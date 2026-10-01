@@ -3,3 +3,4 @@ node_modules
 public/mockServiceWorker.js
 src/mocks/data
 package-lock.json
+README.md
