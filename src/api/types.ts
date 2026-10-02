@@ -245,6 +245,55 @@ export interface TokenResponse {
   expires_in: number
 }
 
+export interface AdminRun extends MatchRun {
+  task_code: string
+  task_title: string
+  requested_by_email: string | null
+}
+
+export interface ThresholdVersion {
+  version: number
+  label: string
+  shortlist_min: number
+  review_min: number
+  reason: string
+  created_by: string | null
+  created_at: string
+  active: boolean
+}
+
+export interface ThresholdsHistory {
+  decision_key: string
+  active: ThresholdVersion
+  history: ThresholdVersion[]
+}
+
+export interface ThresholdsUpdate {
+  shortlist_min: number
+  review_min: number
+  reason: string
+}
+
+export interface EvalReportSummary {
+  id: string
+  name: string
+  created_at: string
+  model: string
+  decision_set_version: string
+  dataset_seed: number
+  tasks: number | null
+  model_hit1: number | null
+  model_hit5: number | null
+  baseline_hit1: number | null
+  baseline_hit5: number | null
+  retrieval_recall: number | null
+  ece: number | null
+}
+
+export interface EvalReport extends EvalReportSummary {
+  metrics: Record<string, unknown>
+}
+
 export interface Problem {
   type: string
   title: string

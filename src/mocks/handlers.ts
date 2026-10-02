@@ -1,6 +1,14 @@
 import { http, HttpResponse } from 'msw'
 
-import type { FeedbackInput, Page, Problem, TaskCreate, User } from '@/api/types'
+import type {
+  FeedbackInput,
+  Page,
+  Problem,
+  TaskCreate,
+  ThresholdsHistory,
+  ThresholdsUpdate,
+  User,
+} from '@/api/types'
 import type { Db } from '@/mocks/db'
 
 const MOCK_USER_ID = 'demo-resource-manager'
@@ -30,6 +38,21 @@ export function createHandlers(db: Db) {
     role: 'resource_manager',
   }
   const token = { access_token: 'mock-token', token_type: 'bearer', expires_in: 1800 }
+  const firstVersion = {
+    version: 1,
+    label: 'overall_fit@1',
+    shortlist_min: 0.8,
+    review_min: 0.5,
+    reason: 'Initial pilot cut-offs',
+    created_by: null,
+    created_at: '2026-10-01T00:00:00Z',
+    active: true,
+  }
+  let thresholds: ThresholdsHistory = {
+    decision_key: 'overall_fit',
+    active: firstVersion,
+    history: [firstVersion],
+  }
 
   return [
     http.post(api('/auth/login'), async ({ request }) => {
@@ -44,6 +67,45 @@ export function createHandlers(db: Db) {
     http.post(api('/auth/logout'), () => new HttpResponse(null, { status: 204 })),
 
     http.get(api('/decisions'), () => HttpResponse.json({ items: db.decisions })),
+    http.get(api('/decisions/overall_fit/thresholds'), () => HttpResponse.json(thresholds)),
+    http.put(api('/decisions/overall_fit/thresholds'), async ({ request }) => {
+      const body = (await request.json()) as ThresholdsUpdate
+      const next = thresholds.active.version + 1
+      const version = {
+        ...body,
+        version: next,
+        label: `overall_fit@${next}`,
+        created_by: user.email,
+        created_at: new Date().toISOString(),
+        active: true,
+      }
+      thresholds = {
+        ...thresholds,
+        active: version,
+        history: [version, ...thresholds.history.map((v) => ({ ...v, active: false }))],
+      }
+      return HttpResponse.json(thresholds)
+    }),
+    http.get(api('/match-runs'), ({ request }) =>
+      HttpResponse.json(
+        page(
+          db.tasks.flatMap((t) =>
+            db
+              .runsForTask(t.id)
+              .map((r) => ({
+                ...r,
+                task_code: t.code,
+                task_title: t.title,
+                requested_by_email: null,
+              })),
+          ),
+          new URL(request.url),
+        ),
+      ),
+    ),
+    http.get(api('/eval/reports'), ({ request }) =>
+      HttpResponse.json(page([], new URL(request.url))),
+    ),
 
     http.get(api('/skills'), ({ request }) =>
       HttpResponse.json(page(db.skills, new URL(request.url))),

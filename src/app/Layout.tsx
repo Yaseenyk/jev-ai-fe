@@ -1,4 +1,4 @@
-import { Info, LayoutList, LogOut, Plus, Users } from 'lucide-react'
+import { Info, LayoutList, LogOut, Plus, ShieldCheck, Users } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
@@ -14,6 +14,7 @@ interface NavItem {
   icon: ComponentType<{ className?: string }>
   isActive: (path: string) => boolean
   editorsOnly?: boolean
+  adminOnly?: boolean
 }
 
 const NAV: NavItem[] = [
@@ -29,6 +30,13 @@ const NAV: NavItem[] = [
     icon: Plus,
     isActive: (p) => p === '/tasks/new',
     editorsOnly: true,
+  },
+  {
+    to: '/admin',
+    label: 'Admin',
+    icon: ShieldCheck,
+    isActive: (p) => p.startsWith('/admin'),
+    adminOnly: true,
   },
 ]
 
@@ -106,7 +114,8 @@ function Brand({ compact = false }: { compact?: boolean }) {
 export function Layout() {
   const { pathname } = useLocation()
   const canEdit = useCanEdit()
-  const nav = NAV.filter((item) => canEdit || !item.editorsOnly)
+  const isAdmin = useAuth().user?.role === 'admin'
+  const nav = NAV.filter((item) => (canEdit || !item.editorsOnly) && (isAdmin || !item.adminOnly))
 
   return (
     <div className="bg-background min-h-svh">

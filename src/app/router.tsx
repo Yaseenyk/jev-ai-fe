@@ -2,6 +2,7 @@ import { Link, Navigate, createBrowserRouter } from 'react-router'
 
 import { Layout } from '@/app/Layout'
 import { EmptyState } from '@/components/QueryStates'
+import AdminPage from '@/features/admin/AdminPage'
 import { RequireAuth } from '@/features/auth/AuthProvider'
 import LoginPage from '@/features/auth/LoginPage'
 import NewTaskChatPage from '@/features/newTask/NewTaskChatPage'
@@ -24,6 +25,7 @@ export const routes = [
       { path: 'tasks/:taskId', element: <TaskDetailPage /> },
       { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },
+      { path: 'admin', element: <AdminPage /> },
       {
         path: '*',
         element: (
