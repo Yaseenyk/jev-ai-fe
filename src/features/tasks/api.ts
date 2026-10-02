@@ -20,7 +20,7 @@ export function useTasks(filters: TaskFilters) {
   return useQuery({
     queryKey: taskKeys.list(filters),
     queryFn: () => {
-      const params = new URLSearchParams({ limit: '200' })
+      const params = new URLSearchParams({ status: 'open', limit: '200' })
       for (const key of ['q', 'priority', 'domain'] as const) {
         if (filters[key]) params.set(key, filters[key])
       }

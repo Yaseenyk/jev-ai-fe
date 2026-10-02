@@ -158,8 +158,12 @@ function CompletedRun({ run }: { run: MatchRun }) {
         </>
       )}
 
-      {excluded.isSuccess && excluded.data.length > 0 && (
-        <ExcludedPanel excluded={excluded.data} counts={run.filter_reason_counts} />
+      {excluded.isSuccess && excluded.data.total > 0 && (
+        <ExcludedPanel
+          excluded={excluded.data.items}
+          total={excluded.data.total}
+          counts={run.filter_reason_counts}
+        />
       )}
 
       <footer className="text-muted-foreground border-t pt-3 text-xs">

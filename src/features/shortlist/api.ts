@@ -22,7 +22,6 @@ export function useExcluded(runId: string, enabled: boolean) {
   return useQuery({
     queryKey: shortlistKeys.excluded(runId),
     queryFn: () => apiFetch<Page<ExcludedCandidate>>(`/match-runs/${runId}/excluded?limit=200`),
-    select: (p) => p.items,
     enabled,
   })
 }

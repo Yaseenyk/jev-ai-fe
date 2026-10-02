@@ -19,9 +19,11 @@ the companion repo `Yaseenyk/jev-ai` (locally the parent folder `D:\Sparity LLM`
 
 ## Current state
 
-- Runs against an in-browser mock API (MSW, `src/mocks/`) fed by `src/mocks/data/demo.json`, exported
-  from a recorded engine run by `backend/scripts/export_frontend_mock.py` in `jev-ai`.
-- `VITE_USE_MOCKS=false` + `VITE_API_BASE_URL` point it at the real API once Phase 2 exists.
+- `npm run dev:api` (mode `api`, `.env.api`: `VITE_USE_MOCKS=false`) runs against the **real backend**:
+  Vite proxies `/api` to uvicorn on :8000; start the backend API and worker first (see `../docs/09`).
+- `npm run dev` (default) runs against the in-browser mock API (MSW, `src/mocks/`) fed by
+  `src/mocks/data/demo.json`, for offline demos; unit tests and `npm run e2e` use the mock too.
+- No login yet (Phase 2e): `feedback.by` is `null` from the real API.
 
 ## Verify before saying done
 

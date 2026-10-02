@@ -27,9 +27,11 @@ export function ReasonCounts({ counts }: { counts: Record<string, number> }) {
 
 export function ExcludedPanel({
   excluded,
+  total,
   counts,
 }: {
   excluded: ExcludedCandidate[]
+  total: number
   counts: Record<string, number>
 }) {
   const [q, setQ] = useState('')
@@ -45,7 +47,7 @@ export function ExcludedPanel({
           <span>
             <span className="font-medium">Why not others?</span>{' '}
             <span className="text-muted-foreground text-sm">
-              {excluded.length} people were excluded by the rules before any AI scoring
+              {total} people were excluded by the rules before any AI scoring
             </span>
           </span>
           <ChevronDown className="text-muted-foreground size-4" aria-hidden />

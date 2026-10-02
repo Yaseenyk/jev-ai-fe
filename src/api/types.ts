@@ -194,7 +194,7 @@ export interface Feedback {
   action: FeedbackAction
   reject_reason: RejectReason | null
   comment: string | null
-  by: string
+  by: string | null
   at: string
 }
 
