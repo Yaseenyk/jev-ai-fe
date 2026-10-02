@@ -90,14 +90,12 @@ export function createHandlers(db: Db) {
       HttpResponse.json(
         page(
           db.tasks.flatMap((t) =>
-            db
-              .runsForTask(t.id)
-              .map((r) => ({
-                ...r,
-                task_code: t.code,
-                task_title: t.title,
-                requested_by_email: null,
-              })),
+            db.runsForTask(t.id).map((r) => ({
+              ...r,
+              task_code: t.code,
+              task_title: t.title,
+              requested_by_email: null,
+            })),
           ),
           new URL(request.url),
         ),
