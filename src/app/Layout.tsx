@@ -1,8 +1,10 @@
-import { Info, LayoutList, Plus, Users } from 'lucide-react'
+import { Info, LayoutList, LogOut, Plus, Users } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
+import type { UserRole } from '@/api/types'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { useAuth, useCanEdit } from '@/features/auth/AuthProvider'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
 
@@ -11,6 +13,7 @@ interface NavItem {
   label: string
   icon: ComponentType<{ className?: string }>
   isActive: (path: string) => boolean
+  editorsOnly?: boolean
 }
 
 const NAV: NavItem[] = [
@@ -20,11 +23,64 @@ const NAV: NavItem[] = [
     icon: LayoutList,
     isActive: (p) => (p.startsWith('/tasks') && p !== '/tasks/new') || p.startsWith('/runs'),
   },
-  { to: '/tasks/new', label: 'New task', icon: Plus, isActive: (p) => p === '/tasks/new' },
+  {
+    to: '/tasks/new',
+    label: 'New task',
+    icon: Plus,
+    isActive: (p) => p === '/tasks/new',
+    editorsOnly: true,
+  },
 ]
 
 const DEMO_NOTE =
   'Demo data: employees and tasks are synthetic. Results come from a recorded test run, not live data.'
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  admin: 'Admin',
+  resource_manager: 'Resource manager',
+  viewer: 'Viewer',
+}
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join('')
+}
+
+function UserBlock() {
+  const { user, logout } = useAuth()
+  if (!user) return null
+  return (
+    <div className="flex flex-col items-center gap-2 lg:flex-row lg:px-1">
+      <span
+        className="bg-secondary text-secondary-foreground grid size-9 shrink-0 place-items-center rounded-full text-xs font-semibold"
+        aria-hidden
+      >
+        {initials(user.display_name)}
+      </span>
+      <span className="hidden min-w-0 flex-1 lg:block">
+        <span className="block truncate text-sm font-medium">{user.display_name}</span>
+        <span className="text-muted-foreground block text-xs">{ROLE_LABELS[user.role]}</span>
+      </span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label="Sign out"
+            onClick={() => void logout()}
+            className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center rounded-lg"
+          >
+            <LogOut className="size-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">Sign out</TooltipContent>
+      </Tooltip>
+    </div>
+  )
+}
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -49,6 +105,8 @@ function Brand({ compact = false }: { compact?: boolean }) {
 
 export function Layout() {
   const { pathname } = useLocation()
+  const canEdit = useCanEdit()
+  const nav = NAV.filter((item) => canEdit || !item.editorsOnly)
 
   return (
     <div className="bg-background min-h-svh">
@@ -64,7 +122,7 @@ export function Layout() {
         </div>
 
         <nav aria-label="Main" className="mt-8 flex flex-col gap-1">
-          {NAV.map((item) => {
+          {nav.map((item) => {
             const active = item.isActive(pathname)
             return (
               <Tooltip key={item.to}>
@@ -108,15 +166,7 @@ export function Layout() {
               </TooltipContent>
             </Tooltip>
           )}
-          <div className="flex items-center justify-center gap-2.5 lg:justify-start lg:px-1">
-            <span className="bg-secondary text-secondary-foreground grid size-9 shrink-0 place-items-center rounded-full text-xs font-semibold">
-              RM
-            </span>
-            <span className="hidden min-w-0 lg:block">
-              <span className="block truncate text-sm font-medium">Resource manager</span>
-              <span className="text-muted-foreground block text-xs">Sparity</span>
-            </span>
-          </div>
+          <UserBlock />
         </div>
       </aside>
 
@@ -149,7 +199,7 @@ export function Layout() {
         aria-label="Main"
         className="bg-surface/95 fixed inset-x-0 bottom-0 z-30 grid grid-cols-2 border-t px-6 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden"
       >
-        {NAV.map((item) => {
+        {nav.map((item) => {
           const active = item.isActive(pathname)
           return (
             <Link

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { PriorityBadge } from '@/features/tasks/PriorityBadge'
+import { useCanEdit } from '@/features/auth/AuthProvider'
 import { useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
 import { date, dateTime, domainLabel, humanize, levelLabel, locationLabel } from '@/lib/format'
 
@@ -25,6 +26,7 @@ function TaskDetail({ task }: { task: Task }) {
   const navigate = useNavigate()
   const runs = useTaskRuns(task.id)
   const start = useStartRun(task.id)
+  const canEdit = useCanEdit()
 
   const facts: [string, string][] = [
     ['Domain', domainLabel(task.domain)],
@@ -63,18 +65,20 @@ function TaskDetail({ task }: { task: Task }) {
           <h1 className="text-2xl font-semibold">{task.title}</h1>
           <p className="text-muted-foreground max-w-2xl text-sm">{task.description}</p>
         </div>
-        <div className="flex flex-col items-end gap-1">
-          <Button
-            onClick={() =>
-              start.mutate(undefined, { onSuccess: (r) => void navigate(`/runs/${r.run_id}`) })
-            }
-            disabled={start.isPending}
-          >
-            {start.isPending ? <Loader2 className="animate-spin" /> : <Play />}
-            Run matching
-          </Button>
-          <span className="text-muted-foreground text-xs">Recommends people; you decide.</span>
-        </div>
+        {canEdit && (
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              onClick={() =>
+                start.mutate(undefined, { onSuccess: (r) => void navigate(`/runs/${r.run_id}`) })
+              }
+              disabled={start.isPending}
+            >
+              {start.isPending ? <Loader2 className="animate-spin" /> : <Play />}
+              Run matching
+            </Button>
+            <span className="text-muted-foreground text-xs">Recommends people; you decide.</span>
+          </div>
+        )}
       </div>
       {start.isError && <ErrorState error={start.error} />}
 

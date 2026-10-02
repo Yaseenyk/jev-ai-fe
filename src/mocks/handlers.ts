@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 
-import type { FeedbackInput, Page, Problem, TaskCreate } from '@/api/types'
+import type { FeedbackInput, Page, Problem, TaskCreate, User } from '@/api/types'
 import type { Db } from '@/mocks/db'
 
 const MOCK_USER_ID = 'demo-resource-manager'
@@ -22,7 +22,27 @@ function page<T>(items: T[], url: URL): Page<T> {
 export function createHandlers(db: Db) {
   const api = (path: string) => `*/api/v1${path}`
 
+  // Mock sign-in: always signed in as a resource manager unless "viewer..." logs in.
+  let user: User = {
+    id: MOCK_USER_ID,
+    email: 'manager1@srtm.local',
+    display_name: 'Resource Manager 1',
+    role: 'resource_manager',
+  }
+  const token = { access_token: 'mock-token', token_type: 'bearer', expires_in: 1800 }
+
   return [
+    http.post(api('/auth/login'), async ({ request }) => {
+      const { email } = (await request.json()) as { email: string }
+      user = email.startsWith('viewer')
+        ? { id: 'demo-viewer', email, display_name: 'Viewer', role: 'viewer' }
+        : { ...user, email }
+      return HttpResponse.json(token)
+    }),
+    http.post(api('/auth/refresh'), () => HttpResponse.json(token)),
+    http.get(api('/auth/me'), () => HttpResponse.json(user)),
+    http.post(api('/auth/logout'), () => new HttpResponse(null, { status: 204 })),
+
     http.get(api('/decisions'), () => HttpResponse.json({ items: db.decisions })),
 
     http.get(api('/skills'), ({ request }) =>

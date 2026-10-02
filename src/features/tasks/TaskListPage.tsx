@@ -16,6 +16,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { PRIORITY_ORDER, PriorityDot, priorityLabel } from '@/features/tasks/PriorityBadge'
 import { StartRunway, daysUntil } from '@/features/tasks/StartRunway'
+import { useCanEdit } from '@/features/auth/AuthProvider'
 import { useTasks } from '@/features/tasks/api'
 import { domainLabel, levelLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -50,6 +51,7 @@ function groupByStart(tasks: Task[], today: Date): Group[] {
 export default function TaskListPage() {
   // All tasks are loaded once and filtered here, so filters respond instantly.
   const tasks = useTasks(NO_FILTERS)
+  const canEdit = useCanEdit()
   const [q, setQ] = useState('')
   const [priority, setPriority] = useState<TaskPriority | null>(null)
   const [domain, setDomain] = useState<string | null>(null)
@@ -97,11 +99,13 @@ export default function TaskListPage() {
             {tasks.isSuccess ? `${all.length} open, soonest start first` : 'Loading open tasks'}
           </p>
         </div>
-        <Button asChild size="lg" className="hidden h-10 rounded-xl px-4 sm:inline-flex">
-          <Link to="/tasks/new">
-            <Plus /> New task
-          </Link>
-        </Button>
+        {canEdit && (
+          <Button asChild size="lg" className="hidden h-10 rounded-xl px-4 sm:inline-flex">
+            <Link to="/tasks/new">
+              <Plus /> New task
+            </Link>
+          </Button>
+        )}
       </header>
 
       <div className="space-y-3">

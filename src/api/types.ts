@@ -224,6 +224,21 @@ export interface FeedbackInput {
   comment?: string
 }
 
+export type UserRole = 'admin' | 'resource_manager' | 'viewer'
+
+export interface User {
+  id: string
+  email: string
+  display_name: string
+  role: UserRole
+}
+
+export interface TokenResponse {
+  access_token: string
+  token_type: 'bearer'
+  expires_in: number
+}
+
 export interface Problem {
   type: string
   title: string

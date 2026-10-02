@@ -9,6 +9,7 @@ import { BandBadge } from '@/features/shortlist/BandBadge'
 import { DecisionBars } from '@/features/shortlist/DecisionBars'
 import { ExplanationBlock } from '@/features/shortlist/ExplanationBlock'
 import { FactsList } from '@/features/shortlist/FactsList'
+import { useCanEdit } from '@/features/auth/AuthProvider'
 import { RejectDialog } from '@/features/shortlist/RejectDialog'
 import {
   FLAG_LABELS,
@@ -34,6 +35,7 @@ export function ShortlistItemCard({
 }) {
   const [open, setOpen] = useState(defaultOpen)
   const [rejecting, setRejecting] = useState(false)
+  const canEdit = useCanEdit()
   const e = item.employee
 
   return (
@@ -127,17 +129,26 @@ export function ShortlistItemCard({
               Your decision is recorded; nobody is assigned automatically.
             </p>
           )}
-          <Button
-            size="sm"
-            variant={item.feedback?.action === 'accept' ? 'secondary' : 'default'}
-            disabled={saving || item.feedback?.action === 'accept'}
-            onClick={() => onFeedback({ action: 'accept' })}
-          >
-            <Check /> Accept as candidate
-          </Button>
-          <Button size="sm" variant="outline" disabled={saving} onClick={() => setRejecting(true)}>
-            <X /> Reject
-          </Button>
+          {canEdit && (
+            <>
+              <Button
+                size="sm"
+                variant={item.feedback?.action === 'accept' ? 'secondary' : 'default'}
+                disabled={saving || item.feedback?.action === 'accept'}
+                onClick={() => onFeedback({ action: 'accept' })}
+              >
+                <Check /> Accept as candidate
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={saving}
+                onClick={() => setRejecting(true)}
+              >
+                <X /> Reject
+              </Button>
+            </>
+          )}
         </div>
       </Collapsible>
 

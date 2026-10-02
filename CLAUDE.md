@@ -23,7 +23,7 @@ the companion repo `Yaseenyk/jev-ai` (locally the parent folder `D:\Sparity LLM`
   Vite proxies `/api` to uvicorn on :8000; start the backend API and worker first (see `../docs/09`).
 - `npm run dev` (default) runs against the in-browser mock API (MSW, `src/mocks/`) fed by
   `src/mocks/data/demo.json`, for offline demos; unit tests and `npm run e2e` use the mock too.
-- No login yet (Phase 2e): `feedback.by` is `null` from the real API.
+- Sign-in: `src/features/auth/` (in-memory access token, refresh via httpOnly cookie, silent renewal on 401, `RequireAuth` guard, `useCanEdit()` hides write actions from viewers). Mock mode signs in automatically.
 
 ## Verify before saying done
 

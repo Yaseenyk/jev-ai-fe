@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { ApiError } from '@/api/client'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { AuthProvider } from '@/features/auth/AuthProvider'
 
 export function createQueryClient() {
   return new QueryClient({
@@ -21,7 +22,9 @@ export function Providers({ children, client }: { children: ReactNode; client?: 
   const [queryClient] = useState(() => client ?? createQueryClient())
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>{children}</TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>{children}</TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   )
 }
