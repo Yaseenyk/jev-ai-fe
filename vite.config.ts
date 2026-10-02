@@ -19,5 +19,13 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: false,
     exclude: [...configDefaults.exclude, 'e2e/**'],
+    // npm run test:coverage — floor from docs/07: feature code >= 70% of lines
+    coverage: {
+      provider: 'v8',
+      include: ['src/features/**'],
+      exclude: ['**/*.test.*'],
+      reporter: ['text-summary', 'json-summary'],
+      thresholds: { lines: 70 },
+    },
   },
 })

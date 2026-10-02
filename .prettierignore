@@ -6,3 +6,4 @@ package-lock.json
 README.md
 src/api/schema.d.ts
 src/api/openapi.json
+coverage
