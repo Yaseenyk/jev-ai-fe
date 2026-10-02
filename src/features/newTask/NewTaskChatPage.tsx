@@ -1,8 +1,16 @@
-import { Check, ClipboardList, CornerUpLeft, Loader2, RotateCcw, Sparkles } from 'lucide-react'
+import {
+  Check,
+  ClipboardList,
+  CornerUpLeft,
+  Loader2,
+  RotateCcw,
+  SendHorizontal,
+  Sparkles,
+} from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 
-import type { Skill } from '@/api/types'
+import type { InterpretResponse, Skill } from '@/api/types'
 import { ErrorState } from '@/components/QueryStates'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,14 +21,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 import { ChoiceAnswer, SkillsAnswer, TextAnswer } from '@/features/newTask/ChatInputs'
-import { useCreateTask, useSkills } from '@/features/newTask/api'
+import { useCreateTask, useInterpret, useSkills } from '@/features/newTask/api'
 import {
   type Draft,
   FIELD_LABELS,
   STAGES,
   type Step,
   applyAnswer,
+  fromInterpretation,
   isAnswered,
   nextStep,
   steps as buildSteps,
@@ -35,6 +45,8 @@ const DRAFT_KEY = 'srtm:new-task-draft'
 interface Saved {
   draft: Draft
   current: number | null
+  description?: string
+  prefilled?: (keyof Draft)[]
 }
 
 function loadSaved(): Saved | null {
@@ -81,47 +93,97 @@ function answerText(step: Step, d: Draft, skillName: (id: string) => string, tod
   return option?.label ?? String(v)
 }
 
+type Mode = 'describe' | 'confirm' | 'questions'
+
+const EXAMPLE =
+  'Senior PySpark engineer for ACME claims migration, hybrid in Hyderabad, starting next month for about 6 months. SQL is a must, Airflow is a plus.'
+
 function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
   const navigate = useNavigate()
   const create = useCreateTask()
+  const interpret = useInterpret()
   const all = useMemo(() => buildSteps(clients), [clients])
   const [today] = useState(() => new Date())
   const [initial] = useState(loadSaved)
+  const hadDraft = initial !== null && Object.keys(initial.draft).length > 0
   const [draft, setDraft] = useState<Draft>(initial?.draft ?? {})
   const [current, setCurrent] = useState<number | null>(initial ? initial.current : 0)
-  const [restored, setRestored] = useState(
-    initial !== null && Object.keys(initial.draft).length > 0,
-  )
+  const [mode, setMode] = useState<Mode>(hadDraft ? 'questions' : 'describe')
+  const [description, setDescription] = useState(initial?.description ?? '')
+  const [prefilled, setPrefilled] = useState<(keyof Draft)[]>(initial?.prefilled ?? [])
+  const [understood, setUnderstood] = useState<{ draft: Draft; r: InterpretResponse } | null>(null)
+  const [intakeNote, setIntakeNote] = useState<string | null>(null)
+  const [restored, setRestored] = useState(hadDraft)
   const [previewOpen, setPreviewOpen] = useState(false)
   const bottom = useRef<HTMLDivElement>(null)
 
   const byId = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills])
   const skillName = (id: string) => byId.get(id) ?? id
-  const describe = (s: Step) => answerText(s, draft, skillName, today)
-  const applies = (s: Step) => !s.skip?.(draft)
-  const step = current === null ? undefined : all[current]
+  const shown = mode === 'confirm' && understood ? understood.draft : draft
+  const describe = (s: Step) => answerText(s, shown, skillName, today)
+  const applies = (s: Step) => !s.skip?.(shown)
+  const step = mode === 'questions' && current !== null ? all[current] : undefined
 
   useEffect(() => {
-    save({ draft, current })
-  }, [draft, current])
+    if (mode === 'questions') save({ draft, current, description, prefilled })
+  }, [mode, draft, current, description, prefilled])
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [current, draft])
+  }, [mode, current, draft, interpret.isPending])
 
   const answer = (index: number, value: string | string[]) => {
     const s = all[index]
     if (!s) return
     const next = applyAnswer(draft, s.id, value)
     setDraft(next)
+    setPrefilled((p) => p.filter((f) => f !== s.id))
     setCurrent(nextStep(all, next, index))
+  }
+
+  const stepByStep = (note: string | null = null) => {
+    setIntakeNote(note)
+    setUnderstood(null)
+    setMode('questions')
+    setCurrent(nextStep(all, draft))
+  }
+
+  const send = (text: string) => {
+    setDescription(text)
+    interpret.mutate(
+      { text, known_clients: clients },
+      {
+        onSuccess: (r) => {
+          const d = fromInterpretation(r, clients, today)
+          if (Object.keys(d).length === 0) {
+            stepByStep("I couldn't pick out any details from that, so let's go step by step.")
+            return
+          }
+          setUnderstood({ draft: d, r })
+          setMode('confirm')
+        },
+        onError: () => {
+          stepByStep("I couldn't read your description just now, so let's go step by step.")
+        },
+      },
+    )
+  }
+
+  const confirm = () => {
+    if (!understood) return
+    const keys = Object.keys(understood.draft) as (keyof Draft)[]
+    setDraft(understood.draft)
+    setPrefilled(keys)
+    setUnderstood(null)
+    setMode('questions')
+    setCurrent(nextStep(all, understood.draft))
   }
 
   const goBack = () => {
     const before = current === null ? all.length : current
     for (let i = before - 1; i >= 0; i--) {
       const s = all[i]
-      if (s && applies(s)) {
+      if (s && applies(s) && !prefilled.includes(s.id)) {
         setCurrent(i)
         return
       }
@@ -131,21 +193,33 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
   const startOver = () => {
     setDraft({})
     setCurrent(0)
+    setMode('describe')
+    setDescription('')
+    setPrefilled([])
+    setUnderstood(null)
+    setIntakeNote(null)
     setRestored(false)
+    save(null)
   }
 
   const history = all
     .map((s, i) => ({ s, i }))
-    .filter(({ s, i }) => i !== current && applies(s) && isAnswered(draft, s.id))
+    .filter(
+      ({ s, i }) =>
+        i !== current && applies(s) && isAnswered(draft, s.id) && !prefilled.includes(s.id),
+    )
+  const missing = (d: Draft) => all.filter((s) => !s.skip?.(d) && !isAnswered(d, s.id)).length
 
   const preview = (inSheet: boolean) => (
     <TaskPreview
       showTitle={!inSheet}
       steps={all}
-      draft={draft}
-      current={current}
+      draft={shown}
+      current={mode === 'questions' ? current : null}
       describe={describe}
       onEdit={(i) => {
+        if (mode === 'confirm') confirm()
+        else if (mode === 'describe') stepByStep()
         setCurrent(i)
         setPreviewOpen(false)
       }}
@@ -160,7 +234,7 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
             <div>
               <h1 className="text-[28px] leading-tight font-semibold sm:text-[32px]">New task</h1>
               <p className="text-muted-foreground mt-1 text-sm">
-                Answer a few questions. The task builds itself as you go.
+                Describe the role, or answer step by step. The task builds itself as you go.
               </p>
             </div>
             <div className="flex shrink-0 gap-1">
@@ -177,7 +251,11 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
               </Button>
             </div>
           </div>
-          <StageProgress steps={all} draft={draft} current={current} />
+          <StageProgress
+            steps={all}
+            draft={shown}
+            current={mode === 'questions' ? current : null}
+          />
         </header>
 
         {restored && (
@@ -194,88 +272,171 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
         )}
 
         <ol className="mt-6 space-y-5" aria-live="polite">
-          {history.map(({ s, i }) => (
-            <li key={s.id} className="space-y-2">
-              <BotMessage>{s.prompt(draft)}</BotMessage>
-              <UserAnswer
-                label={FIELD_LABELS[s.id]}
-                text={describe(s)}
-                onEdit={() => setCurrent(i)}
-              />
-            </li>
-          ))}
-          {step ? (
-            <li>
-              <BotMessage>
-                {isAnswered(draft, step.id) && (
-                  <span className="text-muted-foreground block text-xs">Changing your answer</span>
-                )}
-                {step.prompt(draft)}
-              </BotMessage>
-            </li>
-          ) : (
-            <li className="space-y-3">
-              <BotMessage>
-                That's everything. Check the preview, change anything you like, then create the
-                task.
-              </BotMessage>
-              <div className="flex flex-wrap gap-2 pl-11">
-                <Button
-                  size="lg"
-                  className="h-11 rounded-xl px-5"
-                  disabled={create.isPending}
-                  onClick={() =>
-                    create.mutate(toTaskCreate(draft), {
-                      onSuccess: (task) => {
-                        save(null)
-                        void navigate(`/tasks/${task.id}`)
-                      },
-                    })
-                  }
-                >
-                  {create.isPending ? <Loader2 className="animate-spin" /> : <Check />}
-                  Create task
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="h-11 rounded-xl lg:hidden"
-                  onClick={() => setPreviewOpen(true)}
-                >
-                  Review answers
-                </Button>
-              </div>
-              {create.isError && <ErrorState error={create.error} />}
+          <li>
+            <BotMessage>
+              Hi! Describe the role in your own words, like you would to a colleague. I'll fill in
+              what I can and only ask about what's missing.
+            </BotMessage>
+          </li>
+          {description && (mode !== 'describe' || interpret.isPending) && (
+            <li className="space-y-2">
+              <UserText text={description} />
+              {interpret.isPending && (
+                <BotMessage>
+                  <span className="text-muted-foreground inline-flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" aria-hidden /> Reading your
+                    description…
+                  </span>
+                </BotMessage>
+              )}
+              {mode === 'questions' && prefilled.length > 0 && (
+                <BotMessage>
+                  I filled in {prefilled.length} {prefilled.length === 1 ? 'detail' : 'details'}{' '}
+                  from that. They're in the preview, and you can change any of them.
+                </BotMessage>
+              )}
             </li>
           )}
+          {intakeNote && mode === 'questions' && (
+            <li>
+              <BotMessage>{intakeNote}</BotMessage>
+            </li>
+          )}
+          {mode === 'confirm' && understood && (
+            <li className="space-y-3">
+              <BotMessage>
+                Here's what I understood. Check it, then I'll ask only what's missing.
+              </BotMessage>
+              <Understood
+                steps={all}
+                draft={understood.draft}
+                r={understood.r}
+                describe={describe}
+                left={missing(understood.draft)}
+              />
+            </li>
+          )}
+          {mode === 'questions' &&
+            history.map(({ s, i }) => (
+              <li key={s.id} className="space-y-2">
+                <BotMessage>{s.prompt(draft)}</BotMessage>
+                <UserAnswer
+                  label={FIELD_LABELS[s.id]}
+                  text={describe(s)}
+                  onEdit={() => setCurrent(i)}
+                />
+              </li>
+            ))}
+          {mode === 'questions' &&
+            (step ? (
+              <li>
+                <BotMessage>
+                  {isAnswered(draft, step.id) && (
+                    <span className="text-muted-foreground block text-xs">
+                      Changing your answer
+                    </span>
+                  )}
+                  {step.prompt(draft)}
+                </BotMessage>
+              </li>
+            ) : (
+              <li className="space-y-3">
+                <BotMessage>
+                  That's everything. Check the preview, change anything you like, then create the
+                  task.
+                </BotMessage>
+                <div className="flex flex-wrap gap-2 pl-11">
+                  <Button
+                    size="lg"
+                    className="h-11 rounded-xl px-5"
+                    disabled={create.isPending}
+                    onClick={() =>
+                      create.mutate(toTaskCreate(draft), {
+                        onSuccess: (task) => {
+                          save(null)
+                          void navigate(`/tasks/${task.id}`)
+                        },
+                      })
+                    }
+                  >
+                    {create.isPending ? <Loader2 className="animate-spin" /> : <Check />}
+                    Create task
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="h-11 rounded-xl lg:hidden"
+                    onClick={() => setPreviewOpen(true)}
+                  >
+                    Review answers
+                  </Button>
+                </div>
+                {create.isError && <ErrorState error={create.error} />}
+              </li>
+            ))}
         </ol>
         <div ref={bottom} className="h-4 scroll-mb-64 md:scroll-mb-44" />
 
-        {step && current !== null && (
-          <div className="bg-background/95 sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] -mx-4 border-t px-4 pt-3 pb-4 backdrop-blur sm:-mx-6 sm:px-6 md:bottom-0">
-            <StepInput
-              key={step.id}
-              step={step}
-              draft={draft}
-              skills={skills}
-              today={today}
-              onAnswer={(v) => answer(current, v)}
+        <div className="bg-background/95 sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] -mx-4 border-t px-4 pt-3 pb-4 backdrop-blur sm:-mx-6 sm:px-6 md:bottom-0">
+          {mode === 'describe' && (
+            <DescribeComposer
+              initial={description}
+              pending={interpret.isPending}
+              onSend={send}
+              onStepByStep={() => stepByStep()}
             />
-            <div className="text-muted-foreground mt-2 flex items-center justify-between gap-3 text-xs">
-              <button
-                type="button"
-                onClick={goBack}
-                disabled={current === 0}
-                className="hover:text-foreground flex h-8 items-center gap-1 rounded-md disabled:opacity-40"
+          )}
+          {mode === 'confirm' && (
+            <div className="flex flex-wrap gap-2">
+              <Button size="lg" className="h-11 rounded-xl px-5" onClick={confirm}>
+                <Check /> Looks right, continue
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-11 rounded-xl"
+                onClick={() => {
+                  setUnderstood(null)
+                  setMode('describe')
+                }}
               >
-                <CornerUpLeft className="size-3.5" /> Go back
-              </button>
-              <span className="hidden md:inline">
-                {step.kind === 'choice' ? 'Press 1–9 to pick' : 'Press Enter to send'}
-              </span>
+                Edit my description
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="h-11 rounded-xl"
+                onClick={() => stepByStep()}
+              >
+                Answer step by step instead
+              </Button>
             </div>
-          </div>
-        )}
+          )}
+          {step && current !== null && (
+            <>
+              <StepInput
+                key={step.id}
+                step={step}
+                draft={draft}
+                skills={skills}
+                today={today}
+                onAnswer={(v) => answer(current, v)}
+              />
+              <div className="text-muted-foreground mt-2 flex items-center justify-between gap-3 text-xs">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="hover:text-foreground flex h-8 items-center gap-1 rounded-md"
+                >
+                  <CornerUpLeft className="size-3.5" /> Go back
+                </button>
+                <span className="hidden md:inline">
+                  {step.kind === 'choice' ? 'Press 1–9 to pick' : 'Press Enter to send'}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
       </section>
 
       <aside className="hidden lg:block">
@@ -291,6 +452,133 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
           {previewOpen && preview(true)}
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+function DescribeComposer({
+  initial,
+  pending,
+  onSend,
+  onStepByStep,
+}: {
+  initial: string
+  pending: boolean
+  onSend: (text: string) => void
+  onStepByStep: () => void
+}) {
+  const [text, setText] = useState(initial)
+  const ref = useRef<HTMLTextAreaElement>(null)
+  useEffect(() => {
+    ref.current?.focus()
+  }, [])
+  const ready = text.trim().length >= 3 && !pending
+  const submit = () => {
+    if (ready) onSend(text.trim())
+  }
+  return (
+    <div className="space-y-2">
+      <div className="flex items-end gap-2">
+        <Textarea
+          ref={ref}
+          aria-label="Describe the role"
+          rows={2}
+          maxLength={2000}
+          placeholder="e.g. Senior PySpark engineer for ACME claims, hybrid in Hyderabad, starting next month"
+          className="bg-surface max-h-48 min-h-11 resize-none rounded-xl text-[15px]"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              submit()
+            }
+          }}
+        />
+        <Button
+          aria-label="Send description"
+          className="size-11 shrink-0 rounded-xl"
+          disabled={!ready}
+          onClick={submit}
+        >
+          {pending ? <Loader2 className="animate-spin" /> : <SendHorizontal />}
+        </Button>
+      </div>
+      <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs">
+        <span className="flex flex-wrap gap-x-3">
+          <button
+            type="button"
+            className="hover:text-foreground h-8 underline-offset-4 hover:underline"
+            onClick={onStepByStep}
+          >
+            Answer step by step instead
+          </button>
+          {!text && (
+            <button
+              type="button"
+              className="hover:text-foreground h-8 underline-offset-4 hover:underline"
+              onClick={() => setText(EXAMPLE)}
+            >
+              Use an example
+            </button>
+          )}
+        </span>
+        <span className="hidden md:inline">Enter to send, Shift+Enter for a new line</span>
+      </div>
+    </div>
+  )
+}
+
+function Understood({
+  steps,
+  draft,
+  r,
+  describe,
+  left,
+}: {
+  steps: Step[]
+  draft: Draft
+  r: InterpretResponse
+  describe: (s: Step) => string
+  left: number
+}) {
+  const found = steps.filter((s) => isAnswered(draft, s.id))
+  return (
+    <div className="bg-surface ml-11 space-y-3 rounded-2xl border p-4">
+      <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[9rem_1fr]">
+        {found.map((s) => (
+          <div key={s.id} className="contents">
+            <dt className="text-muted-foreground">{FIELD_LABELS[s.id]}</dt>
+            <dd className="font-medium">{describe(s)}</dd>
+          </div>
+        ))}
+      </dl>
+      {r.unmatched_skills.length > 0 && (
+        <p className="bg-band-review text-band-review-foreground rounded-lg px-3 py-2 text-sm">
+          Not in the skills list: {r.unmatched_skills.join(', ')}. You can pick the closest skills
+          in the next questions.
+        </p>
+      )}
+      {r.notes.map((n) => (
+        <p key={n} className="text-muted-foreground text-sm">
+          {n}
+        </p>
+      ))}
+      <p className="text-muted-foreground text-sm">
+        {left === 0
+          ? 'Nothing else to ask.'
+          : `${left} ${left === 1 ? 'question' : 'questions'} left after this.`}
+      </p>
+    </div>
+  )
+}
+
+function UserText({ text }: { text: string }) {
+  return (
+    <div className="flex justify-end">
+      <p className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-tr-md px-4 py-2.5 text-[15px] whitespace-pre-wrap">
+        {text}
+      </p>
     </div>
   )
 }

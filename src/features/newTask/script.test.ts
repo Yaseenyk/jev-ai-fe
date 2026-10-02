@@ -1,6 +1,14 @@
 import type { Skill } from '@/api/types'
 import { matchSkills } from '@/features/newTask/ChatInputs'
-import { type Draft, applyAnswer, nextStep, steps, toTaskCreate } from '@/features/newTask/script'
+import type { InterpretResponse } from '@/api/types'
+import {
+  type Draft,
+  applyAnswer,
+  fromInterpretation,
+  nextStep,
+  steps,
+  toTaskCreate,
+} from '@/features/newTask/script'
 
 const all = steps(['CL-ACME'])
 const indexOf = (id: keyof Draft) => all.findIndex((s) => s.id === id)
@@ -81,4 +89,50 @@ test('skill search matches names and aliases, prefix matches first', () => {
   ])
   expect(matchSkills(skills, 'reactjs', new Set()).map((s) => s.id)).toEqual(['2'])
   expect(matchSkills(skills, 'react', new Set(['2'])).map((s) => s.id)).toEqual(['1', '3'])
+})
+
+const empty: InterpretResponse = {
+  title: null,
+  client_code: null,
+  domain: null,
+  required_level: null,
+  min_years_experience: null,
+  must_skills: [],
+  nice_skills: [],
+  start_in_days: null,
+  duration_weeks: null,
+  allocation_pct_required: null,
+  work_mode: null,
+  location: null,
+  priority: null,
+  unmatched_skills: [],
+  notes: [],
+  model: 'm',
+}
+
+test('interpreted values snap onto the chat options and unknowns stay unanswered', () => {
+  const d = fromInterpretation(
+    {
+      ...empty,
+      client_code: 'CL-OTHER',
+      required_level: 'L1',
+      min_years_experience: 6,
+      duration_weeks: 26,
+      allocation_pct_required: 60,
+      start_in_days: 14,
+      work_mode: 'remote',
+      location: 'hyderabad',
+    },
+    ['CL-ACME'],
+    new Date('2026-10-02T09:00:00Z'),
+  )
+  expect(d).toEqual({
+    required_level: 'L2',
+    min_years_experience: 5,
+    duration_weeks: 24,
+    allocation_pct_required: 50,
+    start_date: '2026-10-16',
+    work_mode: 'remote',
+  })
+  expect(fromInterpretation(empty, [], new Date())).toEqual({})
 })

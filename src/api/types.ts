@@ -85,6 +85,25 @@ export interface TaskCreate {
   requirements: { skill_id: string; min_proficiency: number; must_have: boolean }[]
 }
 
+export interface InterpretResponse {
+  title: string | null
+  client_code: string | null
+  domain: string | null
+  required_level: Level | null
+  min_years_experience: number | null
+  must_skills: string[]
+  nice_skills: string[]
+  start_in_days: number | null
+  duration_weeks: number | null
+  allocation_pct_required: number | null
+  work_mode: string | null
+  location: string | null
+  priority: TaskPriority | null
+  unmatched_skills: string[]
+  notes: string[]
+  model: string
+}
+
 export interface DecisionOption {
   value: string
   description: string

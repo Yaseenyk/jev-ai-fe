@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { Level, TaskCreate, TaskPriority } from '@/api/types'
+import type { InterpretResponse, Level, TaskCreate, TaskPriority } from '@/api/types'
 import { LEVEL_TITLES, domainLabel, locationLabel } from '@/lib/format'
 
 /** Everything the chat collects. Undefined = not answered yet. */
@@ -382,4 +382,37 @@ export function toTaskCreate(d: Draft): TaskCreate {
       })),
     ],
   }
+}
+
+const YEAR_BUCKETS = [0, 1, 3, 5, 8]
+const DURATIONS = [4, 8, 12, 24, 52]
+
+/** Fit what the interpreter understood onto the chat's own answer options; unknowns stay empty
+ * so the chat asks for them. */
+export function fromInterpretation(r: InterpretResponse, clients: string[], today: Date): Draft {
+  const d: Draft = {}
+  if (r.title) d.title = r.title
+  if (r.client_code && clients.includes(r.client_code)) d.client_code = r.client_code
+  if (r.domain && DOMAINS.includes(r.domain)) d.domain = r.domain
+  if (r.required_level) d.required_level = r.required_level === 'L1' ? 'L2' : r.required_level
+  if (r.min_years_experience !== null) {
+    const years = r.min_years_experience
+    d.min_years_experience = YEAR_BUCKETS.filter((b) => b <= years).at(-1) ?? 0
+  }
+  if (r.must_skills.length) d.must_skills = r.must_skills
+  if (r.nice_skills.length) d.nice_skills = r.nice_skills
+  if (r.start_in_days !== null) d.start_date = isoDate(addDays(today, r.start_in_days))
+  if (r.duration_weeks !== null) {
+    const weeks = r.duration_weeks
+    d.duration_weeks = DURATIONS.reduce((best, w) =>
+      Math.abs(w - weeks) < Math.abs(best - weeks) ? w : best,
+    )
+  }
+  if (r.allocation_pct_required !== null)
+    d.allocation_pct_required = r.allocation_pct_required >= 75 ? 100 : 50
+  if (r.work_mode) d.work_mode = r.work_mode
+  if (r.location && LOCATIONS.includes(r.location) && r.work_mode !== 'remote')
+    d.location = r.location
+  if (r.priority) d.priority = r.priority
+  return d
 }

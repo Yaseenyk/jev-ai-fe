@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiFetch } from '@/api/client'
-import type { Page, Skill, Task, TaskCreate } from '@/api/types'
+import type { InterpretResponse, Page, Skill, Task, TaskCreate } from '@/api/types'
 import { taskKeys } from '@/features/tasks/api'
 
 export function useSkills() {
@@ -19,5 +19,15 @@ export function useCreateTask() {
     mutationFn: (input: TaskCreate) =>
       apiFetch<Task>('/tasks', { method: 'POST', body: JSON.stringify(input) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: taskKeys.all }),
+  })
+}
+
+export function useInterpret() {
+  return useMutation({
+    mutationFn: (input: { text: string; known_clients: string[] }) =>
+      apiFetch<InterpretResponse>('/tasks/interpret', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
   })
 }
