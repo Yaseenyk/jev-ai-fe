@@ -294,6 +294,17 @@ export interface EvalReport extends EvalReportSummary {
   metrics: Record<string, unknown>
 }
 
+export interface LearningSummary {
+  feedback_total: number
+  accepted: number
+  rejected_by_reason: Record<string, number>
+  usable_examples: number
+  training_examples: number
+  holdout_examples: number
+  skipped: Record<string, number>
+  last_feedback_at: string | null
+}
+
 export interface Problem {
   type: string
   title: string

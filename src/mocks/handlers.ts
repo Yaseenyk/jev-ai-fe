@@ -104,6 +104,18 @@ export function createHandlers(db: Db) {
     http.get(api('/eval/reports'), ({ request }) =>
       HttpResponse.json(page([], new URL(request.url))),
     ),
+    http.get(api('/admin/learning'), () =>
+      HttpResponse.json({
+        feedback_total: 3,
+        accepted: 1,
+        rejected_by_reason: { skill_gap: 1, availability: 1 },
+        usable_examples: 2,
+        training_examples: 2,
+        holdout_examples: 0,
+        skipped: { planning_reason: 1 },
+        last_feedback_at: '2026-10-02T10:00:00Z',
+      }),
+    ),
 
     http.get(api('/skills'), ({ request }) =>
       HttpResponse.json(page(db.skills, new URL(request.url))),

@@ -52,3 +52,14 @@ test('an admin changes the band cut-offs with a reason and sees a new version', 
   expect(within(history).getByText(/Shortlist ≥ 65% · Review ≥ 40%/)).toBeInTheDocument()
   expect(within(history).getByText('Pilot: show more people')).toBeInTheDocument()
 })
+
+test('the Learning tab shows what feedback can teach the model', async () => {
+  asAdmin()
+  const user = userEvent.setup()
+  renderRoute('/admin')
+  await user.click(await screen.findByRole('tab', { name: 'Learning' }))
+  const stats = await screen.findByRole('region', { name: 'Feedback so far' })
+  expect(within(stats).getByText('Can train the model').nextSibling).toHaveTextContent('2')
+  expect(screen.getByText(/Planning reasons/)).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: /Export training data \(2\)/ })).toBeEnabled()
+})

@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { apiFetch } from '@/api/client'
+import { ApiError, apiFetch } from '@/api/client'
+import { getAccessToken } from '@/features/auth/session'
+import { env } from '@/lib/env'
 import type {
   AdminRun,
   EvalReport,
   EvalReportSummary,
+  LearningSummary,
   Page,
   RunStatus,
   ThresholdsHistory,
@@ -53,4 +56,27 @@ export function useEvalReport(id: string | null) {
     queryFn: () => apiFetch<EvalReport>(`/eval/reports/${id ?? ''}`),
     enabled: id !== null,
   })
+}
+
+export function useLearning() {
+  return useQuery({
+    queryKey: ['admin', 'learning'],
+    queryFn: () => apiFetch<LearningSummary>('/admin/learning'),
+  })
+}
+
+/** Saves the training file (JSON Lines) through the browser's normal download. */
+export async function downloadTrainingData(): Promise<void> {
+  const token = getAccessToken()
+  const res = await fetch(
+    new URL(`${env.VITE_API_BASE_URL}/admin/learning/export`, window.location.origin),
+    { headers: token ? { Authorization: `Bearer ${token}` } : {}, credentials: 'include' },
+  )
+  if (!res.ok) throw new ApiError(res.status, null)
+  const name =
+    /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1] ?? 'feedback.jsonl'
+  const url = URL.createObjectURL(await res.blob())
+  const link = Object.assign(document.createElement('a'), { href: url, download: name })
+  link.click()
+  URL.revokeObjectURL(url)
 }
