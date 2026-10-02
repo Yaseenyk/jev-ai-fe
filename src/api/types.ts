@@ -29,6 +29,13 @@ export interface SkillRef {
   name: string
 }
 
+export interface Skill {
+  id: string
+  name: string
+  category: string
+  aliases: string[]
+}
+
 export interface SkillRequirement {
   skill: SkillRef
   min_proficiency: number
@@ -47,6 +54,7 @@ export interface Task {
   location_constraint: string[]
   work_mode: string
   client_timezone: string
+  min_timezone_overlap_hours: number
   start_date: string
   duration_weeks: number
   allocation_pct_required: number
@@ -55,6 +63,26 @@ export interface Task {
   priority: TaskPriority
   status: TaskStatus
   requirements: SkillRequirement[]
+}
+
+export interface TaskCreate {
+  title: string
+  description: string
+  client_code: string
+  domain: string
+  required_level: Level
+  min_years_experience: number
+  location_constraint: string[]
+  work_mode: string
+  client_timezone: string
+  min_timezone_overlap_hours: number
+  start_date: string
+  duration_weeks: number
+  allocation_pct_required: number
+  max_cost_band: string
+  clearance_required: string | null
+  priority: TaskPriority
+  requirements: { skill_id: string; min_proficiency: number; must_have: boolean }[]
 }
 
 export interface DecisionOption {

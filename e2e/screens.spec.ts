@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test'
 test('capture main screens', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 })
   await page.goto('/tasks')
-  await expect(page.getByRole('heading', { name: 'Open tasks' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tasks', exact: true })).toBeVisible()
   await page.screenshot({ path: 'e2e-shots/1-tasks.png', fullPage: true })
 
   await page.getByRole('link', { name: /Snowflake Data Engineer/ }).click()

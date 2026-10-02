@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 
-import type { FeedbackInput, Page, Problem } from '@/api/types'
+import type { FeedbackInput, Page, Problem, TaskCreate } from '@/api/types'
 import type { Db } from '@/mocks/db'
 
 const MOCK_USER_ID = 'demo-resource-manager'
@@ -24,6 +24,27 @@ export function createHandlers(db: Db) {
 
   return [
     http.get(api('/decisions'), () => HttpResponse.json({ items: db.decisions })),
+
+    http.get(api('/skills'), ({ request }) =>
+      HttpResponse.json(page(db.skills, new URL(request.url))),
+    ),
+
+    http.post(api('/tasks'), async ({ request }) => {
+      try {
+        const task = db.createTask((await request.json()) as TaskCreate)
+        return HttpResponse.json(task, {
+          status: 201,
+          headers: { Location: `/api/v1/tasks/${task.id}` },
+        })
+      } catch (e) {
+        return problem(
+          422,
+          'Validation Error',
+          'invalid_task',
+          e instanceof Error ? e.message : 'Invalid task',
+        )
+      }
+    }),
 
     http.get(api('/tasks'), ({ request }) => {
       const url = new URL(request.url)
@@ -54,6 +75,14 @@ export function createHandlers(db: Db) {
       const taskId = String(params.taskId)
       if (!db.tasks.some((t) => t.id === taskId)) {
         return problem(404, 'Not Found', 'task_not_found', `Task ${taskId} not found`)
+      }
+      if (!db.canRun(taskId)) {
+        return problem(
+          503,
+          'Not available in demo mode',
+          'demo_matching_unavailable',
+          'Matching new tasks needs the real backend (Phase 2). In demo mode, matching runs on the 15 sample tasks.',
+        )
       }
       if (db.runsForTask(taskId).some((r) => r.status === 'queued' || r.status === 'running')) {
         return problem(

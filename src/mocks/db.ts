@@ -4,7 +4,9 @@ import type {
   Feedback,
   MatchRun,
   ShortlistItem,
+  Skill,
   Task,
+  TaskCreate,
 } from '@/api/types'
 import demo from '@/mocks/data/demo.json'
 
@@ -17,6 +19,7 @@ interface RecordedRun {
 interface DemoData {
   source: string
   decisions: DecisionDefinition[]
+  skills: Skill[]
   tasks: Task[]
   runs: Record<string, RecordedRun>
 }
@@ -34,6 +37,8 @@ const data = demo as unknown as DemoData
 
 export function createDb(now: () => number = Date.now) {
   const runs = new Map<string, RunState>()
+  const tasks = [...data.tasks]
+  const skillsById = new Map(data.skills.map((s) => [s.id, s]))
   const feedback = new Map<string, Feedback>()
 
   // Each task starts with its recorded run as history, so results are viewable without re-running.
@@ -63,7 +68,34 @@ export function createDb(now: () => number = Date.now) {
   return {
     source: data.source,
     decisions: data.decisions,
-    tasks: data.tasks,
+    skills: data.skills,
+    tasks,
+
+    /** Recorded engine results exist only for the sample tasks; new tasks need the real backend. */
+    canRun(taskId: string): boolean {
+      return taskId in data.runs
+    },
+
+    createTask(input: TaskCreate): Task {
+      const { requirements, ...rest } = input
+      const task: Task = {
+        ...rest,
+        id: crypto.randomUUID(),
+        code: `TSK-${String(tasks.length + 1).padStart(4, '0')}`,
+        status: 'open',
+        requirements: requirements.map((r) => {
+          const skill = skillsById.get(r.skill_id)
+          if (!skill) throw new Error(`unknown skill id ${r.skill_id}`)
+          return {
+            skill: { id: skill.id, name: skill.name },
+            min_proficiency: r.min_proficiency,
+            must_have: r.must_have,
+          }
+        }),
+      }
+      tasks.unshift(task)
+      return task
+    },
 
     runsForTask(taskId: string): MatchRun[] {
       return [...runs.values()]

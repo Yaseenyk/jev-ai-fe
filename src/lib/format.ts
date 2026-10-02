@@ -29,7 +29,7 @@ export const LEVEL_TITLES: Record<Level, string> = {
   L5: 'Lead',
   L6: 'Principal',
 }
-export const levelLabel = (l: Level): string => `${l} · ${LEVEL_TITLES[l]}`
+export const levelLabel = (l: Level): string => `${LEVEL_TITLES[l]} (${l})`
 
 export const BAND_LABELS: Record<Band, string> = {
   shortlist: 'Shortlist',
