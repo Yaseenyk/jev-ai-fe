@@ -1,22 +1,62 @@
-// Mirrors docs/06-api-contract.md (backend repo). Hand-written only until the Phase 2 backend
-// publishes its OpenAPI schema; then these are replaced by generated types (ADR 011).
+// API types are generated from the backend's OpenAPI description (docs/04, ADR 011):
+//   backend: uv run python scripts/export_openapi.py   → src/api/openapi.json
+//   here:    npm run gen:api                           → src/api/schema.d.ts
+// This file only gives the generated schemas the short names the screens use. Never hand-write
+// an API shape here; change the backend schema and regenerate instead.
+import type { components } from '@/api/schema'
 
-export type Level = 'L1' | 'L2' | 'L3' | 'L4' | 'L5' | 'L6'
-export type Band = 'shortlist' | 'review' | 'hidden'
-export type RunStatus = 'queued' | 'running' | 'completed' | 'failed'
-export type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
-export type TaskStatus = 'open' | 'matching' | 'shortlisted' | 'filled' | 'cancelled'
-export type DecisionType = 'bool' | 'choice' | 'score'
-export type FeedbackAction = 'accept' | 'reject'
-export type RejectReason =
-  | 'skill_gap'
-  | 'level_mismatch'
-  | 'availability'
-  | 'domain_gap'
-  | 'client_preference'
-  | 'already_planned'
-  | 'other'
+type Schemas = components['schemas']
 
+export type Level = Schemas['Level']
+export type Band = Schemas['Band']
+export type RunStatus = Schemas['RunStatus']
+export type TaskPriority = Schemas['TaskPriority']
+export type TaskStatus = Schemas['TaskStatus']
+export type FeedbackAction = Schemas['FeedbackAction']
+export type RejectReason = Schemas['RejectReason']
+export type UserRole = Schemas['UserRole']
+export type Domain = Schemas['Domain']
+export type WorkMode = Schemas['WorkMode']
+export type CostBand = Schemas['CostBand']
+export type Location = Schemas['Location']
+export type DecisionType = Schemas['DecisionRead']['type']
+
+export type SkillRef = Schemas['SkillRef']
+export type Skill = Schemas['SkillRead']
+export type SkillRequirement = Schemas['SkillRequirementRead']
+export type Task = Schemas['TaskRead']
+export type TaskCreate = Schemas['TaskCreate']
+export type InterpretResponse = Schemas['InterpretResponse']
+
+export type DecisionOption = Schemas['DecisionOptionRead']
+export type DecisionDefinition = Schemas['DecisionRead']
+export type Thresholds = Schemas['ThresholdsRead']
+export type MatchRun = Schemas['MatchRunRead']
+export type MatchRunCreated = Schemas['MatchRunCreated']
+
+export type EmployeeRef = Schemas['EmployeeRef']
+export type CandidateFeatures = Schemas['CandidateFeaturesRead']
+export type DecisionResult = Schemas['DecisionResultRead']
+export type ExplanationPoint = Schemas['ExplanationPointRead']
+export type ExplanationFact = Schemas['ExplanationFactRead']
+export type Explanation = Schemas['ExplanationRead']
+export type Feedback = Schemas['FeedbackRead']
+export type ShortlistItem = Schemas['ShortlistItemRead']
+export type ExcludedCandidate = Schemas['ExcludedRead']
+export type FeedbackInput = Schemas['FeedbackInput']
+
+export type User = Schemas['UserRead']
+export type TokenResponse = Schemas['TokenResponse']
+
+export type AdminRun = Schemas['AdminRunRead']
+export type ThresholdVersion = Schemas['ThresholdVersionRead']
+export type ThresholdsHistory = Schemas['ThresholdsHistory']
+export type ThresholdsUpdate = Schemas['ThresholdsUpdate']
+export type EvalReportSummary = Schemas['EvalReportSummary']
+export type EvalReport = Schemas['EvalReportRead']
+export type LearningSummary = Schemas['LearningSummary']
+
+/** The list envelope every list endpoint returns (docs/06 §1). */
 export interface Page<T> {
   items: T[]
   total: number
@@ -24,292 +64,12 @@ export interface Page<T> {
   offset: number
 }
 
-export interface SkillRef {
-  id: string
-  name: string
-}
-
-export interface Skill {
-  id: string
-  name: string
-  category: string
-  aliases: string[]
-}
-
-export interface SkillRequirement {
-  skill: SkillRef
-  min_proficiency: number
-  must_have: boolean
-}
-
-export interface Task {
-  id: string
-  code: string
-  title: string
-  description: string
-  client_code: string
-  domain: string
-  required_level: Level
-  min_years_experience: number
-  location_constraint: string[]
-  work_mode: string
-  client_timezone: string
-  min_timezone_overlap_hours: number
-  start_date: string
-  duration_weeks: number
-  allocation_pct_required: number
-  max_cost_band: string
-  clearance_required: string | null
-  priority: TaskPriority
-  status: TaskStatus
-  requirements: SkillRequirement[]
-}
-
-export interface TaskCreate {
-  title: string
-  description: string
-  client_code: string
-  domain: string
-  required_level: Level
-  min_years_experience: number
-  location_constraint: string[]
-  work_mode: string
-  client_timezone: string
-  min_timezone_overlap_hours: number
-  start_date: string
-  duration_weeks: number
-  allocation_pct_required: number
-  max_cost_band: string
-  clearance_required: string | null
-  priority: TaskPriority
-  requirements: { skill_id: string; min_proficiency: number; must_have: boolean }[]
-}
-
-export interface InterpretResponse {
-  title: string | null
-  client_code: string | null
-  domain: string | null
-  required_level: Level | null
-  min_years_experience: number | null
-  must_skills: string[]
-  nice_skills: string[]
-  start_in_days: number | null
-  duration_weeks: number | null
-  allocation_pct_required: number | null
-  work_mode: string | null
-  location: string | null
-  priority: TaskPriority | null
-  unmatched_skills: string[]
-  notes: string[]
-  model: string
-}
-
-export interface DecisionOption {
-  value: string
-  description: string
-}
-
-export interface DecisionDefinition {
-  key: string
-  version: number
-  label: string
-  type: DecisionType
-  question: string
-  options: DecisionOption[]
-}
-
-export interface Thresholds {
-  shortlist_min: number
-  review_min: number
-}
-
-export interface MatchRun {
-  id: string
-  task_id: string
-  status: RunStatus
-  started_at: string | null
-  finished_at: string | null
-  error: string | null
-  model: string | null
-  decision_set_version: string
-  thresholds_version: string
-  candidate_count: number
-  retrieved_count: number
-  total_cost_usd: number
-  latency_ms: number
-  run_flags: string[]
-  filter_reason_counts: Record<string, number>
-  thresholds?: Thresholds | null
-}
-
-export interface MatchRunCreated {
-  run_id: string
-  status: RunStatus
-}
-
-export interface EmployeeRef {
-  id: string
-  employee_code: string
-  full_name: string
-  designation: string
-  level: Level
-  location: string
-}
-
-export interface CandidateFeatures {
-  must_have_coverage: number
-  nice_to_have_coverage: number
-  related_skill_hits: number
-  level_gap: number
-  years_gap: number
-  domain_project_count: number
-  most_recent_relevant_skill_months: number | null
-  available_capacity_pct: number
-  low_data: boolean
-  inconsistent_data: boolean
-}
-
-export interface DecisionResult {
-  key: string
-  version: number
-  type: DecisionType
-  chosen: string
-  probs: Record<string, number>
-  flags: string[]
-}
-
-export interface ExplanationPoint {
-  fact_ids: string[]
-  text: string
-}
-
-export interface ExplanationFact {
-  id: string
-  label: string
-  value: string
-}
-
-export interface Explanation {
-  summary: string
-  strengths: ExplanationPoint[]
-  gaps: ExplanationPoint[]
-  facts: ExplanationFact[]
-}
-
-export interface Feedback {
-  action: FeedbackAction
-  reject_reason: RejectReason | null
-  comment: string | null
-  by: string | null
-  at: string
-}
-
-export interface ShortlistItem {
-  id: string
-  rank: number
-  rank_score: number
-  band: Band
-  employee: EmployeeRef
-  features: CandidateFeatures
-  decisions: DecisionResult[]
-  flags: string[]
-  contradictions: string[]
-  explanation: Explanation | null
-  explanation_status: 'ok' | 'unavailable' | null
-  feedback: Feedback | null
-}
-
-export interface ExcludedCandidate {
-  employee: EmployeeRef
-  filter_reasons: string[]
-}
-
-export interface FeedbackInput {
-  action: FeedbackAction
-  reject_reason?: RejectReason
-  comment?: string
-}
-
-export type UserRole = 'admin' | 'resource_manager' | 'viewer'
-
-export interface User {
-  id: string
-  email: string
-  display_name: string
-  role: UserRole
-}
-
-export interface TokenResponse {
-  access_token: string
-  token_type: 'bearer'
-  expires_in: number
-}
-
-export interface AdminRun extends MatchRun {
-  task_code: string
-  task_title: string
-  requested_by_email: string | null
-}
-
-export interface ThresholdVersion {
-  version: number
-  label: string
-  shortlist_min: number
-  review_min: number
-  reason: string
-  created_by: string | null
-  created_at: string
-  active: boolean
-}
-
-export interface ThresholdsHistory {
-  decision_key: string
-  active: ThresholdVersion
-  history: ThresholdVersion[]
-}
-
-export interface ThresholdsUpdate {
-  shortlist_min: number
-  review_min: number
-  reason: string
-}
-
-export interface EvalReportSummary {
-  id: string
-  name: string
-  created_at: string
-  model: string
-  decision_set_version: string
-  dataset_seed: number
-  tasks: number | null
-  model_hit1: number | null
-  model_hit5: number | null
-  baseline_hit1: number | null
-  baseline_hit5: number | null
-  retrieval_recall: number | null
-  ece: number | null
-}
-
-export interface EvalReport extends EvalReportSummary {
-  metrics: Record<string, unknown>
-}
-
-export interface LearningSummary {
-  feedback_total: number
-  accepted: number
-  rejected_by_reason: Record<string, number>
-  usable_examples: number
-  training_examples: number
-  holdout_examples: number
-  skipped: Record<string, number>
-  last_feedback_at: string | null
-}
-
+/** RFC 9457 problem+json error body (docs/03 §5); not part of the OpenAPI schemas. */
 export interface Problem {
   type: string
   title: string
   status: number
   code: string
   detail: string
-  request_id?: string
+  request_id?: string | null
 }

@@ -1,13 +1,23 @@
 import { z } from 'zod'
 
-import type { InterpretResponse, Level, Task, TaskCreate, TaskPriority } from '@/api/types'
+import type {
+  CostBand,
+  Domain,
+  InterpretResponse,
+  Level,
+  Location,
+  Task,
+  TaskCreate,
+  TaskPriority,
+  WorkMode,
+} from '@/api/types'
 import { LEVEL_TITLES, domainLabel, locationLabel } from '@/lib/format'
 
 /** Everything the chat collects. Undefined = not answered yet. */
 export interface Draft {
   title?: string
   client_code?: string
-  domain?: string
+  domain?: Domain
   required_level?: Level
   min_years_experience?: number
   must_skills?: string[]
@@ -17,11 +27,11 @@ export interface Draft {
   start_date?: string
   duration_weeks?: number
   allocation_pct_required?: number
-  work_mode?: string
-  location?: string
+  work_mode?: WorkMode
+  location?: Location | 'any'
   client_timezone?: string
   min_timezone_overlap_hours?: number
-  max_cost_band?: string
+  max_cost_band?: CostBand
   clearance?: 'none' | 'client'
   priority?: TaskPriority
 }

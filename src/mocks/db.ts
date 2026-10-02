@@ -80,6 +80,7 @@ export function createDb(now: () => number = Date.now) {
       const { requirements, ...rest } = input
       const task: Task = {
         ...rest,
+        clearance_required: rest.clearance_required ?? null,
         id: crypto.randomUUID(),
         code: `TSK-${String(tasks.length + 1).padStart(4, '0')}`,
         status: 'open',
