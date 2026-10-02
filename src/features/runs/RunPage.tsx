@@ -13,7 +13,13 @@ import { isActive, useDecisionDefinitions, useMatchRun } from '@/features/runs/a
 import { ExcludedPanel, ReasonCounts } from '@/features/shortlist/ExcludedPanel'
 import { ShortlistItemCard } from '@/features/shortlist/ShortlistItemCard'
 import { useExcluded, useShortlist, useSubmitFeedback } from '@/features/shortlist/api'
-import { BAND_LABELS, dateTime } from '@/lib/format'
+import {
+  BAND_LABELS,
+  dateTime,
+  FILTER_REASON_FIXES,
+  FILTER_REASON_LABELS,
+  humanize,
+} from '@/lib/format'
 
 const OPEN_BY_DEFAULT = 3
 
@@ -100,26 +106,11 @@ function CompletedRun({ run }: { run: MatchRun }) {
         <Stat label={BAND_LABELS.review} value={counts.review.length} />
       </dl>
 
-      {run.run_flags.includes('no_eligible_candidates') && (
-        <Alert>
-          <AlertTitle>Nobody passed the rules for this task</AlertTitle>
-          <AlertDescription className="space-y-2">
-            <p>
-              Constraints are never relaxed automatically. These are the reasons people were
-              excluded; consider changing the task if one reason dominates.
-            </p>
-            <ReasonCounts counts={run.filter_reason_counts} />
-          </AlertDescription>
-        </Alert>
-      )}
-      {run.run_flags.includes('few_candidates') && (
-        <Alert>
-          <AlertTitle>Only a few people fit the basic requirements</AlertTitle>
-          <AlertDescription>
-            Review them carefully, and check “Why not others?” below.
-          </AlertDescription>
-        </Alert>
-      )}
+      <OutcomeNotice
+        run={run}
+        excludedTotal={excluded.data?.total ?? null}
+        ranked={items.data.length}
+      />
 
       {feedback.isError && <ErrorState error={feedback.error} />}
 
@@ -167,8 +158,9 @@ function CompletedRun({ run }: { run: MatchRun }) {
       )}
 
       <footer className="text-muted-foreground border-t pt-3 text-xs">
-        Model {run.model ?? 'n/a'} · Decisions {run.decision_set_version} · Thresholds{' '}
-        {run.thresholds_version} · Finished {run.finished_at ? dateTime(run.finished_at) : 'n/a'}
+        Model {run.model ?? 'not needed (nobody reached scoring)'} · Decisions{' '}
+        {run.decision_set_version} · Thresholds {run.thresholds_version} · Finished{' '}
+        {run.finished_at ? dateTime(run.finished_at) : 'n/a'}
       </footer>
     </div>
   )
@@ -223,4 +215,77 @@ function BandSection({
       )}
     </section>
   )
+}
+
+function biggestBlocker(counts: Record<string, number>): [string, number] | null {
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+  return top ?? null
+}
+
+function OutcomeNotice({
+  run,
+  excludedTotal,
+  ranked,
+}: {
+  run: MatchRun
+  excludedTotal: number | null
+  ranked: number
+}) {
+  const blocker = biggestBlocker(run.filter_reason_counts)
+  const blockerLine = blocker && (
+    <p>
+      Biggest blocker:{' '}
+      <span className="font-medium">
+        {FILTER_REASON_LABELS[blocker[0]] ?? humanize(blocker[0])}
+      </span>{' '}
+      ({blocker[1]} of {run.candidate_count} people). {FILTER_REASON_FIXES[blocker[0]] ?? ''}
+    </p>
+  )
+
+  if (run.run_flags.includes('no_eligible_candidates')) {
+    return (
+      <Alert>
+        <AlertTitle>Nobody matched: no one passed the rules for this task</AlertTitle>
+        <AlertDescription className="space-y-2">
+          {blockerLine}
+          <p>Rules are never relaxed automatically. Change the task to widen the search.</p>
+          <ReasonCounts counts={run.filter_reason_counts} />
+        </AlertDescription>
+      </Alert>
+    )
+  }
+  // Runs saved before the no_skill_match flag existed carry few_candidates with nobody ranked.
+  const noSkillMatch =
+    run.run_flags.includes('no_skill_match') ||
+    (run.run_flags.includes('few_candidates') && ranked === 0)
+  if (noSkillMatch) {
+    const passed = excludedTotal === null ? null : run.candidate_count - excludedTotal
+    return (
+      <Alert>
+        <AlertTitle>Nobody matched: no one has the must-have skills</AlertTitle>
+        <AlertDescription className="space-y-2">
+          <p>
+            {passed === null ? 'Some people' : `${passed} ${passed === 1 ? 'person' : 'people'}`}{' '}
+            passed the rules, but none has a must-have skill at the required level. Lower the
+            minimum proficiency, or move a skill from must-have to nice-to-have.
+          </p>
+          {blockerLine}
+        </AlertDescription>
+      </Alert>
+    )
+  }
+  if (run.run_flags.includes('few_candidates')) {
+    return (
+      <Alert>
+        <AlertTitle>
+          Only {ranked} {ranked === 1 ? 'person fits' : 'people fit'} the basic requirements
+        </AlertTitle>
+        <AlertDescription className="space-y-2">
+          <p>Review them carefully. To widen the search:</p>
+          {blockerLine}
+        </AlertDescription>
+      </Alert>
+    )
+  }
+  return null
 }

@@ -68,6 +68,9 @@ test('rejecting requires a reason', async () => {
 
 test('a run where nobody passes the rules explains why instead of relaxing them', async () => {
   renderRoute(`/runs/${noEligibleRun.run.id}`)
-  expect(await screen.findByText('Nobody passed the rules for this task')).toBeInTheDocument()
+  expect(
+    await screen.findByText('Nobody matched: no one passed the rules for this task'),
+  ).toBeInTheDocument()
   expect(screen.getByText(/never relaxed automatically/)).toBeInTheDocument()
+  expect(screen.getByText(/Biggest blocker:/)).toBeInTheDocument()
 })

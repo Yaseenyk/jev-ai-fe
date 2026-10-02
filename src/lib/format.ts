@@ -46,6 +46,16 @@ export const FILTER_REASON_LABELS: Record<string, string> = {
   missing_clearance: 'Missing client clearance',
 }
 
+/** What a manager can change in the task when this rule removes most people. */
+export const FILTER_REASON_FIXES: Record<string, string> = {
+  not_available: 'Start later, allow part-time, or shorten the duration.',
+  leave_overlap: 'Move the start date or shorten the duration.',
+  location_mismatch: 'Allow another location, or make the role hybrid or remote.',
+  timezone_overlap: 'Ask for fewer overlap hours with the client.',
+  cost_band: 'Raise the maximum cost band.',
+  missing_clearance: 'Drop the clearance requirement if the client allows it.',
+}
+
 export const FLAG_LABELS: Record<string, string> = {
   inconsistent: 'Answer changed when options were reordered',
   contradiction: 'AI answer contradicts the facts',
