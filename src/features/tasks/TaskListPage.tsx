@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { PRIORITY_ORDER, PriorityDot, priorityLabel } from '@/features/tasks/PriorityBadge'
 import { StartRunway, daysUntil } from '@/features/tasks/StartRunway'
 import { useCanEdit } from '@/features/auth/AuthProvider'
-import { useTasks } from '@/features/tasks/api'
+import { type TaskView, useTasks } from '@/features/tasks/api'
 import { domainLabel, levelLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -50,7 +50,8 @@ function groupByStart(tasks: Task[], today: Date): Group[] {
 
 export default function TaskListPage() {
   // All tasks are loaded once and filtered here, so filters respond instantly.
-  const tasks = useTasks(NO_FILTERS)
+  const [view, setView] = useState<TaskView>('open')
+  const tasks = useTasks(NO_FILTERS, view)
   const canEdit = useCanEdit()
   const [q, setQ] = useState('')
   const [priority, setPriority] = useState<TaskPriority | null>(null)
@@ -96,8 +97,26 @@ export default function TaskListPage() {
         <div>
           <h1 className="text-[28px] leading-tight font-semibold sm:text-[32px]">Tasks</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {tasks.isSuccess ? `${all.length} open, soonest start first` : 'Loading open tasks'}
+            {tasks.isSuccess
+              ? `${all.length} ${view}, soonest start first`
+              : `Loading ${view} tasks`}
           </p>
+        </div>
+        <div className="bg-muted ml-auto flex rounded-xl p-1" role="group" aria-label="Show tasks">
+          {(['open', 'closed'] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={view === v}
+              onClick={() => setView(v)}
+              className={cn(
+                'h-8 rounded-lg px-3 text-sm font-medium capitalize',
+                view === v ? 'bg-surface shadow-sm' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {v}
+            </button>
+          ))}
         </div>
         {canEdit && (
           <Button asChild size="lg" className="hidden h-10 rounded-xl px-4 sm:inline-flex">
@@ -305,6 +324,18 @@ function TaskRow({ task, today }: { task: Task; today: Date }) {
               {priorityLabel(task.priority)}
             </span>
             <span className="text-muted-foreground text-xs">{task.code}</span>
+            {(task.status === 'filled' || task.status === 'cancelled') && (
+              <span
+                className={cn(
+                  'rounded-full px-2 py-0.5 text-xs font-medium',
+                  task.status === 'filled'
+                    ? 'bg-band-shortlist text-band-shortlist-foreground'
+                    : 'bg-muted text-muted-foreground',
+                )}
+              >
+                {task.status === 'filled' ? 'Filled' : 'Cancelled'}
+              </span>
+            )}
           </div>
           <p className="font-heading text-[17px] leading-snug font-semibold">{task.title}</p>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">

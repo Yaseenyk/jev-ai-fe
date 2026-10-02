@@ -4,6 +4,7 @@ import type {
   FeedbackInput,
   Page,
   Problem,
+  Task,
   TaskCreate,
   ThresholdsHistory,
   ThresholdsUpdate,
@@ -143,13 +144,23 @@ export function createHandlers(db: Db) {
       const q = url.searchParams.get('q')?.toLowerCase()
       const priority = url.searchParams.get('priority')
       const domain = url.searchParams.get('domain')
+      const statuses = url.searchParams.getAll('status')
       const tasks = db.tasks.filter(
         (t) =>
+          (!statuses.length || statuses.includes(t.status)) &&
           (!q || `${t.code} ${t.title}`.toLowerCase().includes(q)) &&
           (!priority || t.priority === priority) &&
           (!domain || t.domain === domain),
       )
       return HttpResponse.json(page(tasks, url))
+    }),
+
+    http.post(api('/tasks/:taskId/status'), async ({ params, request }) => {
+      const task = db.tasks.find((t) => t.id === params.taskId)
+      if (!task) return problem(404, 'Not Found', 'task_not_found', 'Task not found')
+      const { status } = (await request.json()) as { status: Task['status'] }
+      task.status = status
+      return HttpResponse.json(task)
     }),
 
     http.patch(api('/tasks/:taskId'), async ({ params, request }) => {

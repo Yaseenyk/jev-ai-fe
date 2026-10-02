@@ -17,11 +17,15 @@ export const taskKeys = {
   runs: (id: string) => [...taskKeys.all, 'detail', id, 'runs'] as const,
 }
 
-export function useTasks(filters: TaskFilters) {
+export type TaskView = 'open' | 'closed'
+
+export function useTasks(filters: TaskFilters, view: TaskView = 'open') {
   return useQuery({
-    queryKey: taskKeys.list(filters),
+    queryKey: [...taskKeys.list(filters), view],
     queryFn: () => {
-      const params = new URLSearchParams({ status: 'open', limit: '200' })
+      const params = new URLSearchParams({ limit: '200' })
+      for (const s of view === 'open' ? ['open'] : ['filled', 'cancelled'])
+        params.append('status', s)
       for (const key of ['q', 'priority', 'domain'] as const) {
         if (filters[key]) params.set(key, filters[key])
       }
@@ -52,5 +56,14 @@ export function useStartRun(taskId: string) {
   return useMutation({
     mutationFn: () => apiFetch<MatchRunCreated>(`/tasks/${taskId}/match-runs`, { method: 'POST' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: taskKeys.runs(taskId) }),
+  })
+}
+
+export function useChangeTaskStatus(taskId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { status: 'filled' | 'cancelled' | 'open'; note: string | null }) =>
+      apiFetch<Task>(`/tasks/${taskId}/status`, { method: 'POST', body: JSON.stringify(input) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: taskKeys.all }),
   })
 }

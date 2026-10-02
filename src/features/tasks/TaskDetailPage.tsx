@@ -1,4 +1,5 @@
-import { ArrowLeft, ChevronRight, Loader2, Pencil, Play } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Loader2, Pencil, Play, RotateCcw } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 
 import type { MatchRun, Task } from '@/api/types'
@@ -10,7 +11,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { PriorityBadge } from '@/features/tasks/PriorityBadge'
 import { useCanEdit } from '@/features/auth/AuthProvider'
-import { useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
+import { type CloseAs, CloseTaskDialog } from '@/features/tasks/CloseTaskDialog'
+import { useChangeTaskStatus, useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
+import { cn } from '@/lib/utils'
 import { date, dateTime, domainLabel, humanize, levelLabel, locationLabel } from '@/lib/format'
 
 export default function TaskDetailPage() {
@@ -27,6 +30,9 @@ function TaskDetail({ task }: { task: Task }) {
   const runs = useTaskRuns(task.id)
   const start = useStartRun(task.id)
   const canEdit = useCanEdit()
+  const [closeAs, setCloseAs] = useState<CloseAs | null>(null)
+  const reopen = useChangeTaskStatus(task.id)
+  const closed = task.status === 'filled' || task.status === 'cancelled'
 
   const facts: [string, string][] = [
     ['Domain', domainLabel(task.domain)],
@@ -65,7 +71,7 @@ function TaskDetail({ task }: { task: Task }) {
           <h1 className="text-2xl font-semibold">{task.title}</h1>
           <p className="text-muted-foreground max-w-2xl text-sm">{task.description}</p>
         </div>
-        {canEdit && (
+        {canEdit && !closed && (
           <div className="flex flex-col items-end gap-1">
             <div className="flex gap-2">
               <Button variant="outline" asChild>
@@ -83,11 +89,55 @@ function TaskDetail({ task }: { task: Task }) {
                 Run matching
               </Button>
             </div>
-            <span className="text-muted-foreground text-xs">Recommends people; you decide.</span>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-muted-foreground">Recommends people; you decide.</span>
+              <button
+                type="button"
+                className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                onClick={() => setCloseAs('filled')}
+              >
+                Mark as filled
+              </button>
+              <button
+                type="button"
+                className="text-destructive underline-offset-4 hover:underline"
+                onClick={() => setCloseAs('cancelled')}
+              >
+                Cancel task
+              </button>
+            </div>
           </div>
         )}
       </div>
       {start.isError && <ErrorState error={start.error} />}
+      {closed && (
+        <div
+          role="status"
+          className={cn(
+            'flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3',
+            task.status === 'filled' ? 'bg-band-shortlist' : 'bg-muted',
+          )}
+        >
+          <p className="text-sm">
+            <span className="font-semibold">
+              {task.status === 'filled' ? 'Filled' : 'Cancelled'}.
+            </span>{' '}
+            This task is closed: it is off the open board and cannot be matched.
+          </p>
+          {canEdit && (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={reopen.isPending}
+              onClick={() => reopen.mutate({ status: 'open', note: null })}
+            >
+              <RotateCcw /> Reopen task
+            </Button>
+          )}
+        </div>
+      )}
+      {reopen.isError && <ErrorState error={reopen.error} />}
+      <CloseTaskDialog taskId={task.id} as={closeAs} onOpenChange={(o) => !o && setCloseAs(null)} />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="md:col-span-1">
