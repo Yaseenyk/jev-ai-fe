@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronRight, Loader2, Play } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Loader2, Pencil, Play } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 
 import type { MatchRun, Task } from '@/api/types'
@@ -67,15 +67,22 @@ function TaskDetail({ task }: { task: Task }) {
         </div>
         {canEdit && (
           <div className="flex flex-col items-end gap-1">
-            <Button
-              onClick={() =>
-                start.mutate(undefined, { onSuccess: (r) => void navigate(`/runs/${r.run_id}`) })
-              }
-              disabled={start.isPending}
-            >
-              {start.isPending ? <Loader2 className="animate-spin" /> : <Play />}
-              Run matching
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link to={`/tasks/${task.id}/edit`}>
+                  <Pencil /> Edit task
+                </Link>
+              </Button>
+              <Button
+                onClick={() =>
+                  start.mutate(undefined, { onSuccess: (r) => void navigate(`/runs/${r.run_id}`) })
+                }
+                disabled={start.isPending}
+              >
+                {start.isPending ? <Loader2 className="animate-spin" /> : <Play />}
+                Run matching
+              </Button>
+            </div>
             <span className="text-muted-foreground text-xs">Recommends people; you decide.</span>
           </div>
         )}

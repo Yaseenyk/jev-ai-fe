@@ -1,4 +1,4 @@
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useCanEdit } from '@/features/auth/AuthProvider'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { isActive, useDecisionDefinitions, useMatchRun } from '@/features/runs/api'
 import { ExcludedPanel, ReasonCounts } from '@/features/shortlist/ExcludedPanel'
@@ -231,6 +232,14 @@ function OutcomeNotice({
   excludedTotal: number | null
   ranked: number
 }) {
+  const canEdit = useCanEdit()
+  const editLink = canEdit && (
+    <Button asChild size="sm" variant="outline" className="mt-1">
+      <Link to={`/tasks/${run.task_id}/edit`}>
+        <Pencil /> Edit task to widen the search
+      </Link>
+    </Button>
+  )
   const blocker = biggestBlocker(run.filter_reason_counts)
   const blockerLine = blocker && (
     <p>
@@ -250,6 +259,7 @@ function OutcomeNotice({
           {blockerLine}
           <p>Rules are never relaxed automatically. Change the task to widen the search.</p>
           <ReasonCounts counts={run.filter_reason_counts} />
+          {editLink}
         </AlertDescription>
       </Alert>
     )
@@ -270,6 +280,7 @@ function OutcomeNotice({
             minimum proficiency, or move a skill from must-have to nice-to-have.
           </p>
           {blockerLine}
+          {editLink}
         </AlertDescription>
       </Alert>
     )

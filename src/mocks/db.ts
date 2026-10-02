@@ -97,6 +97,17 @@ export function createDb(now: () => number = Date.now) {
       return task
     },
 
+    updateTask(taskId: string, input: TaskCreate): Task | undefined {
+      const i = tasks.findIndex((t) => t.id === taskId)
+      const old = tasks[i]
+      if (!old) return undefined
+      const created = this.createTask(input)
+      tasks.shift() // createTask adds to the front; keep the original id, code and place
+      const updated = { ...created, id: old.id, code: old.code, status: old.status }
+      tasks[i] = updated
+      return updated
+    },
+
     runsForTask(taskId: string): MatchRun[] {
       return [...runs.values()]
         .filter((s) => s.run.task_id === taskId)

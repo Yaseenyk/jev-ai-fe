@@ -31,3 +31,12 @@ export function useInterpret() {
       }),
   })
 }
+
+export function useUpdateTask(taskId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: TaskCreate) =>
+      apiFetch<Task>(`/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(input) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: taskKeys.all }),
+  })
+}

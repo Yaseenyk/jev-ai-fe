@@ -30,10 +30,11 @@ export function useTasks(filters: TaskFilters) {
   })
 }
 
-export function useTask(taskId: string) {
+export function useTask(taskId: string, enabled = true) {
   return useQuery({
     queryKey: taskKeys.detail(taskId),
     queryFn: () => apiFetch<Task>(`/tasks/${taskId}`),
+    enabled,
   })
 }
 

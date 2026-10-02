@@ -80,6 +80,13 @@ export function createHandlers(db: Db) {
       return HttpResponse.json(page(tasks, url))
     }),
 
+    http.patch(api('/tasks/:taskId'), async ({ params, request }) => {
+      const task = db.updateTask(String(params.taskId), (await request.json()) as TaskCreate)
+      return task
+        ? HttpResponse.json(task)
+        : problem(404, 'Not Found', 'task_not_found', `Task ${String(params.taskId)} not found`)
+    }),
+
     http.get(api('/tasks/:taskId'), ({ params }) => {
       const task = db.tasks.find((t) => t.id === params.taskId)
       return task

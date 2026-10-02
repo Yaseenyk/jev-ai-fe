@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import type { InterpretResponse, Level, TaskCreate, TaskPriority } from '@/api/types'
+import type { InterpretResponse, Level, Task, TaskCreate, TaskPriority } from '@/api/types'
 import { LEVEL_TITLES, domainLabel, locationLabel } from '@/lib/format'
 
 /** Everything the chat collects. Undefined = not answered yet. */
@@ -415,4 +415,30 @@ export function fromInterpretation(r: InterpretResponse, clients: string[], toda
     d.location = r.location
   if (r.priority) d.priority = r.priority
   return d
+}
+
+/** An existing task as chat answers, so editing reuses the same conversation. */
+export function fromTask(task: Task): Draft {
+  const must = task.requirements.filter((r) => r.must_have)
+  return {
+    title: task.title,
+    client_code: task.client_code,
+    domain: task.domain,
+    required_level: task.required_level,
+    min_years_experience: task.min_years_experience,
+    must_skills: must.map((r) => r.skill.id),
+    must_min_proficiency: Math.max(...must.map((r) => r.min_proficiency)),
+    nice_skills: task.requirements.filter((r) => !r.must_have).map((r) => r.skill.id),
+    description: task.description,
+    start_date: task.start_date,
+    duration_weeks: task.duration_weeks,
+    allocation_pct_required: task.allocation_pct_required,
+    work_mode: task.work_mode,
+    location: task.location_constraint[0] ?? 'any',
+    client_timezone: task.client_timezone,
+    min_timezone_overlap_hours: task.min_timezone_overlap_hours,
+    max_cost_band: task.max_cost_band,
+    clearance: task.clearance_required ? 'client' : 'none',
+    priority: task.priority,
+  }
 }

@@ -22,6 +22,7 @@ export const routes = [
       { path: 'tasks', element: <TaskListPage /> },
       { path: 'tasks/new', element: <NewTaskChatPage /> },
       { path: 'tasks/:taskId', element: <TaskDetailPage /> },
+      { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },
       {
         path: '*',

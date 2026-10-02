@@ -12,9 +12,9 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
-import type { InterpretResponse, Skill } from '@/api/types'
+import type { InterpretResponse, Skill, Task } from '@/api/types'
 import { ErrorState } from '@/components/QueryStates'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,7 +27,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { ChoiceAnswer, SkillsAnswer, TextAnswer } from '@/features/newTask/ChatInputs'
-import { useCreateTask, useInterpret, useSkills } from '@/features/newTask/api'
+import { useCreateTask, useInterpret, useSkills, useUpdateTask } from '@/features/newTask/api'
 import {
   type Draft,
   FIELD_LABELS,
@@ -35,12 +35,13 @@ import {
   type Step,
   applyAnswer,
   fromInterpretation,
+  fromTask,
   isAnswered,
   nextStep,
   steps as buildSteps,
   toTaskCreate,
 } from '@/features/newTask/script'
-import { useTasks } from '@/features/tasks/api'
+import { useTask, useTasks } from '@/features/tasks/api'
 import { date } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -72,15 +73,26 @@ function save(value: Saved | null) {
 }
 
 export default function NewTaskChatPage() {
+  const { taskId } = useParams()
   const tasks = useTasks({ q: '', priority: '', domain: '' })
   const skills = useSkills()
+  const editing = useTask(taskId ?? '', Boolean(taskId))
 
-  if (tasks.isPending || skills.isPending) return <Skeleton className="h-96 w-full rounded-2xl" />
+  if (tasks.isPending || skills.isPending || (taskId && editing.isPending)) {
+    return <Skeleton className="h-96 w-full rounded-2xl" />
+  }
   if (tasks.isError) return <ErrorState error={tasks.error} />
   if (skills.isError) return <ErrorState error={skills.error} />
+  if (taskId && editing.isError) return <ErrorState error={editing.error} />
 
-  const clients = [...new Set(tasks.data.items.map((t) => t.client_code))].sort()
-  return <Chat clients={clients} skills={skills.data} />
+  const task = taskId ? editing.data : undefined
+  const clients = [
+    ...new Set([
+      ...tasks.data.items.map((t) => t.client_code),
+      ...(task ? [task.client_code] : []),
+    ]),
+  ].sort()
+  return <Chat key={task?.id ?? 'new'} clients={clients} skills={skills.data} editing={task} />
 }
 
 function answerText(step: Step, d: Draft, skillName: (id: string) => string, today: Date): string {
@@ -102,17 +114,30 @@ type Mode = 'describe' | 'confirm' | 'questions'
 const EXAMPLE =
   'Senior PySpark engineer for ACME claims migration, hybrid in Hyderabad, starting next month for about 6 months. SQL is a must, Airflow is a plus.'
 
-function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
+function Chat({
+  clients,
+  skills,
+  editing,
+}: {
+  clients: string[]
+  skills: Skill[]
+  editing?: Task
+}) {
   const navigate = useNavigate()
   const create = useCreateTask()
   const interpret = useInterpret()
   const all = useMemo(() => buildSteps(clients), [clients])
   const [today] = useState(() => new Date())
-  const [initial] = useState(loadSaved)
+  const update = useUpdateTask(editing?.id ?? '')
+  const [initial] = useState(() => (editing ? null : loadSaved()))
   const hadDraft = initial !== null && Object.keys(initial.draft).length > 0
-  const [draft, setDraft] = useState<Draft>(initial?.draft ?? {})
-  const [current, setCurrent] = useState<number | null>(initial ? initial.current : 0)
-  const [mode, setMode] = useState<Mode>(hadDraft ? 'questions' : 'describe')
+  const [draft, setDraft] = useState<Draft>(() =>
+    editing ? fromTask(editing) : (initial?.draft ?? {}),
+  )
+  const [current, setCurrent] = useState<number | null>(
+    editing ? null : initial ? initial.current : 0,
+  )
+  const [mode, setMode] = useState<Mode>(editing || hadDraft ? 'questions' : 'describe')
   const [description, setDescription] = useState(initial?.description ?? '')
   const [prefilled, setPrefilled] = useState<(keyof Draft)[]>(initial?.prefilled ?? [])
   const [understood, setUnderstood] = useState<{ draft: Draft; r: InterpretResponse } | null>(null)
@@ -131,8 +156,8 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
   const step = mode === 'questions' && current !== null ? all[current] : undefined
 
   useEffect(() => {
-    if (mode === 'questions') save({ draft, current, description, prefilled })
-  }, [mode, draft, current, description, prefilled])
+    if (mode === 'questions' && !editing) save({ draft, current, description, prefilled })
+  }, [mode, draft, current, description, prefilled, editing])
 
   const scrollToEnd = (behavior: ScrollBehavior) => {
     const el = scroller.current
@@ -206,6 +231,11 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
   }
 
   const startOver = () => {
+    if (editing) {
+      setDraft(fromTask(editing))
+      setCurrent(null)
+      return
+    }
     setDraft({})
     setCurrent(0)
     setMode('describe')
@@ -258,7 +288,7 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
               </span>
               <div className="min-w-0">
                 <h1 className="font-heading truncate text-lg leading-tight font-semibold">
-                  New task
+                  {editing ? `Edit ${editing.code}` : 'New task'}
                 </h1>
                 <p className="text-muted-foreground hidden truncate text-xs sm:block">
                   Staffing assistant · you confirm everything before it's created
@@ -307,7 +337,15 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
                   </p>
                 )}
                 <ol className="space-y-6" aria-live="polite">
-                  {(mode !== 'questions' || description) && (
+                  {editing && (
+                    <li>
+                      <BotMessage>
+                        You're editing {editing.code}. Click any answer below or in the preview to
+                        change it, then save.
+                      </BotMessage>
+                    </li>
+                  )}
+                  {!editing && (mode !== 'questions' || description) && (
                     <li>
                       <BotMessage>
                         Hi! Describe the role in your own words, like you would to a colleague. I'll
@@ -378,25 +416,31 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
                     ) : (
                       <li className="space-y-3">
                         <BotMessage>
-                          That's everything. Check the preview, change anything you like, then
-                          create the task.
+                          {editing
+                            ? 'Change anything you like, then save. Run matching again to see who fits now.'
+                            : "That's everything. Check the preview, change anything you like, then create the task."}
                         </BotMessage>
                         <div className="flex flex-wrap gap-2 pl-11">
                           <Button
                             size="lg"
                             className="h-11 rounded-full px-5"
-                            disabled={create.isPending}
-                            onClick={() =>
-                              create.mutate(toTaskCreate(draft), {
-                                onSuccess: (task) => {
-                                  save(null)
-                                  void navigate(`/tasks/${task.id}`)
-                                },
-                              })
-                            }
+                            disabled={create.isPending || update.isPending}
+                            onClick={() => {
+                              const body = toTaskCreate(draft)
+                              const done = (task: Task) => {
+                                if (!editing) save(null)
+                                void navigate(`/tasks/${task.id}`)
+                              }
+                              if (editing) update.mutate(body, { onSuccess: done })
+                              else create.mutate(body, { onSuccess: done })
+                            }}
                           >
-                            {create.isPending ? <Loader2 className="animate-spin" /> : <Check />}
-                            Create task
+                            {create.isPending || update.isPending ? (
+                              <Loader2 className="animate-spin" />
+                            ) : (
+                              <Check />
+                            )}
+                            {editing ? 'Save changes' : 'Create task'}
                           </Button>
                           <Button
                             variant="outline"
@@ -408,6 +452,7 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
                           </Button>
                         </div>
                         {create.isError && <ErrorState error={create.error} />}
+                        {update.isError && <ErrorState error={update.error} />}
                       </li>
                     ))}
                 </ol>

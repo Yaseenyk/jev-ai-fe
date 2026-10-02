@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { HttpResponse, http } from 'msw'
@@ -147,4 +147,23 @@ test('if the description cannot be read, the chat falls back to step-by-step que
   )
   expect(await screen.findByText(/couldn't read your description just now/)).toBeInTheDocument()
   expect(screen.getByText(/What's the role title/)).toBeInTheDocument()
+})
+
+test('editing a task reopens the chat with every answer filled in, and saves changes', async () => {
+  const user = userEvent.setup()
+  const { router } = renderRoute('/tasks')
+  const [first] = await screen.findAllByRole('link', { name: /TSK-/ })
+  await user.click(first as HTMLElement)
+  await user.click(await screen.findByRole('link', { name: /Edit task/ }))
+
+  expect(await screen.findByText(/You're editing TSK-/)).toBeInTheDocument()
+  expect(screen.getByText(/Change anything you like, then save/)).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Edit Priority' }))
+  const choices = await screen.findByRole('group', { name: 'Choose an answer' })
+  await user.click(within(choices).getByRole('button', { name: /Critical/ }))
+  await user.click(await screen.findByRole('button', { name: 'Save changes' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/tasks\/[^/]+$/))
+  expect(await screen.findByText(/Critical/)).toBeInTheDocument()
 })
