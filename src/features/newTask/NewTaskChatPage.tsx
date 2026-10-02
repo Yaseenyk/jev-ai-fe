@@ -1,10 +1,14 @@
 import {
+  ArrowDown,
+  ArrowUp,
   Check,
   ClipboardList,
   CornerUpLeft,
+  Lightbulb,
+  ListChecks,
   Loader2,
+  Pencil,
   RotateCcw,
-  SendHorizontal,
   Sparkles,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -115,7 +119,9 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
   const [intakeNote, setIntakeNote] = useState<string | null>(null)
   const [restored, setRestored] = useState(hadDraft)
   const [previewOpen, setPreviewOpen] = useState(false)
-  const bottom = useRef<HTMLDivElement>(null)
+  const [composerText, setComposerText] = useState(initial?.description ?? '')
+  const [atBottom, setAtBottom] = useState(true)
+  const scroller = useRef<HTMLDivElement>(null)
 
   const byId = useMemo(() => new Map(skills.map((s) => [s.id, s.name])), [skills])
   const skillName = (id: string) => byId.get(id) ?? id
@@ -128,8 +134,17 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
     if (mode === 'questions') save({ draft, current, description, prefilled })
   }, [mode, draft, current, description, prefilled])
 
+  const scrollToEnd = (behavior: ScrollBehavior) => {
+    const el = scroller.current
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior })
+  }
+  const onScroll = () => {
+    const el = scroller.current
+    if (el) setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 80)
+  }
+
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    scrollToEnd('smooth')
   }, [mode, current, draft, interpret.isPending])
 
   const answer = (index: number, value: string | string[]) => {
@@ -195,6 +210,7 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
     setCurrent(0)
     setMode('describe')
     setDescription('')
+    setComposerText('')
     setPrefilled([])
     setUnderstood(null)
     setIntakeNote(null)
@@ -226,221 +242,264 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
     />
   )
 
+  const empty = mode === 'describe' && !description && !interpret.isPending && !restored
+
   return (
-    <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-10">
-      <section aria-label="New task conversation" className="min-w-0">
-        <header className="space-y-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h1 className="text-[28px] leading-tight font-semibold sm:text-[32px]">New task</h1>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Describe the role, or answer step by step. The task builds itself as you go.
-              </p>
+    <div className="-mb-10 flex h-[calc(100svh-9.5rem)] gap-6 md:mb-0 md:h-[calc(100svh-5rem)] lg:h-[calc(100svh-5.5rem)]">
+      <section
+        aria-label="New task conversation"
+        className="bg-surface relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-3xl border"
+      >
+        <header className="flex flex-col gap-3 border-b px-4 py-3 sm:px-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="bg-primary text-primary-foreground grid size-8 shrink-0 place-items-center rounded-full">
+                <Sparkles className="size-4" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <h1 className="font-heading truncate text-lg leading-tight font-semibold">
+                  New task
+                </h1>
+                <p className="text-muted-foreground hidden truncate text-xs sm:block">
+                  Staffing assistant · you confirm everything before it's created
+                </p>
+              </div>
             </div>
             <div className="flex shrink-0 gap-1">
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 rounded-xl lg:hidden"
+                className="h-9 rounded-full lg:hidden"
                 onClick={() => setPreviewOpen(true)}
               >
                 <ClipboardList /> Preview
               </Button>
-              <Button variant="ghost" size="sm" className="h-9 rounded-xl" onClick={startOver}>
+              <Button variant="ghost" size="sm" className="h-9 rounded-full" onClick={startOver}>
                 <RotateCcw /> <span className="hidden sm:inline">Start over</span>
               </Button>
             </div>
           </div>
-          <StageProgress
-            steps={all}
-            draft={shown}
-            current={mode === 'questions' ? current : null}
-          />
-        </header>
-
-        {restored && (
-          <p className="bg-accent text-accent-foreground mt-5 flex flex-wrap items-center gap-x-2 rounded-xl px-4 py-2.5 text-sm">
-            Picked up where you left off.
-            <button
-              type="button"
-              className="font-medium underline underline-offset-4"
-              onClick={startOver}
-            >
-              Start over
-            </button>
-          </p>
-        )}
-
-        <ol className="mt-6 space-y-5" aria-live="polite">
-          <li>
-            <BotMessage>
-              Hi! Describe the role in your own words, like you would to a colleague. I'll fill in
-              what I can and only ask about what's missing.
-            </BotMessage>
-          </li>
-          {description && (mode !== 'describe' || interpret.isPending) && (
-            <li className="space-y-2">
-              <UserText text={description} />
-              {interpret.isPending && (
-                <BotMessage>
-                  <span className="text-muted-foreground inline-flex items-center gap-2">
-                    <Loader2 className="size-4 animate-spin" aria-hidden /> Reading your
-                    description…
-                  </span>
-                </BotMessage>
-              )}
-              {mode === 'questions' && prefilled.length > 0 && (
-                <BotMessage>
-                  I filled in {prefilled.length} {prefilled.length === 1 ? 'detail' : 'details'}{' '}
-                  from that. They're in the preview, and you can change any of them.
-                </BotMessage>
-              )}
-            </li>
-          )}
-          {intakeNote && mode === 'questions' && (
-            <li>
-              <BotMessage>{intakeNote}</BotMessage>
-            </li>
-          )}
-          {mode === 'confirm' && understood && (
-            <li className="space-y-3">
-              <BotMessage>
-                Here's what I understood. Check it, then I'll ask only what's missing.
-              </BotMessage>
-              <Understood
-                steps={all}
-                draft={understood.draft}
-                r={understood.r}
-                describe={describe}
-                left={missing(understood.draft)}
-              />
-            </li>
-          )}
-          {mode === 'questions' &&
-            history.map(({ s, i }) => (
-              <li key={s.id} className="space-y-2">
-                <BotMessage>{s.prompt(draft)}</BotMessage>
-                <UserAnswer
-                  label={FIELD_LABELS[s.id]}
-                  text={describe(s)}
-                  onEdit={() => setCurrent(i)}
-                />
-              </li>
-            ))}
-          {mode === 'questions' &&
-            (step ? (
-              <li>
-                <BotMessage>
-                  {isAnswered(draft, step.id) && (
-                    <span className="text-muted-foreground block text-xs">
-                      Changing your answer
-                    </span>
-                  )}
-                  {step.prompt(draft)}
-                </BotMessage>
-              </li>
-            ) : (
-              <li className="space-y-3">
-                <BotMessage>
-                  That's everything. Check the preview, change anything you like, then create the
-                  task.
-                </BotMessage>
-                <div className="flex flex-wrap gap-2 pl-11">
-                  <Button
-                    size="lg"
-                    className="h-11 rounded-xl px-5"
-                    disabled={create.isPending}
-                    onClick={() =>
-                      create.mutate(toTaskCreate(draft), {
-                        onSuccess: (task) => {
-                          save(null)
-                          void navigate(`/tasks/${task.id}`)
-                        },
-                      })
-                    }
-                  >
-                    {create.isPending ? <Loader2 className="animate-spin" /> : <Check />}
-                    Create task
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="h-11 rounded-xl lg:hidden"
-                    onClick={() => setPreviewOpen(true)}
-                  >
-                    Review answers
-                  </Button>
-                </div>
-                {create.isError && <ErrorState error={create.error} />}
-              </li>
-            ))}
-        </ol>
-        <div ref={bottom} className="h-4 scroll-mb-64 md:scroll-mb-44" />
-
-        <div className="bg-background/95 sticky bottom-[calc(4.5rem+env(safe-area-inset-bottom))] -mx-4 border-t px-4 pt-3 pb-4 backdrop-blur sm:-mx-6 sm:px-6 md:bottom-0">
-          {mode === 'describe' && (
-            <DescribeComposer
-              initial={description}
-              pending={interpret.isPending}
-              onSend={send}
-              onStepByStep={() => stepByStep()}
+          {!empty && (
+            <StageProgress
+              steps={all}
+              draft={shown}
+              current={mode === 'questions' ? current : null}
             />
           )}
-          {mode === 'confirm' && (
-            <div className="flex flex-wrap gap-2">
-              <Button size="lg" className="h-11 rounded-xl px-5" onClick={confirm}>
-                <Check /> Looks right, continue
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-11 rounded-xl"
-                onClick={() => {
-                  setUnderstood(null)
-                  setMode('describe')
-                }}
-              >
-                Edit my description
-              </Button>
-              <Button
-                variant="ghost"
-                size="lg"
-                className="h-11 rounded-xl"
-                onClick={() => stepByStep()}
-              >
-                Answer step by step instead
-              </Button>
-            </div>
-          )}
-          {step && current !== null && (
-            <>
-              <StepInput
-                key={step.id}
-                step={step}
-                draft={draft}
-                skills={skills}
-                today={today}
-                onAnswer={(v) => answer(current, v)}
-              />
-              <div className="text-muted-foreground mt-2 flex items-center justify-between gap-3 text-xs">
-                <button
-                  type="button"
-                  onClick={goBack}
-                  className="hover:text-foreground flex h-8 items-center gap-1 rounded-md"
+        </header>
+
+        <div ref={scroller} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto flex min-h-full max-w-2xl flex-col px-4 py-6 sm:px-6">
+            {empty ? (
+              <Welcome onPick={setComposerText} />
+            ) : (
+              <>
+                {restored && (
+                  <p className="bg-accent text-accent-foreground mb-5 flex flex-wrap items-center gap-x-2 rounded-xl px-4 py-2.5 text-sm">
+                    Picked up where you left off.
+                    <button
+                      type="button"
+                      className="font-medium underline underline-offset-4"
+                      onClick={startOver}
+                    >
+                      Start over
+                    </button>
+                  </p>
+                )}
+                <ol className="space-y-6" aria-live="polite">
+                  {(mode !== 'questions' || description) && (
+                    <li>
+                      <BotMessage>
+                        Hi! Describe the role in your own words, like you would to a colleague. I'll
+                        fill in what I can and only ask about what's missing.
+                      </BotMessage>
+                    </li>
+                  )}
+                  {description && (mode !== 'describe' || interpret.isPending) && (
+                    <li className="space-y-6">
+                      <UserText text={description} />
+                      {interpret.isPending && (
+                        <BotMessage>
+                          <span className="sr-only">Reading your description…</span>
+                          <TypingDots />
+                        </BotMessage>
+                      )}
+                      {mode === 'questions' && prefilled.length > 0 && (
+                        <BotMessage>
+                          I filled in {prefilled.length}{' '}
+                          {prefilled.length === 1 ? 'detail' : 'details'} from that. They're in the
+                          preview, and you can change any of them.
+                        </BotMessage>
+                      )}
+                    </li>
+                  )}
+                  {intakeNote && mode === 'questions' && (
+                    <li>
+                      <BotMessage>{intakeNote}</BotMessage>
+                    </li>
+                  )}
+                  {mode === 'confirm' && understood && (
+                    <li className="space-y-3">
+                      <BotMessage>
+                        Here's what I understood. Check it, then I'll ask only what's missing.
+                      </BotMessage>
+                      <Understood
+                        steps={all}
+                        draft={understood.draft}
+                        r={understood.r}
+                        describe={describe}
+                        left={missing(understood.draft)}
+                      />
+                    </li>
+                  )}
+                  {mode === 'questions' &&
+                    history.map(({ s, i }) => (
+                      <li key={s.id} className="space-y-3">
+                        <BotMessage>{s.prompt(draft)}</BotMessage>
+                        <UserAnswer
+                          label={FIELD_LABELS[s.id]}
+                          text={describe(s)}
+                          onEdit={() => setCurrent(i)}
+                        />
+                      </li>
+                    ))}
+                  {mode === 'questions' &&
+                    (step ? (
+                      <li>
+                        <BotMessage>
+                          {isAnswered(draft, step.id) && (
+                            <span className="text-muted-foreground block text-xs">
+                              Changing your answer
+                            </span>
+                          )}
+                          {step.prompt(draft)}
+                        </BotMessage>
+                      </li>
+                    ) : (
+                      <li className="space-y-3">
+                        <BotMessage>
+                          That's everything. Check the preview, change anything you like, then
+                          create the task.
+                        </BotMessage>
+                        <div className="flex flex-wrap gap-2 pl-11">
+                          <Button
+                            size="lg"
+                            className="h-11 rounded-full px-5"
+                            disabled={create.isPending}
+                            onClick={() =>
+                              create.mutate(toTaskCreate(draft), {
+                                onSuccess: (task) => {
+                                  save(null)
+                                  void navigate(`/tasks/${task.id}`)
+                                },
+                              })
+                            }
+                          >
+                            {create.isPending ? <Loader2 className="animate-spin" /> : <Check />}
+                            Create task
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="h-11 rounded-full lg:hidden"
+                            onClick={() => setPreviewOpen(true)}
+                          >
+                            Review answers
+                          </Button>
+                        </div>
+                        {create.isError && <ErrorState error={create.error} />}
+                      </li>
+                    ))}
+                </ol>
+              </>
+            )}
+            {!atBottom && !empty && (
+              <div className="pointer-events-none sticky bottom-2 mt-4 flex justify-center">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Jump to latest message"
+                  className="bg-surface pointer-events-auto size-9 rounded-full shadow-md"
+                  onClick={() => scrollToEnd('smooth')}
                 >
-                  <CornerUpLeft className="size-3.5" /> Go back
-                </button>
-                <span className="hidden md:inline">
-                  {step.kind === 'choice' ? 'Press 1–9 to pick' : 'Press Enter to send'}
-                </span>
+                  <ArrowDown />
+                </Button>
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
+
+        <footer className="bg-surface border-t px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-5">
+          <div className="mx-auto max-w-2xl">
+            {mode === 'describe' && (
+              <DescribeComposer
+                value={composerText}
+                onChange={setComposerText}
+                pending={interpret.isPending}
+                onSend={send}
+                onStepByStep={() => stepByStep()}
+              />
+            )}
+            {mode === 'confirm' && (
+              <div className="flex flex-wrap gap-2">
+                <Button size="lg" className="h-11 rounded-full px-5" onClick={confirm}>
+                  <Check /> Looks right, continue
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="h-11 rounded-full"
+                  onClick={() => {
+                    setComposerText(description)
+                    setUnderstood(null)
+                    setMode('describe')
+                  }}
+                >
+                  Edit my description
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="h-11 rounded-full"
+                  onClick={() => stepByStep()}
+                >
+                  Answer step by step instead
+                </Button>
+              </div>
+            )}
+            {step && current !== null && (
+              <>
+                <StepInput
+                  key={step.id}
+                  step={step}
+                  draft={draft}
+                  skills={skills}
+                  today={today}
+                  onAnswer={(v) => answer(current, v)}
+                />
+                <div className="text-muted-foreground mt-2 flex items-center justify-between gap-3 text-xs">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="hover:text-foreground flex h-8 items-center gap-1 rounded-md"
+                  >
+                    <CornerUpLeft className="size-3.5" /> Go back
+                  </button>
+                  <span className="hidden md:inline">
+                    {step.kind === 'choice' ? 'Press 1–9 to pick' : 'Press Enter to send'}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        </footer>
       </section>
 
-      <aside className="hidden lg:block">
-        <div className="sticky top-10">{preview(false)}</div>
+      <aside className="bg-surface hidden w-76 shrink-0 flex-col overflow-hidden rounded-3xl border lg:flex">
+        <p className="flex items-center gap-2 border-b px-4 py-3.5 text-sm font-semibold">
+          <ClipboardList className="text-muted-foreground size-4" aria-hidden /> Task preview
+        </p>
+        <div className="min-h-0 flex-1 overflow-y-auto">{preview(true)}</div>
       </aside>
 
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
@@ -456,38 +515,105 @@ function Chat({ clients, skills }: { clients: string[]; skills: Skill[] }) {
   )
 }
 
+const SUGGESTIONS = [
+  {
+    label: 'React developer',
+    text: 'Senior React developer for CL-ACME, onsite in Bengaluru, starting in 2 weeks for about 3 months. Node.js and REST API design are must-haves.',
+  },
+  {
+    label: 'Data engineer, US hours',
+    text: 'Lead data engineer for a CL-HELIX banking migration, remote, US East client with 4 hours overlap, for 6 months. Spark and Snowflake are required.',
+  },
+  {
+    label: 'Part-time QA',
+    text: 'QA engineer for CL-ORBIT, hybrid in Pune, part-time for 8 weeks starting next month. Playwright is a must, API testing is a plus.',
+  },
+  {
+    label: 'DevOps, start now',
+    text: 'Senior DevOps engineer, onsite in Hyderabad, starting as soon as possible for 6 months. Kubernetes and Terraform are required.',
+  },
+]
+
+function Welcome({ onPick }: { onPick: (text: string) => void }) {
+  return (
+    <div className="my-auto py-6">
+      <span className="bg-primary text-primary-foreground grid size-11 place-items-center rounded-2xl">
+        <Sparkles className="size-5" aria-hidden />
+      </span>
+      <h2 className="font-heading mt-5 text-[26px] leading-tight font-semibold sm:text-[32px]">
+        Which role do you need to fill?
+      </h2>
+      <p className="text-muted-foreground mt-2 max-w-lg text-[15px]">
+        Describe it like you would to a colleague. I'll pick out the details, ask only about what's
+        missing, and you confirm everything before the task is created.
+      </p>
+      <ul className="mt-7 grid gap-2.5 sm:grid-cols-2" aria-label="Example descriptions">
+        {SUGGESTIONS.map((s) => (
+          <li key={s.label}>
+            <button
+              type="button"
+              onClick={() => onPick(s.text)}
+              className="hover:border-primary/40 hover:bg-accent/40 focus-visible:ring-ring group flex h-full w-full flex-col gap-1.5 rounded-2xl border p-4 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            >
+              <span className="text-sm font-medium">{s.label}</span>
+              <span className="text-muted-foreground line-clamp-2 text-[13px] leading-snug">
+                {s.text}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function TypingDots() {
+  return (
+    <span className="inline-flex h-6 items-center gap-1" aria-hidden>
+      {[0, 150, 300].map((delay) => (
+        <span
+          key={delay}
+          className="bg-muted-foreground/60 size-1.5 animate-bounce rounded-full"
+          style={{ animationDelay: `${delay}ms` }}
+        />
+      ))}
+    </span>
+  )
+}
+
 function DescribeComposer({
-  initial,
+  value,
+  onChange,
   pending,
   onSend,
   onStepByStep,
 }: {
-  initial: string
+  value: string
+  onChange: (text: string) => void
   pending: boolean
   onSend: (text: string) => void
   onStepByStep: () => void
 }) {
-  const [text, setText] = useState(initial)
   const ref = useRef<HTMLTextAreaElement>(null)
   useEffect(() => {
     ref.current?.focus()
   }, [])
-  const ready = text.trim().length >= 3 && !pending
+  const ready = value.trim().length >= 3 && !pending
   const submit = () => {
-    if (ready) onSend(text.trim())
+    if (ready) onSend(value.trim())
   }
   return (
-    <div className="space-y-2">
-      <div className="flex items-end gap-2">
+    <div>
+      <div className="bg-background focus-within:border-primary/50 focus-within:ring-primary/15 rounded-3xl border shadow-sm transition-shadow focus-within:ring-4">
         <Textarea
           ref={ref}
           aria-label="Describe the role"
-          rows={2}
+          rows={1}
           maxLength={2000}
-          placeholder="e.g. Senior PySpark engineer for ACME claims, hybrid in Hyderabad, starting next month"
-          className="bg-surface max-h-48 min-h-11 resize-none rounded-xl text-[15px]"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+          placeholder="Describe the role you need…"
+          className="field-sizing-content max-h-40 min-h-12 resize-none border-0 bg-transparent px-4 pt-3.5 text-[15px] shadow-none focus-visible:ring-0 dark:bg-transparent"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault()
@@ -495,36 +621,41 @@ function DescribeComposer({
             }
           }}
         />
-        <Button
-          aria-label="Send description"
-          className="size-11 shrink-0 rounded-xl"
-          disabled={!ready}
-          onClick={submit}
-        >
-          {pending ? <Loader2 className="animate-spin" /> : <SendHorizontal />}
-        </Button>
-      </div>
-      <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs">
-        <span className="flex flex-wrap gap-x-3">
-          <button
-            type="button"
-            className="hover:text-foreground h-8 underline-offset-4 hover:underline"
-            onClick={onStepByStep}
-          >
-            Answer step by step instead
-          </button>
-          {!text && (
-            <button
-              type="button"
-              className="hover:text-foreground h-8 underline-offset-4 hover:underline"
-              onClick={() => setText(EXAMPLE)}
+        <div className="flex items-center justify-between gap-2 px-2 pb-2">
+          <div className="flex flex-wrap gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground h-8 rounded-full"
+              onClick={onStepByStep}
             >
-              Use an example
-            </button>
-          )}
-        </span>
-        <span className="hidden md:inline">Enter to send, Shift+Enter for a new line</span>
+              <ListChecks /> Answer step by step instead
+            </Button>
+            {!value && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hidden h-8 rounded-full sm:inline-flex"
+                onClick={() => onChange(EXAMPLE)}
+              >
+                <Lightbulb /> Use an example
+              </Button>
+            )}
+          </div>
+          <Button
+            aria-label="Send description"
+            size="icon"
+            className="size-9 shrink-0 rounded-full"
+            disabled={!ready}
+            onClick={submit}
+          >
+            {pending ? <Loader2 className="animate-spin" /> : <ArrowUp />}
+          </Button>
+        </div>
       </div>
+      <p className="text-muted-foreground mt-2 hidden text-center text-xs md:block">
+        Enter to send, Shift+Enter for a new line. AI can misread details; you'll confirm them.
+      </p>
     </div>
   )
 }
@@ -576,7 +707,7 @@ function Understood({
 function UserText({ text }: { text: string }) {
   return (
     <div className="flex justify-end">
-      <p className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-tr-md px-4 py-2.5 text-[15px] whitespace-pre-wrap">
+      <p className="bg-muted max-w-[85%] rounded-3xl rounded-tr-lg px-4 py-2.5 text-[15px] whitespace-pre-wrap">
         {text}
       </p>
     </div>
@@ -638,7 +769,7 @@ function TaskPreview({
 }) {
   const index = new Map(steps.map((s, i) => [s.id, i]))
   return (
-    <div className="bg-surface rounded-2xl border">
+    <div className={cn(showTitle && 'bg-surface rounded-2xl border')}>
       {showTitle && (
         <p className="flex items-center gap-2 border-b px-4 py-3 text-sm font-semibold">
           <ClipboardList className="text-muted-foreground size-4" aria-hidden /> Task preview
@@ -744,12 +875,10 @@ function StepInput({
 function BotMessage({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="bg-primary text-primary-foreground grid size-8 shrink-0 place-items-center rounded-full">
+      <span className="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-full">
         <Sparkles className="size-4" aria-hidden />
       </span>
-      <p className="bg-surface max-w-[min(36rem,85%)] rounded-2xl rounded-tl-md border px-4 py-2.5 text-[15px] leading-relaxed">
-        {children}
-      </p>
+      <p className="min-w-0 flex-1 pt-1 text-[15px] leading-relaxed">{children}</p>
     </div>
   )
 }
@@ -762,9 +891,13 @@ function UserAnswer({ text, label, onEdit }: { text: string; label: string; onEd
         onClick={onEdit}
         aria-label={`Change ${label}: ${text}`}
         title="Click to change"
-        className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring max-w-[80%] rounded-2xl rounded-tr-md px-4 py-2.5 text-left text-[15px] transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="bg-muted hover:bg-accent focus-visible:ring-ring group flex max-w-[85%] items-center gap-2 rounded-3xl rounded-tr-lg px-4 py-2.5 text-left text-[15px] transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {text}
+        <Pencil
+          className="text-muted-foreground size-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+          aria-hidden
+        />
       </button>
     </div>
   )
