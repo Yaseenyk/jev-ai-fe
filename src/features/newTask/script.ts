@@ -69,7 +69,7 @@ export function steps(clients: string[]): Step[] {
     {
       id: 'title',
       kind: 'text',
-      prompt: () => "Hi! Let's set up a new task. What's the role title?",
+      prompt: () => "Let's set up the task. What's the role title?",
       placeholder: 'e.g. Senior Data Engineer for claims migration',
       schema: z
         .string()
