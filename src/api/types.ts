@@ -118,6 +118,11 @@ export interface DecisionDefinition {
   options: DecisionOption[]
 }
 
+export interface Thresholds {
+  shortlist_min: number
+  review_min: number
+}
+
 export interface MatchRun {
   id: string
   task_id: string
@@ -134,6 +139,7 @@ export interface MatchRun {
   latency_ms: number
   run_flags: string[]
   filter_reason_counts: Record<string, number>
+  thresholds?: Thresholds | null
 }
 
 export interface MatchRunCreated {

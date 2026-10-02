@@ -18,7 +18,7 @@ export function featureRows(f: CandidateFeatures): [string, string][] {
       'Required skill last used',
       f.most_recent_relevant_skill_months === null
         ? 'Never'
-        : `${f.most_recent_relevant_skill_months} months ago`,
+        : `${f.most_recent_relevant_skill_months} ${f.most_recent_relevant_skill_months === 1 ? 'month' : 'months'} ago`,
     ],
     ['Capacity at start', `${f.available_capacity_pct}%`],
   ]

@@ -2,27 +2,22 @@ import { ArrowLeft, Loader2, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
-import type { Band, DecisionDefinition, MatchRun, ShortlistItem } from '@/api/types'
-import { EmptyState, ErrorState } from '@/components/QueryStates'
+import type { Band, DecisionDefinition, MatchRun, ShortlistItem, Thresholds } from '@/api/types'
+import { ErrorState } from '@/components/QueryStates'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCanEdit } from '@/features/auth/AuthProvider'
+import { Funnel } from '@/features/runs/Funnel'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { isActive, useDecisionDefinitions, useMatchRun } from '@/features/runs/api'
 import { ExcludedPanel, ReasonCounts } from '@/features/shortlist/ExcludedPanel'
 import { ShortlistItemCard } from '@/features/shortlist/ShortlistItemCard'
 import { useExcluded, useShortlist, useSubmitFeedback } from '@/features/shortlist/api'
-import {
-  BAND_LABELS,
-  dateTime,
-  FILTER_REASON_FIXES,
-  FILTER_REASON_LABELS,
-  humanize,
-} from '@/lib/format'
+import { dateTime, FILTER_REASON_FIXES, FILTER_REASON_LABELS, humanize } from '@/lib/format'
 
-const OPEN_BY_DEFAULT = 3
+const OPEN_BY_DEFAULT = 1
 
 export default function RunPage() {
   const { runId = '' } = useParams()
@@ -100,12 +95,15 @@ function CompletedRun({ run }: { run: MatchRun }) {
 
   return (
     <div className="space-y-5">
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="People considered" value={run.candidate_count} />
-        <Stat label="Ranked by AI" value={run.retrieved_count} />
-        <Stat label={BAND_LABELS.shortlist} value={counts.shortlist.length} />
-        <Stat label={BAND_LABELS.review} value={counts.review.length} />
-      </dl>
+      <Funnel
+        run={run}
+        excludedTotal={excluded.data?.total ?? null}
+        bands={{
+          shortlist: counts.shortlist.length,
+          review: counts.review.length,
+          hidden: counts.hidden.length,
+        }}
+      />
 
       <OutcomeNotice
         run={run}
@@ -122,6 +120,7 @@ function CompletedRun({ run }: { run: MatchRun }) {
             hint="High confidence and no warnings."
             items={counts.shortlist}
             definitions={definitions.data}
+            thresholds={run.thresholds}
             feedback={feedback}
           />
           <BandSection
@@ -129,6 +128,7 @@ function CompletedRun({ run }: { run: MatchRun }) {
             hint="Worth a look: medium confidence, or a warning stopped it from being shortlisted."
             items={counts.review}
             definitions={definitions.data}
+            thresholds={run.thresholds}
             feedback={feedback}
           />
           {counts.hidden.length > 0 && (
@@ -142,6 +142,7 @@ function CompletedRun({ run }: { run: MatchRun }) {
                   hint="Low confidence. Shown only on request."
                   items={counts.hidden}
                   definitions={definitions.data}
+                  thresholds={run.thresholds}
                   feedback={feedback}
                 />
               )}
@@ -167,26 +168,19 @@ function CompletedRun({ run }: { run: MatchRun }) {
   )
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-xl border px-4 py-3">
-      <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className="text-2xl font-semibold tabular-nums">{value}</dd>
-    </div>
-  )
-}
-
 function BandSection({
   title,
   hint,
   items,
   definitions,
+  thresholds,
   feedback,
 }: {
   title: string
   hint: string
   items: ShortlistItem[]
   definitions: DecisionDefinition[]
+  thresholds: Thresholds | null | undefined
   feedback: ReturnType<typeof useSubmitFeedback>
 }) {
   return (
@@ -199,7 +193,9 @@ function BandSection({
         <p className="text-muted-foreground text-sm">{hint}</p>
       </div>
       {items.length === 0 ? (
-        <EmptyState title={`Nobody in ${title.toLowerCase()}`} />
+        <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-3 text-sm">
+          Nobody in {title.toLowerCase()} for this run.
+        </p>
       ) : (
         <div className="space-y-2">
           {items.map((item) => (
@@ -207,6 +203,7 @@ function BandSection({
               key={item.id}
               item={item}
               definitions={definitions}
+              thresholds={thresholds}
               defaultOpen={item.rank <= OPEN_BY_DEFAULT}
               saving={feedback.isPending && feedback.variables.itemId === item.id}
               onFeedback={(input) => feedback.mutate({ itemId: item.id, input })}

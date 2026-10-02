@@ -1,14 +1,13 @@
 import { Check, ChevronDown, MapPin, TriangleAlert, X } from 'lucide-react'
 import { useState } from 'react'
 
-import type { DecisionDefinition, FeedbackInput, ShortlistItem } from '@/api/types'
+import type { DecisionDefinition, FeedbackInput, ShortlistItem, Thresholds } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { BandBadge } from '@/features/shortlist/BandBadge'
-import { DecisionBars } from '@/features/shortlist/DecisionBars'
+import { DecisionTrail } from '@/features/shortlist/DecisionTrail'
 import { ExplanationBlock } from '@/features/shortlist/ExplanationBlock'
-import { FactsList } from '@/features/shortlist/FactsList'
 import { useCanEdit } from '@/features/auth/AuthProvider'
 import { RejectDialog } from '@/features/shortlist/RejectDialog'
 import {
@@ -23,12 +22,14 @@ import {
 export function ShortlistItemCard({
   item,
   definitions,
+  thresholds,
   defaultOpen,
   onFeedback,
   saving,
 }: {
   item: ShortlistItem
   definitions: DecisionDefinition[]
+  thresholds?: Thresholds | null
   defaultOpen: boolean
   onFeedback: (input: FeedbackInput) => void
   saving: boolean
@@ -90,21 +91,7 @@ export function ShortlistItemCard({
 
         <CollapsibleContent>
           <CardContent className="space-y-4 border-t px-4 py-4">
-            <div className="grid gap-6 md:grid-cols-[minmax(0,15rem)_1fr]">
-              <div className="space-y-2">
-                <p className="text-xs font-medium">Facts from the data</p>
-                <FactsList features={item.features} />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-medium">AI decisions (probability of each answer)</p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {definitions.map((def) => {
-                    const result = item.decisions.find((d) => d.key === def.key)
-                    return result ? <DecisionBars key={def.key} def={def} result={result} /> : null
-                  })}
-                </div>
-              </div>
-            </div>
+            <DecisionTrail item={item} definitions={definitions} thresholds={thresholds} />
             <ExplanationBlock explanation={item.explanation} status={item.explanation_status} />
           </CardContent>
         </CollapsibleContent>
