@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCanEdit } from '@/features/auth/AuthProvider'
 import { Funnel } from '@/features/runs/Funnel'
+import { ResultsQA } from '@/features/runs/ResultsQA'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { isActive, useDecisionDefinitions, useMatchRun } from '@/features/runs/api'
 import { ExcludedPanel, ReasonCounts } from '@/features/shortlist/ExcludedPanel'
@@ -104,6 +105,18 @@ function CompletedRun({ run }: { run: MatchRun }) {
           hidden: counts.hidden.length,
         }}
       />
+
+      {(items.data.length > 0 || (excluded.data?.total ?? 0) > 0) && (
+        <ResultsQA
+          ctx={{
+            run,
+            items: [...items.data].sort((a, b) => a.rank - b.rank),
+            excluded: excluded.data?.items ?? [],
+            excludedTotal: excluded.data?.total ?? 0,
+            definitions: definitions.data,
+          }}
+        />
+      )}
 
       <OutcomeNotice
         run={run}
