@@ -15,7 +15,9 @@ the companion repo `Yaseenyk/jev-ai` (locally the parent folder `D:\Sparity LLM`
 - Probabilities shown as whole percentages with bars for **every** option; bands always have text labels.
 - Show code-computed facts next to AI decisions; explanations labelled AI-generated with their cited facts.
 - Never render LLM text as HTML (`dangerouslySetInnerHTML` is forbidden).
-- API types are hand-written only until the Phase 2 backend publishes OpenAPI (ADR 011), then generated.
+- API types are **generated**: never hand-write one. After a backend API change run
+  `uv run python scripts/export_openapi.py` (backend), then `npm run gen:api` here;
+  `src/api/types.ts` only aliases `components['schemas']`.
 
 ## Current state
 
