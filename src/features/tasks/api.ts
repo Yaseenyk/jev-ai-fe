@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiFetch } from '@/api/client'
 import type { MatchRun, MatchRunCreated, Page, Task } from '@/api/types'
+import { isActive, POLL_MS } from '@/features/runs/api'
 
 export interface TaskFilters {
   q: string
@@ -40,6 +41,8 @@ export function useTaskRuns(taskId: string) {
   return useQuery({
     queryKey: taskKeys.runs(taskId),
     queryFn: () => apiFetch<Page<MatchRun>>(`/tasks/${taskId}/match-runs`),
+    // Keep the list's status badges current while any run is still queued or running.
+    refetchInterval: (query) => (query.state.data?.items.some(isActive) ? POLL_MS : false),
   })
 }
 
