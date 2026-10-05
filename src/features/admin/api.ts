@@ -9,6 +9,7 @@ import type {
   EvalReportSummary,
   LearningSummary,
   ModelActivate,
+  ModelHealth,
   ModelsList,
   UserAdmin,
   UserCreate,
@@ -143,5 +144,12 @@ export function useResetPassword() {
     mutationFn: (id: string) =>
       apiFetch<UserWithPassword>(`/admin/users/${id}/reset-password`, { method: 'POST' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: USERS }),
+  })
+}
+
+export function useModelHealth() {
+  return useQuery({
+    queryKey: ['admin', 'health'],
+    queryFn: () => apiFetch<ModelHealth>('/admin/health'),
   })
 }

@@ -119,3 +119,40 @@ test('an admin adds a person, sees the temporary password once, and manages acce
   await user.click(within(viewerRow).getByRole('button', { name: /Reset password/ }))
   expect(await screen.findByText(/Temporary password for Viewer/)).toBeInTheDocument()
 })
+
+test('the Health tab shows how often managers agree with the model', async () => {
+  asAdmin()
+  const user = userEvent.setup()
+  renderRoute('/admin')
+  await user.click(await screen.findByRole('tab', { name: 'Health' }))
+  expect(await screen.findByText('Managers agree with the model')).toBeInTheDocument()
+  expect(screen.getByText('78%')).toBeInTheDocument()
+  expect(screen.getByText('36 of 46 decisions')).toBeInTheDocument()
+  const weeks = screen.getByRole('region', { name: 'Week by week' })
+  expect(within(weeks).getAllByRole('listitem')).toHaveLength(3)
+  expect(within(weeks).getByText('—', { exact: false })).toBeInTheDocument() // 6 decisions: no rate
+  const byModel = screen.getByRole('region', { name: 'By model' })
+  expect(within(byModel).getByText('Skill gap')).toBeInTheDocument()
+})
+
+test('the Health tab explains when there are no decisions yet', async () => {
+  asAdmin()
+  server.use(
+    http.get('*/api/v1/admin/health', () =>
+      HttpResponse.json({
+        overall: { decisions: 0, agreed: 0, rate: null },
+        shortlist_override_rate: null,
+        by_band: [],
+        weeks: [],
+        models: [],
+        reject_reasons: {},
+        planning_rejections: 0,
+        min_decisions: 10,
+      }),
+    ),
+  )
+  const user = userEvent.setup()
+  renderRoute('/admin')
+  await user.click(await screen.findByRole('tab', { name: 'Health' }))
+  expect(await screen.findByText('No manager decisions yet')).toBeInTheDocument()
+})

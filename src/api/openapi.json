@@ -151,6 +151,37 @@
         "title": "AdminRunRead",
         "type": "object"
       },
+      "Agreement": {
+        "description": "Manager decisions on fit, and how often the model leaned the same way (score >= 50%).",
+        "properties": {
+          "agreed": {
+            "title": "Agreed",
+            "type": "integer"
+          },
+          "decisions": {
+            "title": "Decisions",
+            "type": "integer"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          }
+        },
+        "required": [
+          "decisions",
+          "agreed",
+          "rate"
+        ],
+        "title": "Agreement",
+        "type": "object"
+      },
       "Band": {
         "enum": [
           "shortlist",
@@ -159,6 +190,29 @@
         ],
         "title": "Band",
         "type": "string"
+      },
+      "BandOutcome": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "integer"
+          },
+          "band": {
+            "title": "Band",
+            "type": "string"
+          },
+          "rejected": {
+            "title": "Rejected",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "band",
+          "accepted",
+          "rejected"
+        ],
+        "title": "BandOutcome",
+        "type": "object"
       },
       "CandidateFeaturesRead": {
         "description": "Facts computed by code (not AI) for one person and task.",
@@ -863,6 +917,81 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HealthModel": {
+        "properties": {
+          "agreed": {
+            "title": "Agreed",
+            "type": "integer"
+          },
+          "decisions": {
+            "title": "Decisions",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          }
+        },
+        "required": [
+          "decisions",
+          "agreed",
+          "rate",
+          "model"
+        ],
+        "title": "HealthModel",
+        "type": "object"
+      },
+      "HealthWeek": {
+        "properties": {
+          "agreed": {
+            "title": "Agreed",
+            "type": "integer"
+          },
+          "decisions": {
+            "title": "Decisions",
+            "type": "integer"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "starts": {
+            "title": "Starts",
+            "type": "string"
+          },
+          "week": {
+            "title": "Week",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decisions",
+          "agreed",
+          "rate",
+          "week",
+          "starts"
+        ],
+        "title": "HealthWeek",
+        "type": "object"
+      },
       "InterpretRequest": {
         "properties": {
           "known_clients": {
@@ -1331,6 +1460,72 @@
           "reason"
         ],
         "title": "ModelActivate",
+        "type": "object"
+      },
+      "ModelHealth": {
+        "properties": {
+          "by_band": {
+            "items": {
+              "$ref": "#/components/schemas/BandOutcome"
+            },
+            "title": "By Band",
+            "type": "array"
+          },
+          "min_decisions": {
+            "title": "Min Decisions",
+            "type": "integer"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/HealthModel"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/Agreement"
+          },
+          "planning_rejections": {
+            "title": "Planning Rejections",
+            "type": "integer"
+          },
+          "reject_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Reject Reasons",
+            "type": "object"
+          },
+          "shortlist_override_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shortlist Override Rate"
+          },
+          "weeks": {
+            "items": {
+              "$ref": "#/components/schemas/HealthWeek"
+            },
+            "title": "Weeks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "overall",
+          "shortlist_override_rate",
+          "by_band",
+          "weeks",
+          "models",
+          "reject_reasons",
+          "planning_rejections",
+          "min_decisions"
+        ],
+        "title": "ModelHealth",
         "type": "object"
       },
       "ModelRead": {
@@ -2910,6 +3105,57 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/health": {
+      "get": {
+        "description": "How often managers agree with the model: overall, by band, week by week and per model.",
+        "operationId": "model_health_api_v1_admin_health_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "weeks",
+            "required": false,
+            "schema": {
+              "default": 26,
+              "maximum": 104,
+              "minimum": 1,
+              "title": "Weeks",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelHealth"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Model Health",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/learning": {
       "get": {
         "description": "How much manager feedback there is, and how much of it can train the model.",

@@ -2,6 +2,7 @@ import { Navigate } from 'react-router'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EvalTab } from '@/features/admin/EvalTab'
+import { HealthTab } from '@/features/admin/HealthTab'
 import { LearningTab } from '@/features/admin/LearningTab'
 import { ModelsTab } from '@/features/admin/ModelsTab'
 import { RunsTab } from '@/features/admin/RunsTab'
@@ -27,6 +28,7 @@ export default function AdminPage() {
           <TabsTrigger value="runs">Runs</TabsTrigger>
           <TabsTrigger value="thresholds">Thresholds</TabsTrigger>
           <TabsTrigger value="eval">Evaluation</TabsTrigger>
+          <TabsTrigger value="health">Health</TabsTrigger>
           <TabsTrigger value="learning">Learning</TabsTrigger>
           <TabsTrigger value="models">Models</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
@@ -39,6 +41,9 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="eval" className="mt-5">
           <EvalTab />
+        </TabsContent>
+        <TabsContent value="health" className="mt-5">
+          <HealthTab />
         </TabsContent>
         <TabsContent value="learning" className="mt-5">
           <LearningTab />

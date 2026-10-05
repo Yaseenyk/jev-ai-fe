@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/v1/admin/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Model Health
+         * @description How often managers agree with the model: overall, by band, week by week and per model.
+         */
+        get: operations["model_health_api_v1_admin_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/learning": {
         parameters: {
             query?: never;
@@ -611,10 +631,31 @@ export interface components {
             total_cost_usd: number;
         };
         /**
+         * Agreement
+         * @description Manager decisions on fit, and how often the model leaned the same way (score >= 50%).
+         */
+        Agreement: {
+            /** Agreed */
+            agreed: number;
+            /** Decisions */
+            decisions: number;
+            /** Rate */
+            rate: number | null;
+        };
+        /**
          * Band
          * @enum {string}
          */
         Band: "shortlist" | "review" | "hidden";
+        /** BandOutcome */
+        BandOutcome: {
+            /** Accepted */
+            accepted: number;
+            /** Band */
+            band: string;
+            /** Rejected */
+            rejected: number;
+        };
         /**
          * CandidateFeaturesRead
          * @description Facts computed by code (not AI) for one person and task.
@@ -847,6 +888,30 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HealthModel */
+        HealthModel: {
+            /** Agreed */
+            agreed: number;
+            /** Decisions */
+            decisions: number;
+            /** Model */
+            model: string;
+            /** Rate */
+            rate: number | null;
+        };
+        /** HealthWeek */
+        HealthWeek: {
+            /** Agreed */
+            agreed: number;
+            /** Decisions */
+            decisions: number;
+            /** Rate */
+            rate: number | null;
+            /** Starts */
+            starts: string;
+            /** Week */
+            week: string;
+        };
         /** InterpretRequest */
         InterpretRequest: {
             /** Known Clients */
@@ -977,6 +1042,26 @@ export interface components {
             force: boolean;
             /** Reason */
             reason: string;
+        };
+        /** ModelHealth */
+        ModelHealth: {
+            /** By Band */
+            by_band: components["schemas"]["BandOutcome"][];
+            /** Min Decisions */
+            min_decisions: number;
+            /** Models */
+            models: components["schemas"]["HealthModel"][];
+            overall: components["schemas"]["Agreement"];
+            /** Planning Rejections */
+            planning_rejections: number;
+            /** Reject Reasons */
+            reject_reasons: {
+                [key: string]: number;
+            };
+            /** Shortlist Override Rate */
+            shortlist_override_rate: number | null;
+            /** Weeks */
+            weeks: components["schemas"]["HealthWeek"][];
         };
         /** ModelRead */
         ModelRead: {
@@ -1487,6 +1572,37 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    model_health_api_v1_admin_health_get: {
+        parameters: {
+            query?: {
+                weeks?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelHealth"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     summary_api_v1_admin_learning_get: {
         parameters: {
             query?: never;

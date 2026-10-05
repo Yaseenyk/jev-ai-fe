@@ -9,6 +9,7 @@ import type {
   ThresholdsHistory,
   ThresholdsUpdate,
   ModelActivate,
+  ModelHealth,
   ModelsList,
   UserAdmin,
   UserCreate,
@@ -224,6 +225,47 @@ export function createHandlers(db: Db) {
       return HttpResponse.json(thresholds)
     }),
     http.get(api('/admin/models'), () => HttpResponse.json(models)),
+    http.get(api('/admin/health'), () => {
+      const week = (w: string, starts: string, decisions: number, agreed: number) => ({
+        week: w,
+        starts,
+        decisions,
+        agreed,
+        rate: decisions >= 10 ? agreed / decisions : null,
+      })
+      const health: ModelHealth = {
+        overall: { decisions: 46, agreed: 36, rate: 36 / 46 },
+        shortlist_override_rate: 0.15,
+        by_band: [
+          { band: 'shortlist', accepted: 17, rejected: 3 },
+          { band: 'review', accepted: 9, rejected: 12 },
+          { band: 'hidden', accepted: 1, rejected: 4 },
+        ],
+        weeks: [
+          week('2026-W40', '2026-09-28', 14, 10),
+          week('2026-W41', '2026-10-05', 26, 21),
+          week('2026-W42', '2026-10-12', 6, 5),
+        ],
+        models: [
+          {
+            model: 'student:answerdotai/ModernBERT-base@10780d63239f11b5',
+            decisions: 32,
+            agreed: 27,
+            rate: 27 / 32,
+          },
+          {
+            model: 'student:answerdotai/ModernBERT-base@3efa7d737abb25eb',
+            decisions: 14,
+            agreed: 9,
+            rate: 9 / 14,
+          },
+        ],
+        reject_reasons: { skill_gap: 9, level_mismatch: 6, domain_gap: 2, other: 2 },
+        planning_rejections: 4,
+        min_decisions: 10,
+      }
+      return HttpResponse.json(health)
+    }),
     http.post(api('/admin/models/:name/activate'), async ({ params, request }) => {
       const body = (await request.json()) as ModelActivate
       const target = models.models.find((m) => m.name === params.name)
