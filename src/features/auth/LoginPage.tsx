@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   AlertCircle,
   ArrowRight,
+  Check,
   Eye,
   EyeOff,
   Gauge,
@@ -11,7 +12,7 @@ import {
   Users,
 } from 'lucide-react'
 import { type ComponentType, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
@@ -70,6 +71,7 @@ export default function LoginPage() {
     mode: 'onTouched',
     defaultValues: { email: '', password: '' },
   })
+  const email = useWatch({ control: form.control, name: 'email' })
   const { errors, isSubmitting } = form.formState
 
   if (status === 'signedIn') return <Navigate to={next} replace />
@@ -190,22 +192,34 @@ export default function LoginPage() {
               Pilot accounts · dummy data
               <span className="bg-border h-px flex-1" />
             </div>
-            <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
-              {PILOT_ACCOUNTS.map((a) => (
-                <li key={a.email}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      form.setValue('email', a.email, { shouldValidate: true })
-                      form.setFocus('password')
-                    }}
-                    className="hover:border-primary/40 hover:bg-accent/50 focus-visible:ring-ring flex w-full min-w-0 flex-col rounded-xl border px-3 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                  >
-                    <span className="text-sm font-medium">{a.role}</span>
-                    <span className="text-muted-foreground truncate text-xs">{a.email}</span>
-                  </button>
-                </li>
-              ))}
+            {/* One row per account: equal heights, full emails, room for more roles. */}
+            <ul className="bg-surface mt-4 divide-y overflow-hidden rounded-xl border">
+              {PILOT_ACCOUNTS.map((a) => {
+                const chosen = email.trim().toLowerCase() === a.email
+                return (
+                  <li key={a.email}>
+                    <button
+                      type="button"
+                      aria-pressed={chosen}
+                      onClick={() => {
+                        form.setValue('email', a.email, { shouldValidate: true })
+                        form.setFocus('password')
+                      }}
+                      className={cn(
+                        'hover:bg-accent/50 focus-visible:ring-ring flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset',
+                        chosen && 'bg-accent/60',
+                      )}
+                    >
+                      <span className="text-sm font-medium">{a.role}</span>
+                      <span className="text-muted-foreground ml-auto text-xs">{a.email}</span>
+                      <Check
+                        className={cn('text-primary size-4 shrink-0', !chosen && 'invisible')}
+                        aria-hidden
+                      />
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
             <p className="text-muted-foreground mt-3 text-xs">
               Pick one to fill the email. The pilot admin shares the password.
