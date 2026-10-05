@@ -62,6 +62,7 @@ export const FLAG_LABELS: Record<string, string> = {
   low_confidence_format: 'AI gave an unclear answer',
   low_data: 'Very little profile data',
   inconsistent_data: 'Profile data is inconsistent',
+  model_unsure: 'AI model is unsure about the overall fit',
 }
 
 export const REJECT_REASON_LABELS: Record<RejectReason, string> = {
