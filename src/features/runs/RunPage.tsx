@@ -2,8 +2,9 @@ import { ArrowLeft, Loader2, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 
+import { ApiError } from '@/api/client'
 import type { Band, DecisionDefinition, MatchRun, ShortlistItem, Thresholds } from '@/api/types'
-import { ErrorState } from '@/components/QueryStates'
+import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -25,6 +26,19 @@ export default function RunPage() {
   const run = useMatchRun(runId)
 
   if (run.isPending) return <Skeleton className="h-48 w-full" />
+  if (run.isError && run.error instanceof ApiError && run.error.status === 404) {
+    // Retrying cannot bring a removed run back (e.g. after the data was reset): offer a way on.
+    return (
+      <EmptyState title="This matching run no longer exists">
+        <p>
+          It may have been removed when the data was reset. Open the task and run matching again.
+        </p>
+        <Button asChild className="mt-4">
+          <Link to="/tasks">Back to tasks</Link>
+        </Button>
+      </EmptyState>
+    )
+  }
   if (run.isError) return <ErrorState error={run.error} onRetry={() => void run.refetch()} />
 
   return (

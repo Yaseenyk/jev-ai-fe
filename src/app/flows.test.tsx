@@ -74,3 +74,12 @@ test('a run where nobody passes the rules explains why instead of relaxing them'
   expect(screen.getByText(/never relaxed automatically/)).toBeInTheDocument()
   expect(screen.getByText(/Biggest blocker:/)).toBeInTheDocument()
 })
+
+test('a run that no longer exists offers a way back instead of a retry', async () => {
+  renderRoute('/runs/00000000-0000-4000-8000-000000000000')
+  expect(
+    await screen.findByText('This matching run no longer exists', {}, { timeout: 5000 }),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to tasks' })).toHaveAttribute('href', '/tasks')
+  expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+})
