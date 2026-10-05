@@ -49,6 +49,24 @@ test('a wrong password is explained', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent(/do not match/)
 })
 
+test('a sign-in lockout is explained, not blamed on the connection', async () => {
+  signedOut()
+  server.use(
+    http.post('*/api/v1/auth/login', () =>
+      HttpResponse.json(
+        { type: 'about:blank', title: 'Rate limited', status: 429, code: 'rate_limited' },
+        { status: 429 },
+      ),
+    ),
+  )
+  const user = userEvent.setup()
+  renderRoute('/tasks')
+  await user.type(await screen.findByLabelText('Work email'), 'manager1@srtm.local')
+  await user.type(screen.getByLabelText('Password'), 'nope')
+  await user.click(screen.getByRole('button', { name: 'Sign in' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(/Too many failed sign-ins/)
+})
+
 test('viewers can look but not create tasks or run matching', async () => {
   server.use(
     http.get('*/api/v1/auth/me', () =>

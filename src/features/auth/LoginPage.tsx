@@ -83,7 +83,9 @@ export default function LoginPage() {
       setServerError(
         err instanceof ApiError && err.status === 401
           ? 'That email and password do not match. Check them and try again.'
-          : 'We could not sign you in right now. Check your connection and try again.',
+          : err instanceof ApiError && err.status === 429
+            ? 'Too many failed sign-ins. Wait a few minutes, then try again.'
+            : 'We could not sign you in right now. Check your connection and try again.',
       )
       form.setFocus('password')
     }
