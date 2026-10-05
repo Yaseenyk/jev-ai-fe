@@ -78,5 +78,6 @@ export const REJECT_REASON_LABELS: Record<RejectReason, string> = {
 export const ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Admin',
   resource_manager: 'Resource manager',
+  hr: 'HR',
   viewer: 'Viewer',
 }

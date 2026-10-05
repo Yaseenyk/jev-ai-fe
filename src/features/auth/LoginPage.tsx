@@ -34,6 +34,7 @@ type Values = z.infer<typeof schema>
 
 const PILOT_ACCOUNTS = [
   { email: 'manager1@srtm.local', role: 'Resource manager' },
+  { email: 'hr@srtm.local', role: 'HR' },
   { email: 'admin@srtm.local', role: 'Admin' },
   { email: 'viewer@srtm.local', role: 'Viewer' },
 ]

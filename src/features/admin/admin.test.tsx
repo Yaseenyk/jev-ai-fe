@@ -156,3 +156,42 @@ test('the Health tab explains when there are no decisions yet', async () => {
   await user.click(await screen.findByRole('tab', { name: 'Health' }))
   expect(await screen.findByText('No manager decisions yet')).toBeInTheDocument()
 })
+
+test('HR adds a client and deactivates it; the Clients page is for admins and HR only', async () => {
+  server.use(
+    http.get('*/api/v1/auth/me', () =>
+      HttpResponse.json({
+        id: 'h1',
+        email: 'hr@srtm.local',
+        display_name: 'HR Partner',
+        role: 'hr',
+        must_change_password: false,
+      }),
+    ),
+  )
+  const user = userEvent.setup()
+  renderRoute('/clients')
+  expect(await screen.findByRole('heading', { name: 'Clients' })).toBeInTheDocument()
+  expect(screen.getAllByRole('link', { name: /Clients/ }).length).toBeGreaterThan(0)
+  expect(screen.queryByRole('link', { name: /New task/ })).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /Add client/ }))
+  await user.type(await screen.findByLabelText('Code'), 'cl-newco')
+  await user.type(screen.getByLabelText('Name'), 'NewCo Insurance')
+  await user.type(screen.getByLabelText('Timezone'), 'Asia/Kolkata')
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Add client' }))
+  const list = await screen.findByRole('list', { name: 'Clients' })
+  const row = (await within(list).findByText(/NewCo Insurance/)).closest('li') as HTMLElement
+  expect(within(row).getByText(/CL-NEWCO/)).toBeInTheDocument() // code upper-cased
+
+  await user.click(within(row).getByRole('button', { name: /Edit/ }))
+  await user.click(await screen.findByLabelText(/Active/))
+  await user.click(screen.getByRole('button', { name: 'Save changes' }))
+  expect(await within(row).findByText('inactive')).toBeInTheDocument()
+})
+
+test('a resource manager is sent away from the Clients page', async () => {
+  const { router } = renderRoute('/clients')
+  await screen.findByRole('heading', { name: /^Tasks$/ })
+  expect(router.state.location.pathname).toBe('/tasks')
+})

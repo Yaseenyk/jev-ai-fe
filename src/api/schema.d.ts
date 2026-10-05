@@ -280,6 +280,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Clients
+         * @description Every client, active or not (any signed-in user; used for pickers).
+         */
+        get: operations["list_clients_api_v1_clients_get"];
+        put?: never;
+        /**
+         * Create Client
+         * @description Add a client (HR, admin). 409 `client_exists`.
+         */
+        post: operations["create_client_api_v1_clients_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Client
+         * @description Change a client's details or deactivate it (not offered for new tasks). Audited.
+         */
+        patch: operations["update_client_api_v1_clients__code__patch"];
+        trace?: never;
+    };
     "/api/v1/decisions": {
         parameters: {
             query?: never;
@@ -681,6 +725,47 @@ export interface components {
             related_skill_hits: number;
             /** Years Gap */
             years_gap: number;
+        };
+        /** ClientCreate */
+        ClientCreate: {
+            /** Code */
+            code: string;
+            domain?: components["schemas"]["Domain"] | null;
+            /** Name */
+            name: string;
+            /**
+             * Notes
+             * @default
+             */
+            notes: string;
+            /** Timezone */
+            timezone?: string | null;
+        };
+        /** ClientRead */
+        ClientRead: {
+            /** Code */
+            code: string;
+            domain: components["schemas"]["Domain"] | null;
+            /** Is Active */
+            is_active: boolean;
+            /** Name */
+            name: string;
+            /** Notes */
+            notes: string;
+            /** Timezone */
+            timezone: string | null;
+        };
+        /** ClientUpdate */
+        ClientUpdate: {
+            domain?: components["schemas"]["Domain"] | null;
+            /** Is Active */
+            is_active?: boolean | null;
+            /** Name */
+            name?: string | null;
+            /** Notes */
+            notes?: string | null;
+            /** Timezone */
+            timezone?: string | null;
         };
         /**
          * CostBand
@@ -1527,7 +1612,7 @@ export interface components {
          * UserRole
          * @enum {string}
          */
-        UserRole: "admin" | "resource_manager" | "viewer";
+        UserRole: "admin" | "resource_manager" | "hr" | "viewer";
         /** UserUpdate */
         UserUpdate: {
             /** Display Name */
@@ -1959,6 +2044,94 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_clients_api_v1_clients_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientRead"][];
+                };
+            };
+        };
+    };
+    create_client_api_v1_clients_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_client_api_v1_clients__code__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientRead"];
                 };
             };
             /** @description Validation Error */

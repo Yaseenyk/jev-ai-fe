@@ -1,9 +1,23 @@
-import { Info, KeyRound, LayoutList, LogOut, Plus, ShieldCheck, Users } from 'lucide-react'
+import {
+  Building2,
+  Info,
+  KeyRound,
+  LayoutList,
+  LogOut,
+  Plus,
+  ShieldCheck,
+  Users,
+} from 'lucide-react'
 import type { ComponentType } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { CHANGE_PASSWORD_PATH, useAuth, useCanEdit } from '@/features/auth/AuthProvider'
+import {
+  CHANGE_PASSWORD_PATH,
+  useAuth,
+  useCanEdit,
+  useManagesPeople,
+} from '@/features/auth/AuthProvider'
 import { ROLE_LABELS } from '@/lib/format'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
@@ -15,6 +29,7 @@ interface NavItem {
   isActive: (path: string) => boolean
   editorsOnly?: boolean
   adminOnly?: boolean
+  peopleManagersOnly?: boolean // admin and HR (ADR 019)
 }
 
 const NAV: NavItem[] = [
@@ -30,6 +45,13 @@ const NAV: NavItem[] = [
     icon: Plus,
     isActive: (p) => p === '/tasks/new',
     editorsOnly: true,
+  },
+  {
+    to: '/clients',
+    label: 'Clients',
+    icon: Building2,
+    isActive: (p) => p.startsWith('/clients'),
+    peopleManagersOnly: true,
   },
   {
     to: '/admin',
@@ -121,7 +143,13 @@ export function Layout() {
   const { pathname } = useLocation()
   const canEdit = useCanEdit()
   const isAdmin = useAuth().user?.role === 'admin'
-  const nav = NAV.filter((item) => (canEdit || !item.editorsOnly) && (isAdmin || !item.adminOnly))
+  const managesPeople = useManagesPeople()
+  const nav = NAV.filter(
+    (item) =>
+      (canEdit || !item.editorsOnly) &&
+      (isAdmin || !item.adminOnly) &&
+      (managesPeople || !item.peopleManagersOnly),
+  )
 
   return (
     <div className="bg-background min-h-svh">

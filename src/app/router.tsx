@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/QueryStates'
 import AdminPage from '@/features/admin/AdminPage'
 import { CHANGE_PASSWORD_PATH, RequireAuth } from '@/features/auth/AuthProvider'
 import ChangePasswordPage from '@/features/auth/ChangePasswordPage'
+import ClientsPage from '@/features/clients/ClientsPage'
 import LoginPage from '@/features/auth/LoginPage'
 import NewTaskChatPage from '@/features/newTask/NewTaskChatPage'
 import RunPage from '@/features/runs/RunPage'
@@ -35,6 +36,7 @@ export const routes = [
       { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },
       { path: 'admin', element: <AdminPage /> },
+      { path: 'clients', element: <ClientsPage /> },
       {
         path: '*',
         element: (

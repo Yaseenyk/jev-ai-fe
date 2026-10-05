@@ -8,6 +8,9 @@ import type {
   TaskCreate,
   ThresholdsHistory,
   ThresholdsUpdate,
+  Client,
+  ClientCreate,
+  ClientUpdate,
   ModelActivate,
   ModelHealth,
   ModelsList,
@@ -64,6 +67,14 @@ export function createHandlers(db: Db) {
     account(MOCK_USER_ID, 'manager1@srtm.local', 'Resource Manager 1', 'resource_manager'),
     account('demo-viewer', 'viewer@srtm.local', 'Viewer', 'viewer'),
   ]
+  let clients: Client[] = [...new Set(db.tasks.map((t) => t.client_code))].sort().map((code) => ({
+    code,
+    name: code.replace(/^CL-/, '').replace(/^\w/, (ch) => ch.toUpperCase()),
+    domain: null,
+    timezone: null,
+    notes: '',
+    is_active: true,
+  }))
   const temporary = () => `temp-${Math.random().toString(36).slice(2, 12)}`
   const token = { access_token: 'mock-token', token_type: 'bearer', expires_in: 1800 }
   const firstVersion = {
@@ -223,6 +234,39 @@ export function createHandlers(db: Db) {
         history: [version, ...thresholds.history.map((v) => ({ ...v, active: false }))],
       }
       return HttpResponse.json(thresholds)
+    }),
+    http.get(api('/clients'), () => HttpResponse.json(clients)),
+    http.post(api('/clients'), async ({ request }) => {
+      const body = (await request.json()) as ClientCreate
+      if (clients.some((c) => c.code === body.code)) {
+        return problem(409, 'Conflict', 'client_exists', `Client ${body.code} already exists`)
+      }
+      const made: Client = {
+        code: body.code,
+        name: body.name,
+        domain: body.domain ?? null,
+        timezone: body.timezone ?? null,
+        notes: body.notes,
+        is_active: true,
+      }
+      clients = [...clients, made]
+      return HttpResponse.json(made, { status: 201 })
+    }),
+    http.patch(api('/clients/:code'), async ({ params, request }) => {
+      const body = (await request.json()) as ClientUpdate
+      clients = clients.map((c) =>
+        c.code === params.code
+          ? {
+              ...c,
+              ...(body.name ? { name: body.name } : {}),
+              domain: body.domain === undefined ? c.domain : body.domain,
+              timezone: body.timezone === undefined ? c.timezone : body.timezone,
+              notes: body.notes ?? c.notes,
+              is_active: body.is_active ?? c.is_active,
+            }
+          : c,
+      )
+      return HttpResponse.json(clients.find((c) => c.code === params.code))
     }),
     http.get(api('/admin/models'), () => HttpResponse.json(models)),
     http.get(api('/admin/health'), () => {

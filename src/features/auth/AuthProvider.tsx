@@ -103,6 +103,12 @@ export function useCanEdit(): boolean {
   return role === 'admin' || role === 'resource_manager'
 }
 
+/** Admins and HR maintain clients, employees and candidates (ADR 019). */
+export function useManagesPeople(): boolean {
+  const role = useAuth().user?.role
+  return role === 'admin' || role === 'hr'
+}
+
 export const CHANGE_PASSWORD_PATH = '/account/password'
 
 export function RequireAuth({ children }: { children: ReactNode }) {
