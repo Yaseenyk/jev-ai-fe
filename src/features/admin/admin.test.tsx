@@ -87,3 +87,35 @@ test('an admin sees the models, is stopped from switching to a weaker one, and c
   await user.click(within(history).getByRole('button', { name: 'Back to student-v2' }))
   expect(await within(history).findByText('student → student-v2')).toBeInTheDocument()
 })
+
+test('an admin adds a person, sees the temporary password once, and manages access', async () => {
+  asAdmin()
+  const user = userEvent.setup()
+  renderRoute('/admin')
+  await user.click(await screen.findByRole('tab', { name: 'Users' }))
+  const people = await screen.findByRole('list', { name: 'People' })
+  expect(within(people).getByText('viewer@srtm.local')).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: /Add person/ }))
+  await user.type(await screen.findByLabelText('Work email'), 'priya@srtm.local')
+  await user.type(screen.getByLabelText('Name'), 'Priya')
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Add person' }))
+  expect(await screen.findByText(/Temporary password for Priya/)).toBeInTheDocument()
+  expect(screen.getByLabelText('Temporary password')).toHaveTextContent(/^temp-/)
+  await user.click(screen.getByRole('button', { name: 'Done' }))
+  expect(await within(people).findByText('priya@srtm.local')).toBeInTheDocument()
+
+  // The same email again is refused with a clear message.
+  await user.click(screen.getByRole('button', { name: /Add person/ }))
+  await user.type(await screen.findByLabelText('Work email'), 'priya@srtm.local')
+  await user.type(screen.getByLabelText('Name'), 'Priya again')
+  await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Add person' }))
+  expect(await screen.findByText(/already has an account/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+  const viewerRow = within(people).getByText('viewer@srtm.local').closest('li') as HTMLElement
+  await user.click(within(viewerRow).getByRole('button', { name: 'Deactivate' }))
+  expect(await within(viewerRow).findByText('deactivated')).toBeInTheDocument()
+  await user.click(within(viewerRow).getByRole('button', { name: /Reset password/ }))
+  expect(await screen.findByText(/Temporary password for Viewer/)).toBeInTheDocument()
+})

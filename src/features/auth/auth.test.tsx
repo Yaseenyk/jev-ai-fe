@@ -113,3 +113,41 @@ test('the form checks the email and password before sending, and the eye shows t
   expect(email).toHaveValue('viewer@srtm.local')
   expect(screen.queryByText(/Enter a valid email/)).not.toBeInTheDocument()
 })
+
+test('someone with a temporary password must choose their own before anything else', async () => {
+  let mustChange = true
+  server.use(
+    http.get('*/api/v1/auth/me', () =>
+      HttpResponse.json({
+        id: 'p1',
+        email: 'priya@srtm.local',
+        display_name: 'Priya',
+        role: 'resource_manager',
+        must_change_password: mustChange,
+      }),
+    ),
+    http.post('*/api/v1/auth/password', () => {
+      mustChange = false
+      return HttpResponse.json({ access_token: 't2', token_type: 'bearer', expires_in: 1800 })
+    }),
+  )
+  const user = userEvent.setup()
+  const { router } = renderRoute('/tasks')
+  expect(
+    await screen.findByRole('heading', { name: 'Choose your own password' }),
+  ).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe('/account/password')
+
+  await user.type(screen.getByLabelText('Temporary password'), 'temp-123')
+  await user.type(screen.getByLabelText('New password'), 'short')
+  await user.type(screen.getByLabelText('Repeat the new password'), 'short')
+  await user.click(screen.getByRole('button', { name: 'Save new password' }))
+  expect(await screen.findByText(/at least 10 characters/i)).toBeInTheDocument()
+
+  await user.clear(screen.getByLabelText('New password'))
+  await user.type(screen.getByLabelText('New password'), 'my own long password')
+  await user.clear(screen.getByLabelText('Repeat the new password'))
+  await user.type(screen.getByLabelText('Repeat the new password'), 'my own long password')
+  await user.click(screen.getByRole('button', { name: 'Save new password' }))
+  expect(await screen.findByRole('heading', { name: /^Tasks$/ })).toBeInTheDocument()
+})

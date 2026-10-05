@@ -3,7 +3,8 @@ import { Link, Navigate, createBrowserRouter } from 'react-router'
 import { Layout } from '@/app/Layout'
 import { EmptyState } from '@/components/QueryStates'
 import AdminPage from '@/features/admin/AdminPage'
-import { RequireAuth } from '@/features/auth/AuthProvider'
+import { CHANGE_PASSWORD_PATH, RequireAuth } from '@/features/auth/AuthProvider'
+import ChangePasswordPage from '@/features/auth/ChangePasswordPage'
 import LoginPage from '@/features/auth/LoginPage'
 import NewTaskChatPage from '@/features/newTask/NewTaskChatPage'
 import RunPage from '@/features/runs/RunPage'
@@ -12,6 +13,14 @@ import TaskListPage from '@/features/tasks/TaskListPage'
 
 export const routes = [
   { path: '/login', element: <LoginPage /> },
+  {
+    path: CHANGE_PASSWORD_PATH,
+    element: (
+      <RequireAuth>
+        <ChangePasswordPage />
+      </RequireAuth>
+    ),
+  },
   {
     element: (
       <RequireAuth>

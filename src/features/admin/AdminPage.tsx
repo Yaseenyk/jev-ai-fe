@@ -6,6 +6,7 @@ import { LearningTab } from '@/features/admin/LearningTab'
 import { ModelsTab } from '@/features/admin/ModelsTab'
 import { RunsTab } from '@/features/admin/RunsTab'
 import { ThresholdsTab } from '@/features/admin/ThresholdsTab'
+import { UsersTab } from '@/features/admin/UsersTab'
 import { useAuth } from '@/features/auth/AuthProvider'
 
 export default function AdminPage() {
@@ -28,6 +29,7 @@ export default function AdminPage() {
           <TabsTrigger value="eval">Evaluation</TabsTrigger>
           <TabsTrigger value="learning">Learning</TabsTrigger>
           <TabsTrigger value="models">Models</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
         <TabsContent value="runs" className="mt-5">
           <RunsTab />
@@ -43,6 +45,9 @@ export default function AdminPage() {
         </TabsContent>
         <TabsContent value="models" className="mt-5">
           <ModelsTab />
+        </TabsContent>
+        <TabsContent value="users" className="mt-5">
+          <UsersTab />
         </TabsContent>
       </Tabs>
     </div>

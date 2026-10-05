@@ -1,10 +1,10 @@
-import { Info, LayoutList, LogOut, Plus, ShieldCheck, Users } from 'lucide-react'
+import { Info, KeyRound, LayoutList, LogOut, Plus, ShieldCheck, Users } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
-import type { UserRole } from '@/api/types'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useAuth, useCanEdit } from '@/features/auth/AuthProvider'
+import { CHANGE_PASSWORD_PATH, useAuth, useCanEdit } from '@/features/auth/AuthProvider'
+import { ROLE_LABELS } from '@/lib/format'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
 
@@ -43,12 +43,6 @@ const NAV: NavItem[] = [
 const DEMO_NOTE =
   'Demo data: employees and tasks are synthetic. Results come from a recorded test run, not live data.'
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin: 'Admin',
-  resource_manager: 'Resource manager',
-  viewer: 'Viewer',
-}
-
 function initials(name: string) {
   return name
     .split(/\s+/)
@@ -73,6 +67,18 @@ function UserBlock() {
         <span className="block truncate text-sm font-medium">{user.display_name}</span>
         <span className="text-muted-foreground block text-xs">{ROLE_LABELS[user.role]}</span>
       </span>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to={CHANGE_PASSWORD_PATH}
+            aria-label="Change password"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center rounded-lg"
+          >
+            <KeyRound className="size-4" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Change password</TooltipContent>
+      </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <button

@@ -14,6 +14,7 @@ interface AuthState {
   user: User | null
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  changePassword: (current: string, next: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthState | null>(null)
@@ -66,6 +67,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('signedIn')
   }
 
+  const changePassword = async (current: string, next: string) => {
+    const tokens = await apiFetch<TokenResponse>('/auth/password', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: current, new_password: next }),
+    })
+    setAccessToken(tokens.access_token)
+    setUser(await apiFetch<User>('/auth/me'))
+  }
+
   const logout = async () => {
     try {
       await apiFetch<undefined>('/auth/logout', { method: 'POST' })
@@ -75,7 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ status, user, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ status, user, login, logout, changePassword }}>
+      {children}
+    </AuthContext.Provider>
   )
 }
 
@@ -91,8 +103,10 @@ export function useCanEdit(): boolean {
   return role === 'admin' || role === 'resource_manager'
 }
 
+export const CHANGE_PASSWORD_PATH = '/account/password'
+
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { status } = useAuth()
+  const { status, user } = useAuth()
   const location = useLocation()
   if (status === 'loading') {
     return (
@@ -104,6 +118,10 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   if (status === 'signedOut') {
     const next = `${location.pathname}${location.search}`
     return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />
+  }
+  if (user?.must_change_password && location.pathname !== CHANGE_PASSWORD_PATH) {
+    // A temporary password from an admin: the server refuses everything else until it is replaced.
+    return <Navigate to={CHANGE_PASSWORD_PATH} replace />
   }
   return children
 }

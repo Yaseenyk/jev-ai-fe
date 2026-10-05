@@ -10,6 +10,9 @@ import type {
   ThresholdsUpdate,
   ModelActivate,
   ModelsList,
+  UserAdmin,
+  UserCreate,
+  UserUpdate,
   User,
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
@@ -39,7 +42,28 @@ export function createHandlers(db: Db) {
     email: 'manager1@srtm.local',
     display_name: 'Resource Manager 1',
     role: 'resource_manager',
+    must_change_password: false,
   }
+  const account = (
+    id: string,
+    email: string,
+    display_name: string,
+    role: UserAdmin['role'],
+  ): UserAdmin => ({
+    id,
+    email,
+    display_name,
+    role,
+    is_active: true,
+    must_change_password: false,
+    created_at: '2026-10-02T00:00:00Z',
+  })
+  let accounts: UserAdmin[] = [
+    account('demo-admin', 'admin@srtm.local', 'Pilot Admin', 'admin'),
+    account(MOCK_USER_ID, 'manager1@srtm.local', 'Resource Manager 1', 'resource_manager'),
+    account('demo-viewer', 'viewer@srtm.local', 'Viewer', 'viewer'),
+  ]
+  const temporary = () => `temp-${Math.random().toString(36).slice(2, 12)}`
   const token = { access_token: 'mock-token', token_type: 'bearer', expires_in: 1800 }
   const firstVersion = {
     version: 1,
@@ -108,14 +132,74 @@ export function createHandlers(db: Db) {
   return [
     http.post(api('/auth/login'), async ({ request }) => {
       const { email } = (await request.json()) as { email: string }
-      user = email.startsWith('viewer')
-        ? { id: 'demo-viewer', email, display_name: 'Viewer', role: 'viewer' }
-        : email.startsWith('admin')
-          ? { id: 'demo-admin', email, display_name: 'Pilot Admin', role: 'admin' }
-          : { ...user, email }
+      const known = accounts.find((a) => a.email === email.toLowerCase())
+      user = known
+        ? {
+            id: known.id,
+            email: known.email,
+            display_name: known.display_name,
+            role: known.role,
+            must_change_password: known.must_change_password,
+          }
+        : { ...user, email }
       return HttpResponse.json(token)
     }),
     http.post(api('/auth/refresh'), () => HttpResponse.json(token)),
+    http.post(api('/auth/password'), () => {
+      user = { ...user, must_change_password: false }
+      accounts = accounts.map((a) => (a.id === user.id ? { ...a, must_change_password: false } : a))
+      return HttpResponse.json(token)
+    }),
+    http.get(api('/admin/users'), () => HttpResponse.json(accounts)),
+    http.post(api('/admin/users'), async ({ request }) => {
+      const body = (await request.json()) as UserCreate
+      const email = body.email.toLowerCase()
+      if (accounts.some((a) => a.email === email)) {
+        return problem(409, 'Conflict', 'email_taken', `${email} already has an account`)
+      }
+      const made = {
+        ...account(`u-${accounts.length + 1}`, email, body.display_name, body.role),
+        must_change_password: true,
+      }
+      accounts = [...accounts, made]
+      return HttpResponse.json({ user: made, temporary_password: temporary() }, { status: 201 })
+    }),
+    http.patch(api('/admin/users/:id'), async ({ params, request }) => {
+      const body = (await request.json()) as UserUpdate
+      if (
+        params.id === user.id &&
+        (body.is_active === false || (body.role && body.role !== 'admin'))
+      ) {
+        return problem(
+          422,
+          'Validation error',
+          'cannot_demote_self',
+          'You cannot remove your own admin access or deactivate yourself.',
+        )
+      }
+      accounts = accounts.map((a) =>
+        a.id === params.id
+          ? {
+              ...a,
+              ...(body.display_name ? { display_name: body.display_name } : {}),
+              ...(body.role ? { role: body.role } : {}),
+              ...(body.is_active === undefined || body.is_active === null
+                ? {}
+                : { is_active: body.is_active }),
+            }
+          : a,
+      )
+      return HttpResponse.json(accounts.find((a) => a.id === params.id))
+    }),
+    http.post(api('/admin/users/:id/reset-password'), ({ params }) => {
+      accounts = accounts.map((a) =>
+        a.id === params.id ? { ...a, must_change_password: true } : a,
+      )
+      return HttpResponse.json({
+        user: accounts.find((a) => a.id === params.id),
+        temporary_password: temporary(),
+      })
+    }),
     http.get(api('/auth/me'), () => HttpResponse.json(user)),
     http.post(api('/auth/logout'), () => new HttpResponse(null, { status: 204 })),
 
