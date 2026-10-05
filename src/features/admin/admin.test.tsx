@@ -63,3 +63,27 @@ test('the Learning tab shows what feedback can teach the model', async () => {
   expect(screen.getByText(/Planning reasons/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: /Export training data \(2\)/ })).toBeEnabled()
 })
+
+test('an admin sees the models, is stopped from switching to a weaker one, and can force it', async () => {
+  asAdmin()
+  const user = userEvent.setup()
+  renderRoute('/admin')
+  await user.click(await screen.findByRole('tab', { name: 'Models' }))
+
+  const list = await screen.findByRole('list', { name: 'Models' })
+  expect(within(list).getByText('87.9%')).toBeInTheDocument()
+  expect(within(list).getAllByText('simple ranking 86.1%')).toHaveLength(2)
+
+  await user.click(within(list).getByRole('button', { name: 'Make active' }))
+  await user.type(await screen.findByLabelText('Reason'), 'Compare the old one')
+  await user.click(screen.getByRole('button', { name: 'Make active' }))
+  expect(await screen.findByText(/ranks worse than student-v2/)).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Switch anyway' }))
+  const history = await screen.findByRole('region', { name: 'Switch history' })
+  expect(await within(history).findByText('student-v2 → student')).toBeInTheDocument()
+  expect(within(history).getByText('forced')).toBeInTheDocument()
+
+  await user.click(within(history).getByRole('button', { name: 'Back to student-v2' }))
+  expect(await within(history).findByText('student → student-v2')).toBeInTheDocument()
+})

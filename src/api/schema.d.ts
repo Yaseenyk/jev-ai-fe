@@ -44,6 +44,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Models
+         * @description Trained models, their newest evaluation, which one is active, and the switch history.
+         */
+        get: operations["list_models_api_v1_admin_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/models/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rollback
+         * @description Return to the model that was active before the last switch.
+         */
+        post: operations["rollback_api_v1_admin_models_rollback_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/models/{name}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activate
+         * @description Make a model active. Refused (409) when it has no evaluation or ranks worse than the
+         *     active one, unless `force`. The worker switches to it before its next run.
+         */
+        post: operations["activate_api_v1_admin_models__name__activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/login": {
         parameters: {
             query?: never;
@@ -820,6 +881,76 @@ export interface components {
             /** Total Cost Usd */
             total_cost_usd: number;
         };
+        /** ModelActivate */
+        ModelActivate: {
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Reason */
+            reason: string;
+        };
+        /** ModelRead */
+        ModelRead: {
+            /** Active */
+            active: boolean;
+            /** Calibrated */
+            calibrated: boolean;
+            /** Combiner */
+            combiner: boolean;
+            /** Decision Set Version */
+            decision_set_version: string;
+            /** Fingerprint */
+            fingerprint: string;
+            /** Name */
+            name: string;
+            /** Note */
+            note: string;
+            /** Registered At */
+            registered_at: string;
+            scores: components["schemas"]["ModelScores"] | null;
+        };
+        /**
+         * ModelScores
+         * @description The model's newest evaluation, next to the simple ranking on the same tasks.
+         */
+        ModelScores: {
+            /** Baseline Pairwise Order */
+            baseline_pairwise_order: number | null;
+            /** Hit At 1 */
+            hit_at_1: number;
+            /** Hit At 5 */
+            hit_at_5: number;
+            /** Pairwise Order */
+            pairwise_order: number | null;
+            /** Report Id */
+            report_id: string;
+        };
+        /** ModelSwitch */
+        ModelSwitch: {
+            /** At */
+            at: string;
+            /** Forced */
+            forced: boolean;
+            /** From Model */
+            from_model: string | null;
+            /** Reason */
+            reason: string;
+            /** To Model */
+            to_model: string;
+        };
+        /** ModelsRead */
+        ModelsRead: {
+            /** Active */
+            active: string | null;
+            /** History */
+            history: components["schemas"]["ModelSwitch"][];
+            /** Models */
+            models: components["schemas"]["ModelRead"][];
+            /** Pinned Dir */
+            pinned_dir: string | null;
+        };
         /** Page[AdminRunRead] */
         Page_AdminRunRead_: {
             /** Items */
@@ -1249,6 +1380,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    list_models_api_v1_admin_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelsRead"];
+                };
+            };
+        };
+    };
+    rollback_api_v1_admin_models_rollback_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelsRead"];
+                };
+            };
+        };
+    };
+    activate_api_v1_admin_models__name__activate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelActivate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

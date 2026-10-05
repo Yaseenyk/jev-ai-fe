@@ -8,6 +8,8 @@ import type {
   EvalReport,
   EvalReportSummary,
   LearningSummary,
+  ModelActivate,
+  ModelsList,
   Page,
   RunStatus,
   ThresholdsHistory,
@@ -79,4 +81,30 @@ export async function downloadTrainingData(): Promise<void> {
   const link = Object.assign(document.createElement('a'), { href: url, download: name })
   link.click()
   URL.revokeObjectURL(url)
+}
+
+const MODELS = ['admin', 'models'] as const
+
+export function useModels() {
+  return useQuery({ queryKey: MODELS, queryFn: () => apiFetch<ModelsList>('/admin/models') })
+}
+
+export function useActivateModel() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ name, ...input }: ModelActivate & { name: string }) =>
+      apiFetch<ModelsList>(`/admin/models/${encodeURIComponent(name)}/activate`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: (data) => qc.setQueryData(MODELS, data),
+  })
+}
+
+export function useRollbackModel() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => apiFetch<ModelsList>('/admin/models/rollback', { method: 'POST' }),
+    onSuccess: (data) => qc.setQueryData(MODELS, data),
+  })
 }

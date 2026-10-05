@@ -1313,6 +1313,221 @@
         "title": "MatchRunRead",
         "type": "object"
       },
+      "ModelActivate": {
+        "properties": {
+          "force": {
+            "default": false,
+            "title": "Force",
+            "type": "boolean"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "ModelActivate",
+        "type": "object"
+      },
+      "ModelRead": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "calibrated": {
+            "title": "Calibrated",
+            "type": "boolean"
+          },
+          "combiner": {
+            "title": "Combiner",
+            "type": "boolean"
+          },
+          "decision_set_version": {
+            "title": "Decision Set Version",
+            "type": "string"
+          },
+          "fingerprint": {
+            "title": "Fingerprint",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "registered_at": {
+            "title": "Registered At",
+            "type": "string"
+          },
+          "scores": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelScores"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "fingerprint",
+          "decision_set_version",
+          "note",
+          "registered_at",
+          "active",
+          "calibrated",
+          "combiner",
+          "scores"
+        ],
+        "title": "ModelRead",
+        "type": "object"
+      },
+      "ModelScores": {
+        "description": "The model's newest evaluation, next to the simple ranking on the same tasks.",
+        "properties": {
+          "baseline_pairwise_order": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Pairwise Order"
+          },
+          "hit_at_1": {
+            "title": "Hit At 1",
+            "type": "number"
+          },
+          "hit_at_5": {
+            "title": "Hit At 5",
+            "type": "number"
+          },
+          "pairwise_order": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pairwise Order"
+          },
+          "report_id": {
+            "title": "Report Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "report_id",
+          "pairwise_order",
+          "baseline_pairwise_order",
+          "hit_at_5",
+          "hit_at_1"
+        ],
+        "title": "ModelScores",
+        "type": "object"
+      },
+      "ModelSwitch": {
+        "properties": {
+          "at": {
+            "title": "At",
+            "type": "string"
+          },
+          "forced": {
+            "title": "Forced",
+            "type": "boolean"
+          },
+          "from_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Model"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "to_model": {
+            "title": "To Model",
+            "type": "string"
+          }
+        },
+        "required": [
+          "at",
+          "from_model",
+          "to_model",
+          "forced",
+          "reason"
+        ],
+        "title": "ModelSwitch",
+        "type": "object"
+      },
+      "ModelsRead": {
+        "properties": {
+          "active": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ModelSwitch"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelRead"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "pinned_dir": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned Dir"
+          }
+        },
+        "required": [
+          "active",
+          "pinned_dir",
+          "models",
+          "history"
+        ],
+        "title": "ModelsRead",
+        "type": "object"
+      },
       "Page_AdminRunRead_": {
         "properties": {
           "items": {
@@ -2588,6 +2803,118 @@
           }
         ],
         "summary": "Export",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/models": {
+      "get": {
+        "description": "Trained models, their newest evaluation, which one is active, and the switch history.",
+        "operationId": "list_models_api_v1_admin_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Models",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/models/rollback": {
+      "post": {
+        "description": "Return to the model that was active before the last switch.",
+        "operationId": "rollback_api_v1_admin_models_rollback_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rollback",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/models/{name}/activate": {
+      "post": {
+        "description": "Make a model active. Refused (409) when it has no evaluation or ranks worse than the\nactive one, unless `force`. The worker switches to it before its next run.",
+        "operationId": "activate_api_v1_admin_models__name__activate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelActivate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Activate",
         "tags": [
           "admin"
         ]

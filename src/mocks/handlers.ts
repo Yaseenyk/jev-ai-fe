@@ -8,6 +8,8 @@ import type {
   TaskCreate,
   ThresholdsHistory,
   ThresholdsUpdate,
+  ModelActivate,
+  ModelsList,
   User,
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
@@ -31,7 +33,7 @@ function page<T>(items: T[], url: URL): Page<T> {
 export function createHandlers(db: Db) {
   const api = (path: string) => `*/api/v1${path}`
 
-  // Mock sign-in: always signed in as a resource manager unless "viewer..." logs in.
+  // Mock sign-in: a resource manager unless "viewer..." or "admin..." signs in.
   let user: User = {
     id: MOCK_USER_ID,
     email: 'manager1@srtm.local',
@@ -54,13 +56,63 @@ export function createHandlers(db: Db) {
     active: firstVersion,
     history: [firstVersion],
   }
+  const scores = (pairwise: number, hit5: number, hit1: number, report: string) => ({
+    report_id: report,
+    pairwise_order: pairwise,
+    baseline_pairwise_order: 0.861,
+    hit_at_5: hit5,
+    hit_at_1: hit1,
+  })
+  let models: ModelsList = {
+    active: 'student-v2',
+    pinned_dir: null,
+    models: [
+      {
+        name: 'student',
+        fingerprint: '3efa7d737abb25eb',
+        decision_set_version: 'v1',
+        note: 'teacher only (2 Oct)',
+        registered_at: '2026-10-05T09:11:00Z',
+        active: false,
+        calibrated: false,
+        combiner: false,
+        scores: scores(0.722, 0.8, 0.4, '20261005T053603Z'),
+      },
+      {
+        name: 'student-v2',
+        fingerprint: '10780d63239f11b5',
+        decision_set_version: 'v1',
+        note: '+ simulated managers + combiner (5 Oct)',
+        registered_at: '2026-10-05T09:11:00Z',
+        active: true,
+        calibrated: true,
+        combiner: true,
+        scores: scores(0.879, 0.94, 0.54, '20261005T073524Z'),
+      },
+    ],
+    history: [],
+  }
+  const switchTo = (name: string, reason: string, forced: boolean) => {
+    const from = models.active
+    models = {
+      ...models,
+      active: name,
+      models: models.models.map((m) => ({ ...m, active: m.name === name })),
+      history: [
+        { at: new Date().toISOString(), from_model: from, to_model: name, forced, reason },
+        ...models.history,
+      ],
+    }
+  }
 
   return [
     http.post(api('/auth/login'), async ({ request }) => {
       const { email } = (await request.json()) as { email: string }
       user = email.startsWith('viewer')
         ? { id: 'demo-viewer', email, display_name: 'Viewer', role: 'viewer' }
-        : { ...user, email }
+        : email.startsWith('admin')
+          ? { id: 'demo-admin', email, display_name: 'Pilot Admin', role: 'admin' }
+          : { ...user, email }
       return HttpResponse.json(token)
     }),
     http.post(api('/auth/refresh'), () => HttpResponse.json(token)),
@@ -86,6 +138,38 @@ export function createHandlers(db: Db) {
         history: [version, ...thresholds.history.map((v) => ({ ...v, active: false }))],
       }
       return HttpResponse.json(thresholds)
+    }),
+    http.get(api('/admin/models'), () => HttpResponse.json(models)),
+    http.post(api('/admin/models/:name/activate'), async ({ params, request }) => {
+      const body = (await request.json()) as ModelActivate
+      const target = models.models.find((m) => m.name === params.name)
+      const current = models.models.find((m) => m.active)
+      if (!target)
+        return problem(
+          404,
+          'Not found',
+          'model_not_found',
+          `Model ${String(params.name)} is not registered`,
+        )
+      const worse =
+        (target.scores?.pairwise_order ?? 0) < (current?.scores?.pairwise_order ?? 0) - 0.01
+      if (worse && !body.force) {
+        return problem(
+          409,
+          'Activation refused',
+          'activation_refused',
+          `${target.name} ranks worse than ${current?.name ?? ''}; use force to switch anyway`,
+        )
+      }
+      switchTo(target.name, body.reason, body.force)
+      return HttpResponse.json(models)
+    }),
+    http.post(api('/admin/models/rollback'), () => {
+      const last = models.history[0]
+      if (!last?.from_model)
+        return problem(409, 'Rollback refused', 'rollback_refused', 'nothing to roll back to')
+      switchTo(last.from_model, 'rollback', true)
+      return HttpResponse.json(models)
     }),
     http.get(api('/match-runs'), ({ request }) =>
       HttpResponse.json(
