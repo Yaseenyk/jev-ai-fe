@@ -280,6 +280,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Candidates */
+        get: operations["list_candidates_api_v1_candidates_get"];
+        put?: never;
+        /**
+         * Create Candidate
+         * @description Save a checked profile with the candidate's consent. 422 `consent_required`.
+         */
+        post: operations["create_candidate_api_v1_candidates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/candidates/extract": {
         parameters: {
             query?: never;
@@ -291,9 +312,55 @@ export interface paths {
         put?: never;
         /**
          * Extract Resume
-         * @description Read a resume (PDF or .docx) into a profile for HR to check. Nothing is saved.
+         * @description Read a resume (PDF or .docx) into a profile for HR to check. No candidate is created;
+         *     the file is kept for a day so that saving with this `extraction_id` keeps it.
          */
         post: operations["extract_resume_api_v1_candidates_extract_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/candidates/{candidate_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Candidate */
+        get: operations["get_candidate_api_v1_candidates__candidate_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Candidate
+         * @description Delete the profile and the resume file now. Audited.
+         */
+        delete: operations["delete_candidate_api_v1_candidates__candidate_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Candidate
+         * @description Move along the hiring steps, add a note or correct the profile. Audited.
+         */
+        patch: operations["update_candidate_api_v1_candidates__candidate_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/candidates/{candidate_id}/matches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Candidate Matches
+         * @description Open tasks this candidate fits, best first.
+         */
+        get: operations["candidate_matches_api_v1_candidates__candidate_id__matches_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -416,6 +483,137 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/hiring-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Requests */
+        get: operations["list_requests_api_v1_hiring_requests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hiring-requests/{request_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Request
+         * @description Managers get candidates' first names and professional profiles only.
+         */
+        get: operations["get_request_api_v1_hiring_requests__request_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hiring-requests/{request_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close Request
+         * @description Without a body the outcome is `hired` if a sent candidate was hired, else `no_hire`.
+         */
+        post: operations["close_request_api_v1_hiring_requests__request_id__close_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hiring-requests/{request_id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start Request */
+        post: operations["start_request_api_v1_hiring_requests__request_id__start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hiring-requests/{request_id}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send Candidates
+         * @description Send 1 to 10 candidates in total; the manager is notified.
+         */
+        post: operations["send_candidates_api_v1_hiring_requests__request_id__submissions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hiring-requests/{request_id}/submissions/{candidate_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Decide
+         * @description The requesting manager marks a candidate fit or not; HR hears about fit ones at once.
+         */
+        put: operations["decide_api_v1_hiring_requests__request_id__submissions__candidate_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/hr/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hr Summary */
+        get: operations["hr_summary_api_v1_hr_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/match-runs": {
         parameters: {
             query?: never;
@@ -478,6 +676,57 @@ export interface paths {
         get: operations["shortlist_api_v1_match_runs__run_id__shortlist_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Notifications */
+        get: operations["notifications_api_v1_notifications_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/read-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read All */
+        post: operations["read_all_api_v1_notifications_read_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/{notification_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read One */
+        post: operations["read_one_api_v1_notifications__notification_id__read_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -572,6 +821,46 @@ export interface paths {
         head?: never;
         /** Update Task */
         patch: operations["update_task_api_v1_tasks__task_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Task Candidates
+         * @description External candidates ranked for one task (where "no internal fit" leads).
+         */
+        get: operations["task_candidates_api_v1_tasks__task_id__candidates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}/hiring-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Request
+         * @description Ask HR for candidates; HR is notified. 409 `request_open` or `task_closed`.
+         */
+        post: operations["create_request_api_v1_tasks__task_id__hiring_requests_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/tasks/{task_id}/match-runs": {
@@ -720,10 +1009,73 @@ export interface components {
             /** Rejected */
             rejected: number;
         };
+        /** BestMatch */
+        BestMatch: {
+            /** Score */
+            score: number;
+            /** Task Code */
+            task_code: string;
+        };
         /** Body_extract_resume_api_v1_candidates_extract_post */
         Body_extract_resume_api_v1_candidates_extract_post: {
             /** File */
             file: string;
+        };
+        /** CandidateCreate */
+        CandidateCreate: {
+            /** Consent */
+            consent: boolean;
+            /** Email */
+            email?: string | null;
+            /** Extraction Id */
+            extraction_id?: string | null;
+            /** Full Name */
+            full_name: string;
+            /** Phone */
+            phone?: string | null;
+            profile: components["schemas"]["CandidateProfile"];
+            /** Source */
+            source: string;
+        };
+        /** CandidateDetail */
+        CandidateDetail: {
+            best_match: components["schemas"]["BestMatch"] | null;
+            /**
+             * Consent At
+             * Format: date-time
+             */
+            consent_at: string;
+            /** Consent Recorded By */
+            consent_recorded_by: string;
+            /** Delete After */
+            delete_after: string | null;
+            /** Designation */
+            designation: string;
+            /** Email */
+            email: string | null;
+            /** Full Name */
+            full_name: string;
+            /** History */
+            history: components["schemas"]["HistoryItem"][];
+            /** Id */
+            id: string;
+            level: components["schemas"]["Level"];
+            location: components["schemas"]["Location"];
+            /** Phone */
+            phone: string | null;
+            profile: components["schemas"]["CandidateProfile"];
+            /** Source */
+            source: string;
+            status: components["schemas"]["CandidateStatus"];
+            /** Top Skills */
+            top_skills: string[];
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
+            /** Years Experience */
+            years_experience: number;
         };
         /**
          * CandidateFeaturesRead
@@ -751,6 +1103,21 @@ export interface components {
             /** Years Gap */
             years_gap: number;
         };
+        /** CandidateMatch */
+        CandidateMatch: {
+            band: components["schemas"]["Band"];
+            candidate: components["schemas"]["CandidateSummary"];
+            /** Matched Skills */
+            matched_skills: string[];
+            /** Missing Skills */
+            missing_skills: string[];
+            /** Must Have Coverage */
+            must_have_coverage: number;
+            /** Reasons */
+            reasons: string[];
+            /** Score */
+            score: number;
+        };
         /** CandidateProfile */
         CandidateProfile: {
             /** Designation */
@@ -769,6 +1136,48 @@ export interface components {
             summary: string;
             /** Years Experience */
             years_experience: number;
+        };
+        /**
+         * CandidateStatus
+         * @description An external candidate's hiring progress (ADR 020).
+         * @enum {string}
+         */
+        CandidateStatus: "new" | "screened" | "contacted" | "interviewing" | "hired" | "not_taken";
+        /** CandidateSummary */
+        CandidateSummary: {
+            best_match: components["schemas"]["BestMatch"] | null;
+            /** Delete After */
+            delete_after: string | null;
+            /** Designation */
+            designation: string;
+            /** Full Name */
+            full_name: string;
+            /** Id */
+            id: string;
+            level: components["schemas"]["Level"];
+            location: components["schemas"]["Location"];
+            /** Source */
+            source: string;
+            status: components["schemas"]["CandidateStatus"];
+            /** Top Skills */
+            top_skills: string[];
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
+            /** Years Experience */
+            years_experience: number;
+        };
+        /** CandidateUpdate */
+        CandidateUpdate: {
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            profile?: components["schemas"]["CandidateProfile"] | null;
+            status?: components["schemas"]["CandidateStatus"] | null;
         };
         /** ClientCreate */
         ClientCreate: {
@@ -810,6 +1219,15 @@ export interface components {
             notes?: string | null;
             /** Timezone */
             timezone?: string | null;
+        };
+        /** CloseIn */
+        CloseIn: {
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            outcome?: components["schemas"]["HiringOutcome"] | null;
         };
         /**
          * Contact
@@ -1068,6 +1486,117 @@ export interface components {
             /** Week */
             week: string;
         };
+        /**
+         * HiringOutcome
+         * @enum {string}
+         */
+        HiringOutcome: "hired" | "no_hire" | "cancelled";
+        /** HiringRequestCreate */
+        HiringRequestCreate: {
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /**
+             * Wanted
+             * @default 5
+             */
+            wanted: number;
+        };
+        /** HiringRequestDetail */
+        HiringRequestDetail: {
+            /** Client Code */
+            client_code: string;
+            /** Fit Count */
+            fit_count: number;
+            /** Id */
+            id: string;
+            /** Note */
+            note: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Requested By */
+            requested_by: string;
+            /** Sent Count */
+            sent_count: number;
+            status: components["schemas"]["HiringRequestStatus"];
+            /** Submissions */
+            submissions: components["schemas"]["Submission"][];
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Task Title */
+            task_title: string;
+            /** Wanted */
+            wanted: number;
+        };
+        /**
+         * HiringRequestStatus
+         * @enum {string}
+         */
+        HiringRequestStatus: "new" | "in_progress" | "sent" | "reviewed" | "closed";
+        /** HiringRequestSummary */
+        HiringRequestSummary: {
+            /** Client Code */
+            client_code: string;
+            /** Fit Count */
+            fit_count: number;
+            /** Id */
+            id: string;
+            /** Note */
+            note: string;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Requested By */
+            requested_by: string;
+            /** Sent Count */
+            sent_count: number;
+            status: components["schemas"]["HiringRequestStatus"];
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Task Title */
+            task_title: string;
+            /** Wanted */
+            wanted: number;
+        };
+        /** HistoryItem */
+        HistoryItem: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** By */
+            by: string;
+            /** Note */
+            note: string;
+            status: components["schemas"]["CandidateStatus"];
+        };
+        /** HrSummary */
+        HrSummary: {
+            /** Candidates By Status */
+            candidates_by_status: {
+                [key: string]: number;
+            };
+            /** Due For Deletion 30D */
+            due_for_deletion_30d: number;
+            /** Open Tasks */
+            open_tasks: number;
+            /** Recent Candidates */
+            recent_candidates: components["schemas"]["CandidateSummary"][];
+            /** Tasks Without Internal Fit */
+            tasks_without_internal_fit: components["schemas"]["TaskWithoutFit"][];
+        };
         /** InterpretRequest */
         InterpretRequest: {
             /** Known Clients */
@@ -1279,10 +1808,45 @@ export interface components {
             /** Pinned Dir */
             pinned_dir: string | null;
         };
+        /**
+         * NotificationKind
+         * @enum {string}
+         */
+        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit";
+        /** NotificationRead */
+        NotificationRead: {
+            /** Body */
+            body: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: string;
+            kind: components["schemas"]["NotificationKind"];
+            /** Link */
+            link: string;
+            /** Read */
+            read: boolean;
+            /** Title */
+            title: string;
+        };
         /** Page[AdminRunRead] */
         Page_AdminRunRead_: {
             /** Items */
             items: components["schemas"]["AdminRunRead"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Total */
+            total: number;
+        };
+        /** Page[CandidateSummary] */
+        Page_CandidateSummary_: {
+            /** Items */
+            items: components["schemas"]["CandidateSummary"][];
             /** Limit */
             limit: number;
             /** Offset */
@@ -1376,7 +1940,10 @@ export interface components {
         };
         /** ProfileSkill */
         ProfileSkill: {
-            /** Last Used */
+            /**
+             * Last Used
+             * Format: date
+             */
             last_used: string;
             /** Proficiency */
             proficiency: number;
@@ -1458,6 +2025,47 @@ export interface components {
             must_have: boolean;
             skill: components["schemas"]["SkillRef"];
         };
+        /** Submission */
+        Submission: {
+            candidate: components["schemas"]["SubmittedCandidate"];
+            /** Decided At */
+            decided_at: string | null;
+            /** Hr Note */
+            hr_note: string;
+            match: components["schemas"]["TaskMatch"];
+            verdict: components["schemas"]["Verdict"] | null;
+            /** Verdict Note */
+            verdict_note: string;
+        };
+        /** SubmissionsCreate */
+        SubmissionsCreate: {
+            /** Candidate Ids */
+            candidate_ids: string[];
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+        };
+        /**
+         * SubmittedCandidate
+         * @description What a manager may see: professional profile and first name only (docs/08 §1a).
+         */
+        SubmittedCandidate: {
+            /** Designation */
+            designation: string;
+            /** First Name */
+            first_name: string;
+            /** Id */
+            id: string;
+            level: components["schemas"]["Level"];
+            location: components["schemas"]["Location"];
+            /** Notice Days */
+            notice_days: number;
+            profile: components["schemas"]["CandidateProfile"];
+            /** Years Experience */
+            years_experience: number;
+        };
         /** TaskCreate */
         TaskCreate: {
             /** Allocation Pct Required */
@@ -1492,6 +2100,28 @@ export interface components {
             /** Title */
             title: string;
             work_mode: components["schemas"]["WorkMode"];
+        };
+        /** TaskMatch */
+        TaskMatch: {
+            band: components["schemas"]["Band"];
+            /** Client Code */
+            client_code: string;
+            /** Matched Skills */
+            matched_skills: string[];
+            /** Missing Skills */
+            missing_skills: string[];
+            /** Must Have Coverage */
+            must_have_coverage: number;
+            /** Reasons */
+            reasons: string[];
+            /** Score */
+            score: number;
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Title */
+            title: string;
         };
         /**
          * TaskPriority
@@ -1590,6 +2220,19 @@ export interface components {
             /** Title */
             title?: string | null;
             work_mode?: components["schemas"]["WorkMode"] | null;
+        };
+        /** TaskWithoutFit */
+        TaskWithoutFit: {
+            /** Best Internal Score */
+            best_internal_score: number | null;
+            /** Client Code */
+            client_code: string;
+            /** Code */
+            code: string;
+            /** Task Id */
+            task_id: string;
+            /** Title */
+            title: string;
         };
         /** ThresholdVersionRead */
         ThresholdVersionRead: {
@@ -1726,6 +2369,20 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /**
+         * Verdict
+         * @enum {string}
+         */
+        Verdict: "fit" | "not_fit";
+        /** VerdictIn */
+        VerdictIn: {
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            verdict: components["schemas"]["Verdict"];
         };
         /**
          * WorkMode
@@ -2141,6 +2798,73 @@ export interface operations {
             };
         };
     };
+    list_candidates_api_v1_candidates_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["CandidateStatus"] | null;
+                q?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_CandidateSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_candidate_api_v1_candidates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     extract_resume_api_v1_candidates_extract_post: {
         parameters: {
             query?: never;
@@ -2161,6 +2885,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExtractionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_candidate_api_v1_candidates__candidate_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_candidate_api_v1_candidates__candidate_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_candidate_api_v1_candidates__candidate_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CandidateUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    candidate_matches_api_v1_candidates__candidate_id__matches_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskMatch"][];
                 };
             };
             /** @description Validation Error */
@@ -2411,6 +3261,225 @@ export interface operations {
             };
         };
     };
+    list_requests_api_v1_hiring_requests_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["HiringRequestStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_request_api_v1_hiring_requests__request_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    close_request_api_v1_hiring_requests__request_id__close_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CloseIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_request_api_v1_hiring_requests__request_id__start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    send_candidates_api_v1_hiring_requests__request_id__submissions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmissionsCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_api_v1_hiring_requests__request_id__submissions__candidate_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                request_id: string;
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VerdictIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    hr_summary_api_v1_hr_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HrSummary"];
+                };
+            };
+        };
+    };
     all_runs_api_v1_match_runs_get: {
         parameters: {
             query?: {
@@ -2532,6 +3601,73 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Page_ShortlistItemRead_"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    notifications_api_v1_notifications_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationRead"][];
+                };
+            };
+        };
+    };
+    read_all_api_v1_notifications_read_all_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    read_one_api_v1_notifications__notification_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notification_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -2768,6 +3904,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_candidates_api_v1_tasks__task_id__candidates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateMatch"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_request_api_v1_tasks__task_id__hiring_requests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HiringRequestCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestSummary"];
                 };
             };
             /** @description Validation Error */

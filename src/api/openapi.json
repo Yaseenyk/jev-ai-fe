@@ -214,6 +214,24 @@
         "title": "BandOutcome",
         "type": "object"
       },
+      "BestMatch": {
+        "properties": {
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_code",
+          "score"
+        ],
+        "title": "BestMatch",
+        "type": "object"
+      },
       "Body_extract_resume_api_v1_candidates_extract_post": {
         "properties": {
           "file": {
@@ -226,6 +244,202 @@
           "file"
         ],
         "title": "Body_extract_resume_api_v1_candidates_extract_post",
+        "type": "object"
+      },
+      "CandidateCreate": {
+        "properties": {
+          "consent": {
+            "title": "Consent",
+            "type": "boolean"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "extraction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extraction Id"
+          },
+          "full_name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/CandidateProfile"
+          },
+          "source": {
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "full_name",
+          "source",
+          "consent",
+          "profile"
+        ],
+        "title": "CandidateCreate",
+        "type": "object"
+      },
+      "CandidateDetail": {
+        "properties": {
+          "best_match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BestMatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consent_at": {
+            "format": "date-time",
+            "title": "Consent At",
+            "type": "string"
+          },
+          "consent_recorded_by": {
+            "title": "Consent Recorded By",
+            "type": "string"
+          },
+          "delete_after": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delete After"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/HistoryItem"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/CandidateProfile"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CandidateStatus"
+          },
+          "top_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Top Skills",
+            "type": "array"
+          },
+          "uploaded_at": {
+            "format": "date-time",
+            "title": "Uploaded At",
+            "type": "string"
+          },
+          "years_experience": {
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "full_name",
+          "designation",
+          "level",
+          "years_experience",
+          "location",
+          "status",
+          "source",
+          "uploaded_at",
+          "delete_after",
+          "top_skills",
+          "best_match",
+          "email",
+          "phone",
+          "consent_recorded_by",
+          "consent_at",
+          "profile",
+          "history"
+        ],
+        "title": "CandidateDetail",
         "type": "object"
       },
       "CandidateFeaturesRead": {
@@ -294,9 +508,60 @@
         "title": "CandidateFeaturesRead",
         "type": "object"
       },
+      "CandidateMatch": {
+        "properties": {
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          },
+          "candidate": {
+            "$ref": "#/components/schemas/CandidateSummary"
+          },
+          "matched_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Matched Skills",
+            "type": "array"
+          },
+          "missing_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Skills",
+            "type": "array"
+          },
+          "must_have_coverage": {
+            "title": "Must Have Coverage",
+            "type": "number"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "score",
+          "band",
+          "must_have_coverage",
+          "matched_skills",
+          "missing_skills",
+          "reasons",
+          "candidate"
+        ],
+        "title": "CandidateMatch",
+        "type": "object"
+      },
       "CandidateProfile": {
         "properties": {
           "designation": {
+            "maxLength": 120,
             "title": "Designation",
             "type": "string"
           },
@@ -311,6 +576,7 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 5,
             "title": "Education",
             "type": "array"
           },
@@ -321,6 +587,8 @@
             "$ref": "#/components/schemas/Location"
           },
           "notice_days": {
+            "maximum": 180.0,
+            "minimum": 0.0,
             "title": "Notice Days",
             "type": "integer"
           },
@@ -328,14 +596,18 @@
             "items": {
               "$ref": "#/components/schemas/ProfileSkill"
             },
+            "maxItems": 60,
             "title": "Skills",
             "type": "array"
           },
           "summary": {
+            "maxLength": 1000,
             "title": "Summary",
             "type": "string"
           },
           "years_experience": {
+            "maximum": 50.0,
+            "minimum": 0.0,
             "title": "Years Experience",
             "type": "number"
           }
@@ -352,6 +624,134 @@
           "summary"
         ],
         "title": "CandidateProfile",
+        "type": "object"
+      },
+      "CandidateStatus": {
+        "description": "An external candidate's hiring progress (ADR 020).",
+        "enum": [
+          "new",
+          "screened",
+          "contacted",
+          "interviewing",
+          "hired",
+          "not_taken"
+        ],
+        "title": "CandidateStatus",
+        "type": "string"
+      },
+      "CandidateSummary": {
+        "properties": {
+          "best_match": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BestMatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delete_after": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delete After"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CandidateStatus"
+          },
+          "top_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Top Skills",
+            "type": "array"
+          },
+          "uploaded_at": {
+            "format": "date-time",
+            "title": "Uploaded At",
+            "type": "string"
+          },
+          "years_experience": {
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "full_name",
+          "designation",
+          "level",
+          "years_experience",
+          "location",
+          "status",
+          "source",
+          "uploaded_at",
+          "delete_after",
+          "top_skills",
+          "best_match"
+        ],
+        "title": "CandidateSummary",
+        "type": "object"
+      },
+      "CandidateUpdate": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Note",
+            "type": "string"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidateProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CandidateStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "CandidateUpdate",
         "type": "object"
       },
       "ClientCreate": {
@@ -514,6 +914,28 @@
           }
         },
         "title": "ClientUpdate",
+        "type": "object"
+      },
+      "CloseIn": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Note",
+            "type": "string"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HiringOutcome"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "CloseIn",
         "type": "object"
       },
       "Contact": {
@@ -1318,6 +1740,262 @@
         "title": "HealthWeek",
         "type": "object"
       },
+      "HiringOutcome": {
+        "enum": [
+          "hired",
+          "no_hire",
+          "cancelled"
+        ],
+        "title": "HiringOutcome",
+        "type": "string"
+      },
+      "HiringRequestCreate": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Note",
+            "type": "string"
+          },
+          "wanted": {
+            "default": 5,
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Wanted",
+            "type": "integer"
+          }
+        },
+        "title": "HiringRequestCreate",
+        "type": "object"
+      },
+      "HiringRequestDetail": {
+        "properties": {
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "fit_count": {
+            "title": "Fit Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "requested_by": {
+            "title": "Requested By",
+            "type": "string"
+          },
+          "sent_count": {
+            "title": "Sent Count",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/HiringRequestStatus"
+          },
+          "submissions": {
+            "items": {
+              "$ref": "#/components/schemas/Submission"
+            },
+            "title": "Submissions",
+            "type": "array"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "task_title": {
+            "title": "Task Title",
+            "type": "string"
+          },
+          "wanted": {
+            "title": "Wanted",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "task_code",
+          "task_title",
+          "client_code",
+          "requested_by",
+          "requested_at",
+          "wanted",
+          "note",
+          "status",
+          "sent_count",
+          "fit_count",
+          "submissions"
+        ],
+        "title": "HiringRequestDetail",
+        "type": "object"
+      },
+      "HiringRequestStatus": {
+        "enum": [
+          "new",
+          "in_progress",
+          "sent",
+          "reviewed",
+          "closed"
+        ],
+        "title": "HiringRequestStatus",
+        "type": "string"
+      },
+      "HiringRequestSummary": {
+        "properties": {
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "fit_count": {
+            "title": "Fit Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "requested_by": {
+            "title": "Requested By",
+            "type": "string"
+          },
+          "sent_count": {
+            "title": "Sent Count",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/HiringRequestStatus"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "task_title": {
+            "title": "Task Title",
+            "type": "string"
+          },
+          "wanted": {
+            "title": "Wanted",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "task_code",
+          "task_title",
+          "client_code",
+          "requested_by",
+          "requested_at",
+          "wanted",
+          "note",
+          "status",
+          "sent_count",
+          "fit_count"
+        ],
+        "title": "HiringRequestSummary",
+        "type": "object"
+      },
+      "HistoryItem": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "by": {
+            "title": "By",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CandidateStatus"
+          }
+        },
+        "required": [
+          "at",
+          "by",
+          "status",
+          "note"
+        ],
+        "title": "HistoryItem",
+        "type": "object"
+      },
+      "HrSummary": {
+        "properties": {
+          "candidates_by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/components/schemas/CandidateStatus"
+            },
+            "title": "Candidates By Status",
+            "type": "object"
+          },
+          "due_for_deletion_30d": {
+            "title": "Due For Deletion 30D",
+            "type": "integer"
+          },
+          "open_tasks": {
+            "title": "Open Tasks",
+            "type": "integer"
+          },
+          "recent_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateSummary"
+            },
+            "title": "Recent Candidates",
+            "type": "array"
+          },
+          "tasks_without_internal_fit": {
+            "items": {
+              "$ref": "#/components/schemas/TaskWithoutFit"
+            },
+            "title": "Tasks Without Internal Fit",
+            "type": "array"
+          }
+        },
+        "required": [
+          "open_tasks",
+          "tasks_without_internal_fit",
+          "candidates_by_status",
+          "due_for_deletion_30d",
+          "recent_candidates"
+        ],
+        "title": "HrSummary",
+        "type": "object"
+      },
       "InterpretRequest": {
         "properties": {
           "known_clients": {
@@ -2049,6 +2727,59 @@
         "title": "ModelsRead",
         "type": "object"
       },
+      "NotificationKind": {
+        "enum": [
+          "request_new",
+          "request_sent",
+          "request_reviewed",
+          "candidate_fit"
+        ],
+        "title": "NotificationKind",
+        "type": "string"
+      },
+      "NotificationRead": {
+        "properties": {
+          "body": {
+            "title": "Body",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/NotificationKind"
+          },
+          "link": {
+            "title": "Link",
+            "type": "string"
+          },
+          "read": {
+            "title": "Read",
+            "type": "boolean"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "body",
+          "link",
+          "created_at",
+          "read"
+        ],
+        "title": "NotificationRead",
+        "type": "object"
+      },
       "Page_AdminRunRead_": {
         "properties": {
           "items": {
@@ -2078,6 +2809,37 @@
           "offset"
         ],
         "title": "Page[AdminRunRead]",
+        "type": "object"
+      },
+      "Page_CandidateSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CandidateSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "Page[CandidateSummary]",
         "type": "object"
       },
       "Page_DecisionRead_": {
@@ -2322,10 +3084,13 @@
       "ProfileSkill": {
         "properties": {
           "last_used": {
+            "format": "date",
             "title": "Last Used",
             "type": "string"
           },
           "proficiency": {
+            "maximum": 5.0,
+            "minimum": 1.0,
             "title": "Proficiency",
             "type": "integer"
           },
@@ -2338,6 +3103,8 @@
             "type": "string"
           },
           "years": {
+            "maximum": 50.0,
+            "minimum": 0.0,
             "title": "Years",
             "type": "number"
           }
@@ -2582,6 +3349,126 @@
         "title": "SkillRequirementRead",
         "type": "object"
       },
+      "Submission": {
+        "properties": {
+          "candidate": {
+            "$ref": "#/components/schemas/SubmittedCandidate"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "hr_note": {
+            "title": "Hr Note",
+            "type": "string"
+          },
+          "match": {
+            "$ref": "#/components/schemas/TaskMatch"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Verdict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verdict_note": {
+            "title": "Verdict Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidate",
+          "match",
+          "hr_note",
+          "verdict",
+          "verdict_note",
+          "decided_at"
+        ],
+        "title": "Submission",
+        "type": "object"
+      },
+      "SubmissionsCreate": {
+        "properties": {
+          "candidate_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Candidate Ids",
+            "type": "array"
+          },
+          "note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidate_ids"
+        ],
+        "title": "SubmissionsCreate",
+        "type": "object"
+      },
+      "SubmittedCandidate": {
+        "description": "What a manager may see: professional profile and first name only (docs/08 \u00a71a).",
+        "properties": {
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "first_name": {
+            "title": "First Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "notice_days": {
+            "title": "Notice Days",
+            "type": "integer"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/CandidateProfile"
+          },
+          "years_experience": {
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "first_name",
+          "designation",
+          "level",
+          "years_experience",
+          "location",
+          "notice_days",
+          "profile"
+        ],
+        "title": "SubmittedCandidate",
+        "type": "object"
+      },
       "TaskCreate": {
         "properties": {
           "allocation_pct_required": {
@@ -2698,6 +3585,72 @@
           "requirements"
         ],
         "title": "TaskCreate",
+        "type": "object"
+      },
+      "TaskMatch": {
+        "properties": {
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          },
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "matched_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Matched Skills",
+            "type": "array"
+          },
+          "missing_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Skills",
+            "type": "array"
+          },
+          "must_have_coverage": {
+            "title": "Must Have Coverage",
+            "type": "number"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_code",
+          "title",
+          "client_code",
+          "score",
+          "band",
+          "must_have_coverage",
+          "matched_skills",
+          "missing_skills",
+          "reasons"
+        ],
+        "title": "TaskMatch",
         "type": "object"
       },
       "TaskPriority": {
@@ -3081,6 +4034,46 @@
         "title": "TaskUpdate",
         "type": "object"
       },
+      "TaskWithoutFit": {
+        "properties": {
+          "best_internal_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Best Internal Score"
+          },
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "code",
+          "title",
+          "client_code",
+          "best_internal_score"
+        ],
+        "title": "TaskWithoutFit",
+        "type": "object"
+      },
       "ThresholdVersionRead": {
         "properties": {
           "active": {
@@ -3440,6 +4433,32 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "Verdict": {
+        "enum": [
+          "fit",
+          "not_fit"
+        ],
+        "title": "Verdict",
+        "type": "string"
+      },
+      "VerdictIn": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Note",
+            "type": "string"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/Verdict"
+          }
+        },
+        "required": [
+          "verdict"
+        ],
+        "title": "VerdictIn",
         "type": "object"
       },
       "WorkMode": {
@@ -4041,9 +5060,148 @@
         ]
       }
     },
+    "/api/v1/candidates": {
+      "get": {
+        "operationId": "list_candidates_api_v1_candidates_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/CandidateStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_CandidateSummary_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Candidates",
+        "tags": [
+          "candidates"
+        ]
+      },
+      "post": {
+        "description": "Save a checked profile with the candidate's consent. 422 `consent_required`.",
+        "operationId": "create_candidate_api_v1_candidates_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Candidate",
+        "tags": [
+          "candidates"
+        ]
+      }
+    },
     "/api/v1/candidates/extract": {
       "post": {
-        "description": "Read a resume (PDF or .docx) into a profile for HR to check. Nothing is saved.",
+        "description": "Read a resume (PDF or .docx) into a profile for HR to check. No candidate is created;\nthe file is kept for a day so that saving with this `extraction_id` keeps it.",
         "operationId": "extract_resume_api_v1_candidates_extract_post",
         "requestBody": {
           "content": {
@@ -4083,6 +5241,204 @@
           }
         ],
         "summary": "Extract Resume",
+        "tags": [
+          "candidates"
+        ]
+      }
+    },
+    "/api/v1/candidates/{candidate_id}": {
+      "delete": {
+        "description": "Delete the profile and the resume file now. Audited.",
+        "operationId": "delete_candidate_api_v1_candidates__candidate_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Candidate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Candidate",
+        "tags": [
+          "candidates"
+        ]
+      },
+      "get": {
+        "operationId": "get_candidate_api_v1_candidates__candidate_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Candidate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Candidate",
+        "tags": [
+          "candidates"
+        ]
+      },
+      "patch": {
+        "description": "Move along the hiring steps, add a note or correct the profile. Audited.",
+        "operationId": "update_candidate_api_v1_candidates__candidate_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Candidate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CandidateUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Candidate",
+        "tags": [
+          "candidates"
+        ]
+      }
+    },
+    "/api/v1/candidates/{candidate_id}/matches": {
+      "get": {
+        "description": "Open tasks this candidate fits, best first.",
+        "operationId": "candidate_matches_api_v1_candidates__candidate_id__matches_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Candidate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TaskMatch"
+                  },
+                  "title": "Response Candidate Matches Api V1 Candidates  Candidate Id  Matches Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Candidate Matches",
         "tags": [
           "candidates"
         ]
@@ -4460,6 +5816,381 @@
         ]
       }
     },
+    "/api/v1/hiring-requests": {
+      "get": {
+        "operationId": "list_requests_api_v1_hiring_requests_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/HiringRequestStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HiringRequestSummary"
+                  },
+                  "title": "Response List Requests Api V1 Hiring Requests Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Requests",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/hiring-requests/{request_id}": {
+      "get": {
+        "description": "Managers get candidates' first names and professional profiles only.",
+        "operationId": "get_request_api_v1_hiring_requests__request_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringRequestDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Request",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/hiring-requests/{request_id}/close": {
+      "post": {
+        "description": "Without a body the outcome is `hired` if a sent candidate was hired, else `no_hire`.",
+        "operationId": "close_request_api_v1_hiring_requests__request_id__close_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/CloseIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringRequestDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Close Request",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/hiring-requests/{request_id}/start": {
+      "post": {
+        "operationId": "start_request_api_v1_hiring_requests__request_id__start_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringRequestDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Start Request",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/hiring-requests/{request_id}/submissions": {
+      "post": {
+        "description": "Send 1 to 10 candidates in total; the manager is notified.",
+        "operationId": "send_candidates_api_v1_hiring_requests__request_id__submissions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionsCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringRequestDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send Candidates",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/hiring-requests/{request_id}/submissions/{candidate_id}": {
+      "put": {
+        "description": "The requesting manager marks a candidate fit or not; HR hears about fit ones at once.",
+        "operationId": "decide_api_v1_hiring_requests__request_id__submissions__candidate_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Candidate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerdictIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringRequestDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Decide",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/hr/summary": {
+      "get": {
+        "operationId": "hr_summary_api_v1_hr_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HrSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Hr Summary",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
     "/api/v1/match-runs": {
       "get": {
         "operationId": "all_runs_api_v1_match_runs_get",
@@ -4734,6 +6465,96 @@
         "summary": "Shortlist",
         "tags": [
           "match-runs"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "notifications_api_v1_notifications_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationRead"
+                  },
+                  "title": "Response Notifications Api V1 Notifications Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Notifications",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "operationId": "read_all_api_v1_notifications_read_all_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read All",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/notifications/{notification_id}/read": {
+      "post": {
+        "operationId": "read_one_api_v1_notifications__notification_id__read_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "notification_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Notification Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read One",
+        "tags": [
+          "hiring"
         ]
       }
     },
@@ -5210,6 +7031,118 @@
         "summary": "Update Task",
         "tags": [
           "tasks"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/candidates": {
+      "get": {
+        "description": "External candidates ranked for one task (where \"no internal fit\" leads).",
+        "operationId": "task_candidates_api_v1_tasks__task_id__candidates_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CandidateMatch"
+                  },
+                  "title": "Response Task Candidates Api V1 Tasks  Task Id  Candidates Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Task Candidates",
+        "tags": [
+          "hiring"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/hiring-requests": {
+      "post": {
+        "description": "Ask HR for candidates; HR is notified. 409 `request_open` or `task_closed`.",
+        "operationId": "create_request_api_v1_tasks__task_id__hiring_requests_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HiringRequestCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringRequestSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Request",
+        "tags": [
+          "hiring"
         ]
       }
     },
