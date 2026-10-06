@@ -256,6 +256,25 @@ function ReviewForm({
             />
           </div>
           <div className="space-y-1.5">
+            <Label htmlFor="p-band">Expected pay band</Label>
+            <Select
+              value={profile.cost_band ?? 'none'}
+              onValueChange={(v) => set('cost_band', v === 'none' ? null : v)}
+            >
+              <SelectTrigger id="p-band">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not known yet</SelectItem>
+                {['A', 'B', 'C', 'D', 'E'].map((b) => (
+                  <SelectItem key={b} value={b}>
+                    Band {b}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
             <Label htmlFor="p-location">Location</Label>
             <Select value={profile.location} onValueChange={(v) => set('location', v)}>
               <SelectTrigger id="p-location">

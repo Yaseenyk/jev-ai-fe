@@ -12,6 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { useManagesPeople } from '@/features/auth/AuthProvider'
@@ -32,6 +39,9 @@ import {
 } from '@/features/hr/ui'
 import { date, dateTime, domainLabel, levelLabel, locationLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
+
+const NOT_KNOWN = 'none'
+const COST_BANDS = ['A', 'B', 'C', 'D', 'E']
 
 export default function CandidatePage() {
   const { candidateId = '' } = useParams()
@@ -141,6 +151,31 @@ export default function CandidatePage() {
               <div>
                 <dt className="text-muted-foreground">Education</dt>
                 <dd>{c.profile.education.join(', ') || '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Expected pay band</dt>
+                <dd className="mt-1">
+                  <Select
+                    value={c.profile.cost_band ?? NOT_KNOWN}
+                    onValueChange={(band) =>
+                      update.mutate({
+                        profile: { ...c.profile, cost_band: band === NOT_KNOWN ? null : band },
+                      })
+                    }
+                  >
+                    <SelectTrigger className="w-40" aria-label="Expected pay band">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NOT_KNOWN}>Not known yet</SelectItem>
+                      {COST_BANDS.map((b) => (
+                        <SelectItem key={b} value={b}>
+                          Band {b}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </dd>
               </div>
             </dl>
           </Panel>

@@ -6,6 +6,7 @@ import type {
   AppNotification,
   CandidateCreate,
   CandidateDetail,
+  CandidateProfile,
   CandidateMatch,
   CandidateStatus,
   CandidateSummary,
@@ -160,7 +161,7 @@ export function useCreateCandidate() {
 export function useUpdateCandidate(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (input: { status?: CandidateStatus; note?: string }) =>
+    mutationFn: (input: { status?: CandidateStatus; note?: string; profile?: CandidateProfile }) =>
       apiFetch<CandidateDetail>(`/candidates/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(input),
@@ -168,6 +169,10 @@ export function useUpdateCandidate(id: string) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['candidates'] })
       void qc.invalidateQueries({ queryKey: ['hr'] })
+      // The profile (e.g. the pay band) changes which tasks the candidate fits.
+      void qc.invalidateQueries({
+        predicate: (q) => q.queryKey[0] === 'tasks' && q.queryKey[2] === 'candidates',
+      })
     },
   })
 }

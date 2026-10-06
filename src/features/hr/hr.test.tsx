@@ -189,3 +189,15 @@ test('HR adds an employee and lands on their page; a taken code is refused', asy
   await user.click(within(again).getByRole('button', { name: 'Add employee' }))
   expect(await within(again).findByText(/already exists/)).toBeInTheDocument()
 })
+
+test('HR records the expected pay band on a candidate', async () => {
+  const user = userEvent.setup()
+  const anyone = hr.candidates[1]
+  if (!anyone) throw new Error('hr.json has too few candidates')
+  renderRoute(`/candidates/${anyone.id}`)
+  const band = await screen.findByRole('combobox', { name: 'Expected pay band' })
+  expect(band).toHaveTextContent('Not known yet')
+  await user.click(band)
+  await user.click(await screen.findByRole('option', { name: 'Band C' }))
+  await waitFor(() => expect(band).toHaveTextContent('Band C'))
+})

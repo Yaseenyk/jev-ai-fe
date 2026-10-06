@@ -5,6 +5,7 @@ import { HttpResponse, bypass, http } from 'msw'
 import type { Task } from '@/api/types'
 
 import type {
+  CandidateProfile,
   EmployeeCreate,
   CandidateCreate,
   CandidateDetail,
@@ -641,18 +642,32 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         : problem(404, 'candidate_not_found', 'Candidate not found')
     }),
     http.patch(api('/candidates/:id'), async ({ params, request }) => {
-      const body = (await request.json()) as { status?: CandidateStatus; note?: string }
+      const body = (await request.json()) as {
+        status?: CandidateStatus
+        note?: string
+        profile?: CandidateProfile
+      }
       candidates = candidates.map((c) => {
         if (c.id !== params.id) return c
         const status = body.status ?? c.status
+        // Like the API: a step is recorded only for a status change or a note.
+        const recorded = body.status !== undefined || (body.note ?? '').trim() !== ''
         return {
           ...c,
           status,
+          profile: body.profile ?? c.profile,
           delete_after: status === 'hired' ? null : c.delete_after,
-          history: [
-            ...(c.history ?? []),
-            { at: new Date().toISOString(), by: 'hr@srtm.local', status, note: body.note ?? '' },
-          ],
+          history: recorded
+            ? [
+                ...(c.history ?? []),
+                {
+                  at: new Date().toISOString(),
+                  by: 'hr@srtm.local',
+                  status,
+                  note: body.note ?? '',
+                },
+              ]
+            : c.history,
         }
       })
       const c = candidates.find((x) => x.id === params.id)

@@ -108,6 +108,8 @@ export interface CandidateProfile {
   skills: Omit<EmployeeSkill, 'certified'>[]
   education: string[]
   summary: string
+  /** Expected pay band, entered by HR; never read from the resume. */
+  cost_band?: string | null
 }
 
 export interface CandidateSummary {

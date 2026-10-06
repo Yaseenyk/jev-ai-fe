@@ -589,6 +589,16 @@
       },
       "CandidateProfile": {
         "properties": {
+          "cost_band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostBand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "designation": {
             "maxLength": 120,
             "title": "Designation",

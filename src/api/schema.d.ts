@@ -1268,6 +1268,7 @@ export interface components {
         };
         /** CandidateProfile */
         CandidateProfile: {
+            cost_band?: components["schemas"]["CostBand"] | null;
             /** Designation */
             designation: string;
             /** Domains */
