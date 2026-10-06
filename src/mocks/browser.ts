@@ -1,4 +1,4 @@
-import { bypass, http } from 'msw'
+import { bypass, http, passthrough } from 'msw'
 import { setupWorker } from 'msw/browser'
 
 import { createDb } from '@/mocks/db'
@@ -20,6 +20,8 @@ export function createHrOverlayWorker() {
       if (response.ok) user = (await response.clone().json()) as typeof user
       return response
     }),
+    // Resumes are read by the real backend (code + LLM, docs/08 §1a).
+    http.post('*/api/v1/candidates/extract', () => passthrough()),
     ...createHrHandlers(createDb(), () => user),
   )
 }

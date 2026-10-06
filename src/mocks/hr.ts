@@ -1,6 +1,8 @@
 // Mock API for the planned HR endpoints (docs/06: Employees, Import, HR overview, Candidates).
 // Dummy data from backend/scripts/export_hr_mock.py; same task ids as demo.json.
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, bypass, http } from 'msw'
+
+import type { Task } from '@/api/types'
 
 import type {
   CandidateCreate,
@@ -306,6 +308,75 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
     return findRequest(id)
   }
 
+  // Real-API mode: tasks created after the demo data are read from the real backend and scored
+  // here with the same simple ranking as the dummy data (scripts/export_hr_mock.py).
+  const realTasks = new Map<string, Task>()
+  const taskFor = async (id: string, request: Request): Promise<Task | undefined> => {
+    const known = db.tasks.find((t) => t.id === id) ?? realTasks.get(id)
+    if (known) return known
+    const res = await fetch(
+      bypass(
+        new Request(new URL(`/api/v1/tasks/${id}`, request.url), { headers: request.headers }),
+      ),
+    )
+    if (!res.ok) return undefined
+    const task = (await res.json()) as Task
+    realTasks.set(id, task)
+    return task
+  }
+  const LEVEL_ORDER = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
+  const matchFor = (c: MockCandidate, task: Task): TaskMatch | undefined => {
+    const cached = c.matches.find((m) => m.task_id === task.id)
+    if (cached) return cached
+    if (
+      task.location_constraint.length > 0 &&
+      task.work_mode !== 'remote' &&
+      !task.location_constraint.includes(c.profile.location as Task['location_constraint'][number])
+    ) {
+      return undefined
+    }
+    const have = new Map(c.profile.skills.map((k) => [k.skill_id, k.proficiency]))
+    const met = (r: Task['requirements'][number]) =>
+      (have.get(r.skill.id) ?? 0) >= r.min_proficiency
+    const must = task.requirements.filter((r) => r.must_have)
+    const nice = task.requirements.filter((r) => !r.must_have)
+    const mustCov = must.length ? must.filter(met).length / must.length : 1
+    const niceCov = nice.length ? nice.filter(met).length / nice.length : 1
+    if (mustCov === 0) return undefined
+    const gap = LEVEL_ORDER.indexOf(c.profile.level) - LEVEL_ORDER.indexOf(task.required_level)
+    const domain = c.profile.domains.includes(task.domain) ? 1 : 0
+    const score =
+      Math.round(
+        (0.5 * mustCov +
+          0.2 * niceCov +
+          0.2 * Math.max(0, 1 - 0.5 * Math.abs(gap)) +
+          (0.1 * domain) / 3) *
+          1000,
+      ) / 1000
+    const reasons = [`Has ${must.filter(met).length} of ${must.length} must-have skills`]
+    reasons.push(
+      gap === 0
+        ? 'Level matches'
+        : gap > 0
+          ? `${gap} level(s) above the role`
+          : `${-gap} level(s) below the role`,
+    )
+    const match: TaskMatch = {
+      task_id: task.id,
+      task_code: task.code,
+      title: task.title,
+      client_code: task.client_code,
+      score,
+      band: score >= 0.8 ? 'shortlist' : score >= 0.5 ? 'review' : 'hidden',
+      must_have_coverage: Math.round(mustCov * 1000) / 1000,
+      matched_skills: must.filter(met).map((r) => r.skill.name),
+      missing_skills: must.filter((r) => !met(r)).map((r) => r.skill.name),
+      reasons,
+    }
+    c.matches = [...c.matches, match]
+    return match
+  }
+
   return [
     // --- HR overview -------------------------------------------------------------------
     http.get(api('/hr/summary'), () => {
@@ -562,10 +633,11 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         ? HttpResponse.json(c.matches)
         : problem(404, 'candidate_not_found', 'Candidate not found')
     }),
-    http.get(api('/tasks/:id/candidates'), ({ params }) => {
+    http.get(api('/tasks/:id/candidates'), async ({ params, request }) => {
+      const task = await taskFor(String(params.id), request)
       const ranked: CandidateMatch[] = candidates
         .flatMap((c) => {
-          const m = c.matches.find((x) => x.task_id === params.id)
+          const m = task && matchFor(c, task)
           if (!m) return []
           return [
             {
@@ -585,7 +657,7 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
     // --- Hiring requests ----------------------------------------------------------------------
     http.post(api('/tasks/:id/hiring-requests'), async ({ params, request }) => {
       const body = (await request.json()) as { wanted: number; note: string }
-      const task = db.tasks.find((t) => t.id === params.id)
+      const task = await taskFor(String(params.id), request)
       if (!task) return problem(404, 'task_not_found', 'Task not found')
       if (requests.some((r) => r.task_id === task.id && r.status !== 'closed')) {
         return problem(409, 'request_open', 'HR is already working on a request for this task')
@@ -646,6 +718,8 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
       const body = (await request.json()) as { candidate_ids: string[]; note: string }
       const r = findRequest(params.id)
       if (!r) return problem(404, 'request_not_found', 'Request not found')
+      const task = await taskFor(r.task_id, request)
+      if (task) for (const c of candidates) if (body.candidate_ids.includes(c.id)) matchFor(c, task)
       const ids = body.candidate_ids.filter(
         (id) => !r.submissions.some((s) => s.candidate_id === id),
       )
@@ -702,6 +776,15 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         return { ...x, submissions, status: done ? 'reviewed' : x.status }
       })
       if (!updated) return problem(404, 'request_not_found', 'Request not found')
+      if (body.verdict === 'fit') {
+        const c = candidates.find((x) => x.id === params.candidateId)
+        notify('hr', {
+          kind: 'candidate_fit',
+          title: `Get this candidate: ${c?.full_name.split(' ')[0] ?? 'candidate'} for ${r.task_code}`,
+          body: `${currentUser().email} marked them fit. Contact them to start hiring.`,
+          link: `/candidates/${String(params.candidateId)}`,
+        })
+      }
       if (updated.status === 'reviewed' && r.status !== 'reviewed') {
         const fit = updated.submissions.filter((s) => s.verdict === 'fit').length
         notify('hr', {
