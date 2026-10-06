@@ -64,7 +64,16 @@ function problem(status: number, code: string, detail: string) {
 
 const IMPORT_COLUMNS: Record<ImportKind, string[]> = {
   clients: ['code', 'name', 'domain', 'timezone'],
-  employees: ['employee_code', 'full_name', 'designation', 'level', 'location', 'cost_band'],
+  employees: [
+    'employee_code',
+    'full_name',
+    'designation',
+    'level',
+    'practice',
+    'years_experience',
+    'location',
+    'cost_band',
+  ],
   employee_skills: ['employee_code', 'skill', 'proficiency', 'years', 'last_used'],
 }
 const LEVELS = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']

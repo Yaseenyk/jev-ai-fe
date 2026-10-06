@@ -1,6 +1,6 @@
-// Planned HR contract (docs/06: Employees, Import, HR overview, Candidates — ADR 019/020).
-// Hand-written until the backend publishes these endpoints; then replace with generated
-// aliases in src/api/types.ts, like the other screens.
+// HR contract (docs/06: Employees, Import, HR overview, Candidates — ADR 019/020).
+// Hand-written; they match the backend's published schemas and can become generated aliases
+// in src/api/types.ts, like the other screens.
 import type { Band, Domain, Level } from '@/api/types'
 
 export interface EmployeeSkill {

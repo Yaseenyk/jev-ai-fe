@@ -182,6 +182,16 @@
         "title": "Agreement",
         "type": "object"
       },
+      "AssignmentOutcome": {
+        "enum": [
+          "successful",
+          "early_release",
+          "escalated",
+          "ongoing"
+        ],
+        "title": "AssignmentOutcome",
+        "type": "string"
+      },
       "Band": {
         "enum": [
           "shortlist",
@@ -244,6 +254,25 @@
           "file"
         ],
         "title": "Body_extract_resume_api_v1_candidates_extract_post",
+        "type": "object"
+      },
+      "Body_preview_import_api_v1_imports_preview_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file",
+          "kind"
+        ],
+        "title": "Body_preview_import_api_v1_imports_preview_post",
         "type": "object"
       },
       "CandidateCreate": {
@@ -1117,6 +1146,155 @@
         "title": "Domain",
         "type": "string"
       },
+      "EmployeeDetail": {
+        "properties": {
+          "available_from": {
+            "format": "date",
+            "title": "Available From",
+            "type": "string"
+          },
+          "client_clearances": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Client Clearances",
+            "type": "array"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "current_allocation_pct": {
+            "title": "Current Allocation Pct",
+            "type": "integer"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "leaves": {
+            "items": {
+              "$ref": "#/components/schemas/LeaveRead"
+            },
+            "title": "Leaves",
+            "type": "array"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "practice": {
+            "$ref": "#/components/schemas/Practice"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/EmployeeProjectRead"
+            },
+            "title": "Projects",
+            "type": "array"
+          },
+          "skill_count": {
+            "title": "Skill Count",
+            "type": "integer"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/EmployeeSkillRead"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "work_mode_preference": {
+            "$ref": "#/components/schemas/WorkMode"
+          },
+          "years_experience": {
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "location",
+          "cost_band",
+          "current_allocation_pct",
+          "available_from",
+          "skill_count",
+          "practice",
+          "years_experience",
+          "timezone",
+          "work_mode_preference",
+          "client_clearances",
+          "summary",
+          "skills",
+          "projects",
+          "leaves"
+        ],
+        "title": "EmployeeDetail",
+        "type": "object"
+      },
+      "EmployeeProjectRead": {
+        "properties": {
+          "domain": {
+            "$ref": "#/components/schemas/Domain"
+          },
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/AssignmentOutcome"
+          },
+          "project_name": {
+            "title": "Project Name",
+            "type": "string"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_name",
+          "domain",
+          "role_title",
+          "start_date",
+          "end_date",
+          "outcome"
+        ],
+        "title": "EmployeeProjectRead",
+        "type": "object"
+      },
       "EmployeeRef": {
         "properties": {
           "designation": {
@@ -1151,6 +1329,250 @@
           "location"
         ],
         "title": "EmployeeRef",
+        "type": "object"
+      },
+      "EmployeeSkillIn": {
+        "properties": {
+          "certified": {
+            "default": false,
+            "title": "Certified",
+            "type": "boolean"
+          },
+          "last_used": {
+            "format": "date",
+            "title": "Last Used",
+            "type": "string"
+          },
+          "proficiency": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "years": {
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "skill_id",
+          "proficiency",
+          "years",
+          "last_used"
+        ],
+        "title": "EmployeeSkillIn",
+        "type": "object"
+      },
+      "EmployeeSkillRead": {
+        "properties": {
+          "certified": {
+            "title": "Certified",
+            "type": "boolean"
+          },
+          "last_used": {
+            "format": "date",
+            "title": "Last Used",
+            "type": "string"
+          },
+          "proficiency": {
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "years": {
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "skill_id",
+          "skill_name",
+          "proficiency",
+          "years",
+          "last_used",
+          "certified"
+        ],
+        "title": "EmployeeSkillRead",
+        "type": "object"
+      },
+      "EmployeeSummary": {
+        "properties": {
+          "available_from": {
+            "format": "date",
+            "title": "Available From",
+            "type": "string"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "current_allocation_pct": {
+            "title": "Current Allocation Pct",
+            "type": "integer"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "skill_count": {
+            "title": "Skill Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "location",
+          "cost_band",
+          "current_allocation_pct",
+          "available_from",
+          "skill_count"
+        ],
+        "title": "EmployeeSummary",
+        "type": "object"
+      },
+      "EmployeeUpdate": {
+        "properties": {
+          "available_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available From"
+          },
+          "client_clearances": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Clearances"
+          },
+          "cost_band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostBand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current_allocation_pct": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Allocation Pct"
+          },
+          "designation": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 2,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Designation"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Level"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "location": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Location"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          },
+          "work_mode_preference": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/WorkMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "EmployeeUpdate",
         "type": "object"
       },
       "EvalReportRead": {
@@ -1996,6 +2418,116 @@
         "title": "HrSummary",
         "type": "object"
       },
+      "ImportPreview": {
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "invalid": {
+            "title": "Invalid",
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "clients",
+              "employees",
+              "employee_skills"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "preview_id": {
+            "title": "Preview Id",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ImportRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "preview_id",
+          "kind",
+          "columns",
+          "rows",
+          "valid",
+          "invalid"
+        ],
+        "title": "ImportPreview",
+        "type": "object"
+      },
+      "ImportResult": {
+        "properties": {
+          "created": {
+            "title": "Created",
+            "type": "integer"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "created",
+          "updated",
+          "skipped"
+        ],
+        "title": "ImportResult",
+        "type": "object"
+      },
+      "ImportRow": {
+        "properties": {
+          "action": {
+            "enum": [
+              "create",
+              "update"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "row": {
+            "title": "Row",
+            "type": "integer"
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Values",
+            "type": "object"
+          }
+        },
+        "required": [
+          "row",
+          "values",
+          "action",
+          "errors"
+        ],
+        "title": "ImportRow",
+        "type": "object"
+      },
       "InterpretRequest": {
         "properties": {
           "known_clients": {
@@ -2252,6 +2784,51 @@
           "last_feedback_at"
         ],
         "title": "LearningSummary",
+        "type": "object"
+      },
+      "LeaveCreate": {
+        "properties": {
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date"
+        ],
+        "title": "LeaveCreate",
+        "type": "object"
+      },
+      "LeaveRead": {
+        "properties": {
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "start_date",
+          "end_date"
+        ],
+        "title": "LeaveRead",
         "type": "object"
       },
       "Level": {
@@ -2873,6 +3450,37 @@
         "title": "Page[DecisionRead]",
         "type": "object"
       },
+      "Page_EmployeeSummary_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EmployeeSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "Page[EmployeeSummary]",
+        "type": "object"
+      },
       "Page_EvalReportSummary_": {
         "properties": {
           "items": {
@@ -3080,6 +3688,18 @@
         ],
         "title": "PasswordChange",
         "type": "object"
+      },
+      "Practice": {
+        "enum": [
+          "data_analytics",
+          "cloud",
+          "app_dev",
+          "ai_ml",
+          "qa",
+          "devops"
+        ],
+        "title": "Practice",
+        "type": "string"
       },
       "ProfileSkill": {
         "properties": {
@@ -5707,6 +6327,409 @@
         ]
       }
     },
+    "/api/v1/employees": {
+      "get": {
+        "operationId": "list_employees_api_v1_employees_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "level",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Level"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Level"
+            }
+          },
+          {
+            "in": "query",
+            "name": "location",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Location"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Location"
+            }
+          },
+          {
+            "in": "query",
+            "name": "available_by",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Available By"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_EmployeeSummary_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Employees",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}": {
+      "get": {
+        "operationId": "get_employee_api_v1_employees__employee_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Employee",
+        "tags": [
+          "employees"
+        ]
+      },
+      "patch": {
+        "description": "Change details that matching uses (counts from the next run). Audited.",
+        "operationId": "update_employee_api_v1_employees__employee_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Employee",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/leaves": {
+      "post": {
+        "operationId": "add_leave_api_v1_employees__employee_id__leaves_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeaveCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaveRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Leave",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/leaves/{leave_id}": {
+      "delete": {
+        "operationId": "remove_leave_api_v1_employees__employee_id__leaves__leave_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "leave_id",
+            "required": true,
+            "schema": {
+              "title": "Leave Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Leave",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/skills": {
+      "put": {
+        "description": "The whole skills list; every skill must be in the skills list. Audited.",
+        "operationId": "replace_skills_api_v1_employees__employee_id__skills_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/EmployeeSkillIn"
+                },
+                "title": "Body",
+                "type": "array"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Replace Skills",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
     "/api/v1/eval/reports": {
       "get": {
         "operationId": "list_reports_api_v1_eval_reports_get",
@@ -6188,6 +7211,102 @@
         "summary": "Hr Summary",
         "tags": [
           "hiring"
+        ]
+      }
+    },
+    "/api/v1/imports/preview": {
+      "post": {
+        "description": "Check every row of a CSV file; nothing is saved.",
+        "operationId": "preview_import_api_v1_imports_preview_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_preview_import_api_v1_imports_preview_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview Import",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/imports/{preview_id}/commit": {
+      "post": {
+        "description": "Save the valid rows of a checked file (rows with problems are skipped). Audited.",
+        "operationId": "commit_import_api_v1_imports__preview_id__commit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "preview_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Preview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Commit Import",
+        "tags": [
+          "employees"
         ]
       }
     },

@@ -27,7 +27,7 @@ const KINDS: Record<ImportKind, { label: string; template: string }> = {
   employees: {
     label: 'Employees',
     template:
-      'employee_code,full_name,designation,level,location,cost_band\nSPY-01001,Asha Rao,Data Engineer,L3,hyderabad,C\n',
+      'employee_code,full_name,designation,level,practice,years_experience,location,cost_band\nSPY-01001,Asha Rao,Data Engineer,L3,data_analytics,4,hyderabad,C\n',
   },
   employee_skills: {
     label: 'Employee skills',
