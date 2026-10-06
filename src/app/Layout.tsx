@@ -119,43 +119,49 @@ function UserBlock() {
   const { user, logout } = useAuth()
   if (!user) return null
   return (
-    <div className="flex flex-col items-center gap-2 lg:flex-row lg:px-1">
-      <span
-        className="bg-secondary text-secondary-foreground grid size-9 shrink-0 place-items-center rounded-full text-xs font-semibold"
-        aria-hidden
-      >
-        {initials(user.display_name)}
-      </span>
-      <span className="hidden min-w-0 flex-1 lg:block">
-        <span className="block truncate text-sm font-medium">{user.display_name}</span>
-        <span className="text-muted-foreground block text-xs">{ROLE_LABELS[user.role]}</span>
-      </span>
-      <NotificationsBell />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            to={CHANGE_PASSWORD_PATH}
-            aria-label="Change password"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center rounded-lg"
-          >
-            <KeyRound className="size-4" />
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent side="right">Change password</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            aria-label="Sign out"
-            onClick={() => void logout()}
-            className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center rounded-lg"
-          >
-            <LogOut className="size-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">Sign out</TooltipContent>
-      </Tooltip>
+    <div className="flex flex-col items-center gap-2 lg:items-stretch lg:px-1">
+      <div className="flex items-center gap-2.5">
+        <span
+          className="bg-secondary text-secondary-foreground grid size-9 shrink-0 place-items-center rounded-full text-xs font-semibold"
+          aria-hidden
+        >
+          {initials(user.display_name)}
+        </span>
+        <span className="hidden min-w-0 flex-1 lg:block">
+          <span className="block truncate text-sm font-medium">{user.display_name}</span>
+          <span className="text-muted-foreground block truncate text-xs">
+            {ROLE_LABELS[user.role]}
+          </span>
+        </span>
+      </div>
+      <div className="flex flex-col items-center gap-2 lg:flex-row lg:gap-1 lg:border-t lg:pt-2">
+        <NotificationsBell />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Link
+              to={CHANGE_PASSWORD_PATH}
+              aria-label="Change password"
+              className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center rounded-lg"
+            >
+              <KeyRound className="size-4" />
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent side="right">Change password</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label="Sign out"
+              onClick={() => void logout()}
+              className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center rounded-lg"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">Sign out</TooltipContent>
+        </Tooltip>
+      </div>
     </div>
   )
 }
