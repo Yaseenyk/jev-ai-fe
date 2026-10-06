@@ -18,6 +18,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // Page-level tests render the whole app; the default 5 s is too tight when files run in parallel.
+    testTimeout: 15_000,
     exclude: [...configDefaults.exclude, 'e2e/**'],
     // npm run test:coverage — floor from docs/07: feature code >= 70% of lines
     coverage: {

@@ -14,6 +14,7 @@ import { Funnel } from '@/features/runs/Funnel'
 import { ResultsQA } from '@/features/runs/ResultsQA'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { isActive, useDecisionDefinitions, useMatchRun } from '@/features/runs/api'
+import { NoInternalFit } from '@/features/hr/NoInternalFit'
 import { ExcludedPanel, ReasonCounts } from '@/features/shortlist/ExcludedPanel'
 import { ShortlistItemCard } from '@/features/shortlist/ShortlistItemCard'
 import { useExcluded, useShortlist, useSubmitFeedback } from '@/features/shortlist/api'
@@ -137,6 +138,10 @@ function CompletedRun({ run }: { run: MatchRun }) {
         excludedTotal={excluded.data?.total ?? null}
         ranked={items.data.length}
       />
+
+      {counts.shortlist.length + counts.review.length === 0 && (
+        <NoInternalFit taskId={run.task_id} />
+      )}
 
       {feedback.isError && <ErrorState error={feedback.error} />}
 

@@ -20,6 +20,7 @@ import type {
   User,
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
+import { createHrHandlers } from '@/mocks/hr'
 
 const MOCK_USER_ID = 'demo-resource-manager'
 
@@ -37,7 +38,7 @@ function page<T>(items: T[], url: URL): Page<T> {
   return { items: items.slice(offset, offset + limit), total: items.length, limit, offset }
 }
 
-export function createHandlers(db: Db) {
+export function createHandlers(db: Db, session?: Storage) {
   const api = (path: string) => `*/api/v1${path}`
 
   // Mock sign-in: a resource manager unless "viewer..." or "admin..." signs in.
@@ -65,6 +66,7 @@ export function createHandlers(db: Db) {
   let accounts: UserAdmin[] = [
     account('demo-admin', 'admin@srtm.local', 'Pilot Admin', 'admin'),
     account(MOCK_USER_ID, 'manager1@srtm.local', 'Resource Manager 1', 'resource_manager'),
+    account('demo-hr', 'hr@srtm.local', 'HR Partner', 'hr'),
     account('demo-viewer', 'viewer@srtm.local', 'Viewer', 'viewer'),
   ]
   let clients: Client[] = [...new Set(db.tasks.map((t) => t.client_code))].sort().map((code) => ({
@@ -76,6 +78,25 @@ export function createHandlers(db: Db) {
     is_active: true,
   }))
   const temporary = () => `temp-${Math.random().toString(36).slice(2, 12)}`
+  let signedIn = true
+  // The browser mock keeps who is signed in across page reloads; tests pass no storage.
+  const SESSION_KEY = 'srtm-mock-email'
+  const signInAs = (email: string) => {
+    const known = accounts.find((a) => a.email === email.toLowerCase())
+    user = known
+      ? {
+          id: known.id,
+          email: known.email,
+          display_name: known.display_name,
+          role: known.role,
+          must_change_password: known.must_change_password,
+        }
+      : { ...user, email }
+    signedIn = true
+  }
+  const remembered = session?.getItem(SESSION_KEY)
+  if (remembered === '') signedIn = false
+  else if (remembered) signInAs(remembered)
   const token = { access_token: 'mock-token', token_type: 'bearer', expires_in: 1800 }
   const firstVersion = {
     version: 1,
@@ -142,21 +163,22 @@ export function createHandlers(db: Db) {
   }
 
   return [
+    ...createHrHandlers(db, () => user),
     http.post(api('/auth/login'), async ({ request }) => {
       const { email } = (await request.json()) as { email: string }
-      const known = accounts.find((a) => a.email === email.toLowerCase())
-      user = known
-        ? {
-            id: known.id,
-            email: known.email,
-            display_name: known.display_name,
-            role: known.role,
-            must_change_password: known.must_change_password,
-          }
-        : { ...user, email }
+      signInAs(email)
+      session?.setItem(SESSION_KEY, email)
       return HttpResponse.json(token)
     }),
-    http.post(api('/auth/refresh'), () => HttpResponse.json(token)),
+    // Signed in until someone signs out, so the mock can switch between accounts (e.g. HR).
+    http.post(api('/auth/refresh'), () =>
+      signedIn
+        ? HttpResponse.json(token)
+        : HttpResponse.json(
+            { type: 'about:blank', title: 'Unauthorized', status: 401, code: 'not_authenticated' },
+            { status: 401 },
+          ),
+    ),
     http.post(api('/auth/password'), () => {
       user = { ...user, must_change_password: false }
       accounts = accounts.map((a) => (a.id === user.id ? { ...a, must_change_password: false } : a))
@@ -213,7 +235,11 @@ export function createHandlers(db: Db) {
       })
     }),
     http.get(api('/auth/me'), () => HttpResponse.json(user)),
-    http.post(api('/auth/logout'), () => new HttpResponse(null, { status: 204 })),
+    http.post(api('/auth/logout'), () => {
+      signedIn = false
+      session?.setItem(SESSION_KEY, '')
+      return new HttpResponse(null, { status: 204 })
+    }),
 
     http.get(api('/decisions'), () => HttpResponse.json({ items: db.decisions })),
     http.get(api('/decisions/overall_fit/thresholds'), () => HttpResponse.json(thresholds)),

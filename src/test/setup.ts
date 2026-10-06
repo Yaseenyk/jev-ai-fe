@@ -32,3 +32,20 @@ Element.prototype.scrollIntoView = () => {}
 Element.prototype.scrollTo = () => {}
 Element.prototype.hasPointerCapture = () => false
 Element.prototype.releasePointerCapture = () => {}
+
+// Node's fetch only sends and parses its own FormData/File/Blob; Vitest's jsdom bridge drops file
+// names. Vitest defines these globals as accessors, so plain assignment would be ignored.
+// The app's tsconfig has no Node types, hence the untyped import.
+const nodeBuffer = 'node:buffer'
+const { Blob: NodeBlob, File: NodeFile } = (await import(/* @vite-ignore */ nodeBuffer)) as {
+  Blob: typeof Blob
+  File: typeof File
+}
+const NodeFormData = (await new Response(new URLSearchParams()).formData()).constructor
+for (const [name, value] of [
+  ['File', NodeFile],
+  ['Blob', NodeBlob],
+  ['FormData', NodeFormData],
+] as const) {
+  Object.defineProperty(globalThis, name, { value, configurable: true, writable: true })
+}

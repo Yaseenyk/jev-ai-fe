@@ -1,11 +1,15 @@
 import {
   Building2,
+  FileUp,
+  Inbox,
   Info,
   KeyRound,
+  LayoutDashboard,
   LayoutList,
   LogOut,
   Plus,
   ShieldCheck,
+  UserSearch,
   Users,
 } from 'lucide-react'
 import type { ComponentType } from 'react'
@@ -18,6 +22,7 @@ import {
   useCanEdit,
   useManagesPeople,
 } from '@/features/auth/AuthProvider'
+import { NotificationsBell } from '@/features/hr/NotificationsBell'
 import { ROLE_LABELS } from '@/lib/format'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
@@ -30,6 +35,7 @@ interface NavItem {
   editorsOnly?: boolean
   adminOnly?: boolean
   peopleManagersOnly?: boolean // admin and HR (ADR 019)
+  requestsOnly?: boolean // anyone who asks for or answers hiring requests
 }
 
 const NAV: NavItem[] = [
@@ -45,6 +51,41 @@ const NAV: NavItem[] = [
     icon: Plus,
     isActive: (p) => p === '/tasks/new',
     editorsOnly: true,
+  },
+  {
+    to: '/hr',
+    label: 'HR home',
+    icon: LayoutDashboard,
+    isActive: (p) => p === '/hr',
+    peopleManagersOnly: true,
+  },
+  {
+    to: '/hiring-requests',
+    label: 'Requests',
+    icon: Inbox,
+    isActive: (p) => p.startsWith('/hiring-requests'),
+    requestsOnly: true,
+  },
+  {
+    to: '/candidates',
+    label: 'Candidates',
+    icon: UserSearch,
+    isActive: (p) => p.startsWith('/candidates'),
+    peopleManagersOnly: true,
+  },
+  {
+    to: '/employees',
+    label: 'Employees',
+    icon: Users,
+    isActive: (p) => p.startsWith('/employees'),
+    peopleManagersOnly: true,
+  },
+  {
+    to: '/import',
+    label: 'Import',
+    icon: FileUp,
+    isActive: (p) => p === '/import',
+    peopleManagersOnly: true,
   },
   {
     to: '/clients',
@@ -89,6 +130,7 @@ function UserBlock() {
         <span className="block truncate text-sm font-medium">{user.display_name}</span>
         <span className="text-muted-foreground block text-xs">{ROLE_LABELS[user.role]}</span>
       </span>
+      <NotificationsBell />
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
@@ -148,7 +190,8 @@ export function Layout() {
     (item) =>
       (canEdit || !item.editorsOnly) &&
       (isAdmin || !item.adminOnly) &&
-      (managesPeople || !item.peopleManagersOnly),
+      (managesPeople || !item.peopleManagersOnly) &&
+      (managesPeople || canEdit || !item.requestsOnly),
   )
 
   return (

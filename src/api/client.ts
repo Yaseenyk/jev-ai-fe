@@ -15,7 +15,8 @@ export class ApiError extends Error {
 
 async function send(path: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers)
-  headers.set('Content-Type', 'application/json')
+  // File uploads (FormData) need the browser's multipart header with its boundary.
+  if (!(init?.body instanceof FormData)) headers.set('Content-Type', 'application/json')
   const token = getAccessToken()
   if (token) headers.set('Authorization', `Bearer ${token}`)
   return fetch(new URL(`${env.VITE_API_BASE_URL}${path}`, window.location.origin), {

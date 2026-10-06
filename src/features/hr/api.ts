@@ -1,0 +1,236 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { apiFetch } from '@/api/client'
+import type { Page } from '@/api/types'
+import type {
+  AppNotification,
+  CandidateCreate,
+  CandidateDetail,
+  CandidateMatch,
+  CandidateStatus,
+  CandidateSummary,
+  EmployeeDetail,
+  EmployeeSkill,
+  EmployeeSummary,
+  EmployeeUpdate,
+  Extraction,
+  HiringRequestDetail,
+  HiringRequestSummary,
+  HrSummary,
+  ImportKind,
+  ImportPreview,
+  TaskMatch,
+  Verdict,
+} from '@/features/hr/types'
+
+const qs = (params: Record<string, string | undefined>) => {
+  const p = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) if (v) p.set(k, v)
+  const s = p.toString()
+  return s ? `?${s}` : ''
+}
+
+// --- Overview ---------------------------------------------------------------------------
+export const useHrSummary = () =>
+  useQuery({ queryKey: ['hr', 'summary'], queryFn: () => apiFetch<HrSummary>('/hr/summary') })
+
+// --- Employees -------------------------------------------------------------------------------
+export const useEmployees = (filters: { q?: string; level?: string; location?: string }) =>
+  useQuery({
+    queryKey: ['employees', filters],
+    queryFn: () => apiFetch<Page<EmployeeSummary>>(`/employees${qs(filters)}`),
+  })
+
+export const useEmployee = (id: string) =>
+  useQuery({
+    queryKey: ['employees', id],
+    queryFn: () => apiFetch<EmployeeDetail>(`/employees/${id}`),
+  })
+
+function useEmployeeMutation<T>(fn: (input: T) => Promise<unknown>) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['employees'] }),
+  })
+}
+
+export const useUpdateEmployee = (id: string) =>
+  useEmployeeMutation((input: EmployeeUpdate) =>
+    apiFetch<EmployeeDetail>(`/employees/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
+  )
+
+export const useSaveSkills = (id: string) =>
+  useEmployeeMutation((skills: Omit<EmployeeSkill, 'skill_name'>[]) =>
+    apiFetch<EmployeeDetail>(`/employees/${id}/skills`, {
+      method: 'PUT',
+      body: JSON.stringify(skills),
+    }),
+  )
+
+export const useAddLeave = (id: string) =>
+  useEmployeeMutation((leave: { start_date: string; end_date: string }) =>
+    apiFetch(`/employees/${id}/leaves`, { method: 'POST', body: JSON.stringify(leave) }),
+  )
+
+export const useRemoveLeave = (id: string) =>
+  useEmployeeMutation((leaveId: string) =>
+    apiFetch<undefined>(`/employees/${id}/leaves/${leaveId}`, { method: 'DELETE' }),
+  )
+
+// --- Import ------------------------------------------------------------------------------------
+export const usePreviewImport = () =>
+  useMutation({
+    mutationFn: ({ kind, file }: { kind: ImportKind; file: File }) => {
+      const form = new FormData()
+      form.set('kind', kind)
+      form.set('file', file)
+      return apiFetch<ImportPreview>('/imports/preview', { method: 'POST', body: form })
+    },
+  })
+
+export const useCommitImport = () =>
+  useMutation({
+    mutationFn: (previewId: string) =>
+      apiFetch<{ created: number; updated: number; skipped: number }>(
+        `/imports/${previewId}/commit`,
+        { method: 'POST' },
+      ),
+  })
+
+// --- Candidates -------------------------------------------------------------------------------
+export const useCandidates = (filters: { status?: string; q?: string }) =>
+  useQuery({
+    queryKey: ['candidates', filters],
+    queryFn: () => apiFetch<Page<CandidateSummary>>(`/candidates${qs(filters)}`),
+  })
+
+export const useCandidate = (id: string) =>
+  useQuery({
+    queryKey: ['candidates', id],
+    queryFn: () => apiFetch<CandidateDetail>(`/candidates/${id}`),
+  })
+
+export const useCandidateMatches = (id: string) =>
+  useQuery({
+    queryKey: ['candidates', id, 'matches'],
+    queryFn: () => apiFetch<TaskMatch[]>(`/candidates/${id}/matches`),
+  })
+
+export const useTaskCandidates = (taskId: string) =>
+  useQuery({
+    queryKey: ['tasks', taskId, 'candidates'],
+    queryFn: () => apiFetch<CandidateMatch[]>(`/tasks/${taskId}/candidates`),
+  })
+
+export const useExtractResume = () =>
+  useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData()
+      form.set('file', file)
+      return apiFetch<Extraction>('/candidates/extract', { method: 'POST', body: form })
+    },
+  })
+
+export function useCreateCandidate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CandidateCreate) =>
+      apiFetch<CandidateDetail>('/candidates', { method: 'POST', body: JSON.stringify(input) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['candidates'] }),
+  })
+}
+
+export function useUpdateCandidate(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { status?: CandidateStatus; note?: string }) =>
+      apiFetch<CandidateDetail>(`/candidates/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['candidates'] })
+      void qc.invalidateQueries({ queryKey: ['hr'] })
+    },
+  })
+}
+
+export function useDeleteCandidate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => apiFetch<undefined>(`/candidates/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['candidates'] }),
+  })
+}
+
+// --- Hiring requests and notifications ----------------------------------------------------------
+export const useHiringRequests = (status?: string) =>
+  useQuery({
+    queryKey: ['requests', status ?? 'all'],
+    queryFn: () => apiFetch<HiringRequestSummary[]>(`/hiring-requests${qs({ status })}`),
+  })
+
+export const useHiringRequest = (id: string) =>
+  useQuery({
+    queryKey: ['requests', 'one', id],
+    queryFn: () => apiFetch<HiringRequestDetail>(`/hiring-requests/${id}`),
+  })
+
+function useRequestMutation<T>(fn: (input: T) => Promise<unknown>) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => {
+      for (const key of ['requests', 'notifications', 'candidates', 'hr']) {
+        void qc.invalidateQueries({ queryKey: [key] })
+      }
+    },
+  })
+}
+
+export const useCreateRequest = (taskId: string) =>
+  useRequestMutation((input: { wanted: number; note: string }) =>
+    apiFetch<HiringRequestSummary>(`/tasks/${taskId}/hiring-requests`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  )
+
+export const useStartRequest = (id: string) =>
+  useRequestMutation(() => apiFetch(`/hiring-requests/${id}/start`, { method: 'POST' }))
+
+export const useSendCandidates = (id: string) =>
+  useRequestMutation((input: { candidate_ids: string[]; note: string }) =>
+    apiFetch(`/hiring-requests/${id}/submissions`, { method: 'POST', body: JSON.stringify(input) }),
+  )
+
+export const useDecide = (id: string) =>
+  useRequestMutation(
+    ({ candidateId, ...input }: { candidateId: string; verdict: Verdict; note: string }) =>
+      apiFetch(`/hiring-requests/${id}/submissions/${candidateId}`, {
+        method: 'PUT',
+        body: JSON.stringify(input),
+      }),
+  )
+
+export const useCloseRequest = (id: string) =>
+  useRequestMutation(() => apiFetch(`/hiring-requests/${id}/close`, { method: 'POST' }))
+
+export const useNotifications = () =>
+  useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => apiFetch<AppNotification[]>('/notifications'),
+    refetchInterval: 30_000,
+  })
+
+export function useReadNotifications() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id?: string) =>
+      apiFetch<undefined>(id ? `/notifications/${id}/read` : '/notifications/read-all', {
+        method: 'POST',
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+  })
+}

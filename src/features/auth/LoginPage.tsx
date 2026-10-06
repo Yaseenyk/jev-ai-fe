@@ -62,7 +62,8 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const nextParam = params.get('next')
-  const next = nextParam?.startsWith('/') ? nextParam : '/tasks'
+  // '/' lets the home redirect pick by role (HR → HR home, others → tasks).
+  const next = nextParam?.startsWith('/') ? nextParam : '/'
   const [showPassword, setShowPassword] = useState(false)
   const [capsLock, setCapsLock] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
