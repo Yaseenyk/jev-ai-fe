@@ -8,6 +8,13 @@ import type {
   EvalReport,
   EvalReportSummary,
   LearningSummary,
+  ModelActivate,
+  ModelHealth,
+  ModelsList,
+  UserAdmin,
+  UserCreate,
+  UserUpdate,
+  UserWithPassword,
   Page,
   RunStatus,
   ThresholdsHistory,
@@ -79,4 +86,70 @@ export async function downloadTrainingData(): Promise<void> {
   const link = Object.assign(document.createElement('a'), { href: url, download: name })
   link.click()
   URL.revokeObjectURL(url)
+}
+
+const MODELS = ['admin', 'models'] as const
+
+export function useModels() {
+  return useQuery({ queryKey: MODELS, queryFn: () => apiFetch<ModelsList>('/admin/models') })
+}
+
+export function useActivateModel() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ name, ...input }: ModelActivate & { name: string }) =>
+      apiFetch<ModelsList>(`/admin/models/${encodeURIComponent(name)}/activate`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: (data) => qc.setQueryData(MODELS, data),
+  })
+}
+
+export function useRollbackModel() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => apiFetch<ModelsList>('/admin/models/rollback', { method: 'POST' }),
+    onSuccess: (data) => qc.setQueryData(MODELS, data),
+  })
+}
+
+const USERS = ['admin', 'users'] as const
+
+export function useUsers() {
+  return useQuery({ queryKey: USERS, queryFn: () => apiFetch<UserAdmin[]>('/admin/users') })
+}
+
+export function useCreateUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: UserCreate) =>
+      apiFetch<UserWithPassword>('/admin/users', { method: 'POST', body: JSON.stringify(input) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: USERS }),
+  })
+}
+
+export function useUpdateUser() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...input }: UserUpdate & { id: string }) =>
+      apiFetch<UserAdmin>(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: USERS }),
+  })
+}
+
+export function useResetPassword() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<UserWithPassword>(`/admin/users/${id}/reset-password`, { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: USERS }),
+  })
+}
+
+export function useModelHealth() {
+  return useQuery({
+    queryKey: ['admin', 'health'],
+    queryFn: () => apiFetch<ModelHealth>('/admin/health'),
+  })
 }

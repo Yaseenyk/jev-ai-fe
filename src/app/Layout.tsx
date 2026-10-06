@@ -1,10 +1,29 @@
-import { Info, LayoutList, LogOut, Plus, ShieldCheck, Users } from 'lucide-react'
+import {
+  Building2,
+  FileUp,
+  Inbox,
+  Info,
+  KeyRound,
+  LayoutDashboard,
+  LayoutList,
+  LogOut,
+  Plus,
+  ShieldCheck,
+  UserSearch,
+  Users,
+} from 'lucide-react'
 import type { ComponentType } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
-import type { UserRole } from '@/api/types'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { useAuth, useCanEdit } from '@/features/auth/AuthProvider'
+import {
+  CHANGE_PASSWORD_PATH,
+  useAuth,
+  useCanEdit,
+  useManagesPeople,
+} from '@/features/auth/AuthProvider'
+import { NotificationsBell } from '@/features/hr/NotificationsBell'
+import { ROLE_LABELS } from '@/lib/format'
 import { env } from '@/lib/env'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +34,8 @@ interface NavItem {
   isActive: (path: string) => boolean
   editorsOnly?: boolean
   adminOnly?: boolean
+  peopleManagersOnly?: boolean // admin and HR (ADR 019)
+  requestsOnly?: boolean // anyone who asks for or answers hiring requests
 }
 
 const NAV: NavItem[] = [
@@ -32,6 +53,48 @@ const NAV: NavItem[] = [
     editorsOnly: true,
   },
   {
+    to: '/hr',
+    label: 'HR home',
+    icon: LayoutDashboard,
+    isActive: (p) => p === '/hr',
+    peopleManagersOnly: true,
+  },
+  {
+    to: '/hiring-requests',
+    label: 'Requests',
+    icon: Inbox,
+    isActive: (p) => p.startsWith('/hiring-requests'),
+    requestsOnly: true,
+  },
+  {
+    to: '/candidates',
+    label: 'Candidates',
+    icon: UserSearch,
+    isActive: (p) => p.startsWith('/candidates'),
+    peopleManagersOnly: true,
+  },
+  {
+    to: '/employees',
+    label: 'Employees',
+    icon: Users,
+    isActive: (p) => p.startsWith('/employees'),
+    peopleManagersOnly: true,
+  },
+  {
+    to: '/import',
+    label: 'Import',
+    icon: FileUp,
+    isActive: (p) => p === '/import',
+    peopleManagersOnly: true,
+  },
+  {
+    to: '/clients',
+    label: 'Clients',
+    icon: Building2,
+    isActive: (p) => p.startsWith('/clients'),
+    peopleManagersOnly: true,
+  },
+  {
     to: '/admin',
     label: 'Admin',
     icon: ShieldCheck,
@@ -42,12 +105,6 @@ const NAV: NavItem[] = [
 
 const DEMO_NOTE =
   'Demo data: employees and tasks are synthetic. Results come from a recorded test run, not live data.'
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin: 'Admin',
-  resource_manager: 'Resource manager',
-  viewer: 'Viewer',
-}
 
 function initials(name: string) {
   return name
@@ -73,6 +130,19 @@ function UserBlock() {
         <span className="block truncate text-sm font-medium">{user.display_name}</span>
         <span className="text-muted-foreground block text-xs">{ROLE_LABELS[user.role]}</span>
       </span>
+      <NotificationsBell />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to={CHANGE_PASSWORD_PATH}
+            aria-label="Change password"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground grid size-9 shrink-0 place-items-center rounded-lg"
+          >
+            <KeyRound className="size-4" />
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Change password</TooltipContent>
+      </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -115,7 +185,14 @@ export function Layout() {
   const { pathname } = useLocation()
   const canEdit = useCanEdit()
   const isAdmin = useAuth().user?.role === 'admin'
-  const nav = NAV.filter((item) => (canEdit || !item.editorsOnly) && (isAdmin || !item.adminOnly))
+  const managesPeople = useManagesPeople()
+  const nav = NAV.filter(
+    (item) =>
+      (canEdit || !item.editorsOnly) &&
+      (isAdmin || !item.adminOnly) &&
+      (managesPeople || !item.peopleManagersOnly) &&
+      (managesPeople || canEdit || !item.requestsOnly),
+  )
 
   return (
     <div className="bg-background min-h-svh">

@@ -17,3 +17,12 @@ export function renderRoute(path: string) {
     ),
   }
 }
+
+/** Switches the mock API's signed-in account (e.g. 'hr@srtm.local'); render again afterwards. */
+export async function signInAs(email: string) {
+  await fetch('http://localhost/api/v1/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: 'x' }),
+  })
+}

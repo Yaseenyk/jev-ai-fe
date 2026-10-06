@@ -8,9 +8,19 @@ import type {
   TaskCreate,
   ThresholdsHistory,
   ThresholdsUpdate,
+  Client,
+  ClientCreate,
+  ClientUpdate,
+  ModelActivate,
+  ModelHealth,
+  ModelsList,
+  UserAdmin,
+  UserCreate,
+  UserUpdate,
   User,
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
+import { createHrHandlers } from '@/mocks/hr'
 
 const MOCK_USER_ID = 'demo-resource-manager'
 
@@ -28,16 +38,65 @@ function page<T>(items: T[], url: URL): Page<T> {
   return { items: items.slice(offset, offset + limit), total: items.length, limit, offset }
 }
 
-export function createHandlers(db: Db) {
+export function createHandlers(db: Db, session?: Storage) {
   const api = (path: string) => `*/api/v1${path}`
 
-  // Mock sign-in: always signed in as a resource manager unless "viewer..." logs in.
+  // Mock sign-in: a resource manager unless "viewer..." or "admin..." signs in.
   let user: User = {
     id: MOCK_USER_ID,
     email: 'manager1@srtm.local',
     display_name: 'Resource Manager 1',
     role: 'resource_manager',
+    must_change_password: false,
   }
+  const account = (
+    id: string,
+    email: string,
+    display_name: string,
+    role: UserAdmin['role'],
+  ): UserAdmin => ({
+    id,
+    email,
+    display_name,
+    role,
+    is_active: true,
+    must_change_password: false,
+    created_at: '2026-10-02T00:00:00Z',
+  })
+  let accounts: UserAdmin[] = [
+    account('demo-admin', 'admin@srtm.local', 'Pilot Admin', 'admin'),
+    account(MOCK_USER_ID, 'manager1@srtm.local', 'Resource Manager 1', 'resource_manager'),
+    account('demo-hr', 'hr@srtm.local', 'HR Partner', 'hr'),
+    account('demo-viewer', 'viewer@srtm.local', 'Viewer', 'viewer'),
+  ]
+  let clients: Client[] = [...new Set(db.tasks.map((t) => t.client_code))].sort().map((code) => ({
+    code,
+    name: code.replace(/^CL-/, '').replace(/^\w/, (ch) => ch.toUpperCase()),
+    domain: null,
+    timezone: null,
+    notes: '',
+    is_active: true,
+  }))
+  const temporary = () => `temp-${Math.random().toString(36).slice(2, 12)}`
+  let signedIn = true
+  // The browser mock keeps who is signed in across page reloads; tests pass no storage.
+  const SESSION_KEY = 'srtm-mock-email'
+  const signInAs = (email: string) => {
+    const known = accounts.find((a) => a.email === email.toLowerCase())
+    user = known
+      ? {
+          id: known.id,
+          email: known.email,
+          display_name: known.display_name,
+          role: known.role,
+          must_change_password: known.must_change_password,
+        }
+      : { ...user, email }
+    signedIn = true
+  }
+  const remembered = session?.getItem(SESSION_KEY)
+  if (remembered === '') signedIn = false
+  else if (remembered) signInAs(remembered)
   const token = { access_token: 'mock-token', token_type: 'bearer', expires_in: 1800 }
   const firstVersion = {
     version: 1,
@@ -54,18 +113,133 @@ export function createHandlers(db: Db) {
     active: firstVersion,
     history: [firstVersion],
   }
+  const scores = (pairwise: number, hit5: number, hit1: number, report: string) => ({
+    report_id: report,
+    pairwise_order: pairwise,
+    baseline_pairwise_order: 0.861,
+    hit_at_5: hit5,
+    hit_at_1: hit1,
+  })
+  let models: ModelsList = {
+    active: 'student-v2',
+    pinned_dir: null,
+    models: [
+      {
+        name: 'student',
+        fingerprint: '3efa7d737abb25eb',
+        decision_set_version: 'v1',
+        note: 'teacher only (2 Oct)',
+        registered_at: '2026-10-05T09:11:00Z',
+        active: false,
+        calibrated: false,
+        combiner: false,
+        scores: scores(0.722, 0.8, 0.4, '20261005T053603Z'),
+      },
+      {
+        name: 'student-v2',
+        fingerprint: '10780d63239f11b5',
+        decision_set_version: 'v1',
+        note: '+ simulated managers + combiner (5 Oct)',
+        registered_at: '2026-10-05T09:11:00Z',
+        active: true,
+        calibrated: true,
+        combiner: true,
+        scores: scores(0.879, 0.94, 0.54, '20261005T073524Z'),
+      },
+    ],
+    history: [],
+  }
+  const switchTo = (name: string, reason: string, forced: boolean) => {
+    const from = models.active
+    models = {
+      ...models,
+      active: name,
+      models: models.models.map((m) => ({ ...m, active: m.name === name })),
+      history: [
+        { at: new Date().toISOString(), from_model: from, to_model: name, forced, reason },
+        ...models.history,
+      ],
+    }
+  }
 
   return [
+    ...createHrHandlers(db, () => user),
     http.post(api('/auth/login'), async ({ request }) => {
       const { email } = (await request.json()) as { email: string }
-      user = email.startsWith('viewer')
-        ? { id: 'demo-viewer', email, display_name: 'Viewer', role: 'viewer' }
-        : { ...user, email }
+      signInAs(email)
+      session?.setItem(SESSION_KEY, email)
       return HttpResponse.json(token)
     }),
-    http.post(api('/auth/refresh'), () => HttpResponse.json(token)),
+    // Signed in until someone signs out, so the mock can switch between accounts (e.g. HR).
+    http.post(api('/auth/refresh'), () =>
+      signedIn
+        ? HttpResponse.json(token)
+        : HttpResponse.json(
+            { type: 'about:blank', title: 'Unauthorized', status: 401, code: 'not_authenticated' },
+            { status: 401 },
+          ),
+    ),
+    http.post(api('/auth/password'), () => {
+      user = { ...user, must_change_password: false }
+      accounts = accounts.map((a) => (a.id === user.id ? { ...a, must_change_password: false } : a))
+      return HttpResponse.json(token)
+    }),
+    http.get(api('/admin/users'), () => HttpResponse.json(accounts)),
+    http.post(api('/admin/users'), async ({ request }) => {
+      const body = (await request.json()) as UserCreate
+      const email = body.email.toLowerCase()
+      if (accounts.some((a) => a.email === email)) {
+        return problem(409, 'Conflict', 'email_taken', `${email} already has an account`)
+      }
+      const made = {
+        ...account(`u-${accounts.length + 1}`, email, body.display_name, body.role),
+        must_change_password: true,
+      }
+      accounts = [...accounts, made]
+      return HttpResponse.json({ user: made, temporary_password: temporary() }, { status: 201 })
+    }),
+    http.patch(api('/admin/users/:id'), async ({ params, request }) => {
+      const body = (await request.json()) as UserUpdate
+      if (
+        params.id === user.id &&
+        (body.is_active === false || (body.role && body.role !== 'admin'))
+      ) {
+        return problem(
+          422,
+          'Validation error',
+          'cannot_demote_self',
+          'You cannot remove your own admin access or deactivate yourself.',
+        )
+      }
+      accounts = accounts.map((a) =>
+        a.id === params.id
+          ? {
+              ...a,
+              ...(body.display_name ? { display_name: body.display_name } : {}),
+              ...(body.role ? { role: body.role } : {}),
+              ...(body.is_active === undefined || body.is_active === null
+                ? {}
+                : { is_active: body.is_active }),
+            }
+          : a,
+      )
+      return HttpResponse.json(accounts.find((a) => a.id === params.id))
+    }),
+    http.post(api('/admin/users/:id/reset-password'), ({ params }) => {
+      accounts = accounts.map((a) =>
+        a.id === params.id ? { ...a, must_change_password: true } : a,
+      )
+      return HttpResponse.json({
+        user: accounts.find((a) => a.id === params.id),
+        temporary_password: temporary(),
+      })
+    }),
     http.get(api('/auth/me'), () => HttpResponse.json(user)),
-    http.post(api('/auth/logout'), () => new HttpResponse(null, { status: 204 })),
+    http.post(api('/auth/logout'), () => {
+      signedIn = false
+      session?.setItem(SESSION_KEY, '')
+      return new HttpResponse(null, { status: 204 })
+    }),
 
     http.get(api('/decisions'), () => HttpResponse.json({ items: db.decisions })),
     http.get(api('/decisions/overall_fit/thresholds'), () => HttpResponse.json(thresholds)),
@@ -86,6 +260,112 @@ export function createHandlers(db: Db) {
         history: [version, ...thresholds.history.map((v) => ({ ...v, active: false }))],
       }
       return HttpResponse.json(thresholds)
+    }),
+    http.get(api('/clients'), () => HttpResponse.json(clients)),
+    http.post(api('/clients'), async ({ request }) => {
+      const body = (await request.json()) as ClientCreate
+      if (clients.some((c) => c.code === body.code)) {
+        return problem(409, 'Conflict', 'client_exists', `Client ${body.code} already exists`)
+      }
+      const made: Client = {
+        code: body.code,
+        name: body.name,
+        domain: body.domain ?? null,
+        timezone: body.timezone ?? null,
+        notes: body.notes,
+        is_active: true,
+      }
+      clients = [...clients, made]
+      return HttpResponse.json(made, { status: 201 })
+    }),
+    http.patch(api('/clients/:code'), async ({ params, request }) => {
+      const body = (await request.json()) as ClientUpdate
+      clients = clients.map((c) =>
+        c.code === params.code
+          ? {
+              ...c,
+              ...(body.name ? { name: body.name } : {}),
+              domain: body.domain === undefined ? c.domain : body.domain,
+              timezone: body.timezone === undefined ? c.timezone : body.timezone,
+              notes: body.notes ?? c.notes,
+              is_active: body.is_active ?? c.is_active,
+            }
+          : c,
+      )
+      return HttpResponse.json(clients.find((c) => c.code === params.code))
+    }),
+    http.get(api('/admin/models'), () => HttpResponse.json(models)),
+    http.get(api('/admin/health'), () => {
+      const week = (w: string, starts: string, decisions: number, agreed: number) => ({
+        week: w,
+        starts,
+        decisions,
+        agreed,
+        rate: decisions >= 10 ? agreed / decisions : null,
+      })
+      const health: ModelHealth = {
+        overall: { decisions: 46, agreed: 36, rate: 36 / 46 },
+        shortlist_override_rate: 0.15,
+        by_band: [
+          { band: 'shortlist', accepted: 17, rejected: 3 },
+          { band: 'review', accepted: 9, rejected: 12 },
+          { band: 'hidden', accepted: 1, rejected: 4 },
+        ],
+        weeks: [
+          week('2026-W40', '2026-09-28', 14, 10),
+          week('2026-W41', '2026-10-05', 26, 21),
+          week('2026-W42', '2026-10-12', 6, 5),
+        ],
+        models: [
+          {
+            model: 'student:answerdotai/ModernBERT-base@10780d63239f11b5',
+            decisions: 32,
+            agreed: 27,
+            rate: 27 / 32,
+          },
+          {
+            model: 'student:answerdotai/ModernBERT-base@3efa7d737abb25eb',
+            decisions: 14,
+            agreed: 9,
+            rate: 9 / 14,
+          },
+        ],
+        reject_reasons: { skill_gap: 9, level_mismatch: 6, domain_gap: 2, other: 2 },
+        planning_rejections: 4,
+        min_decisions: 10,
+      }
+      return HttpResponse.json(health)
+    }),
+    http.post(api('/admin/models/:name/activate'), async ({ params, request }) => {
+      const body = (await request.json()) as ModelActivate
+      const target = models.models.find((m) => m.name === params.name)
+      const current = models.models.find((m) => m.active)
+      if (!target)
+        return problem(
+          404,
+          'Not found',
+          'model_not_found',
+          `Model ${String(params.name)} is not registered`,
+        )
+      const worse =
+        (target.scores?.pairwise_order ?? 0) < (current?.scores?.pairwise_order ?? 0) - 0.01
+      if (worse && !body.force) {
+        return problem(
+          409,
+          'Activation refused',
+          'activation_refused',
+          `${target.name} ranks worse than ${current?.name ?? ''}; use force to switch anyway`,
+        )
+      }
+      switchTo(target.name, body.reason, body.force)
+      return HttpResponse.json(models)
+    }),
+    http.post(api('/admin/models/rollback'), () => {
+      const last = models.history[0]
+      if (!last?.from_model)
+        return problem(409, 'Rollback refused', 'rollback_refused', 'nothing to roll back to')
+      switchTo(last.from_model, 'rollback', true)
+      return HttpResponse.json(models)
     }),
     http.get(api('/match-runs'), ({ request }) =>
       HttpResponse.json(

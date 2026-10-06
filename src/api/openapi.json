@@ -151,6 +151,37 @@
         "title": "AdminRunRead",
         "type": "object"
       },
+      "Agreement": {
+        "description": "Manager decisions on fit, and how often the model leaned the same way (score >= 50%).",
+        "properties": {
+          "agreed": {
+            "title": "Agreed",
+            "type": "integer"
+          },
+          "decisions": {
+            "title": "Decisions",
+            "type": "integer"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          }
+        },
+        "required": [
+          "decisions",
+          "agreed",
+          "rate"
+        ],
+        "title": "Agreement",
+        "type": "object"
+      },
       "Band": {
         "enum": [
           "shortlist",
@@ -159,6 +190,29 @@
         ],
         "title": "Band",
         "type": "string"
+      },
+      "BandOutcome": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "integer"
+          },
+          "band": {
+            "title": "Band",
+            "type": "string"
+          },
+          "rejected": {
+            "title": "Rejected",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "band",
+          "accepted",
+          "rejected"
+        ],
+        "title": "BandOutcome",
+        "type": "object"
       },
       "CandidateFeaturesRead": {
         "description": "Facts computed by code (not AI) for one person and task.",
@@ -224,6 +278,168 @@
           "inconsistent_data"
         ],
         "title": "CandidateFeaturesRead",
+        "type": "object"
+      },
+      "ClientCreate": {
+        "properties": {
+          "code": {
+            "pattern": "^[A-Z0-9][A-Z0-9-]{1,31}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Domain"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Notes",
+            "type": "string"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "ClientCreate",
+        "type": "object"
+      },
+      "ClientRead": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Domain"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "notes": {
+            "title": "Notes",
+            "type": "string"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "domain",
+          "timezone",
+          "notes",
+          "is_active"
+        ],
+        "title": "ClientRead",
+        "type": "object"
+      },
+      "ClientUpdate": {
+        "properties": {
+          "domain": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Domain"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "ClientUpdate",
         "type": "object"
       },
       "CostBand": {
@@ -863,6 +1079,81 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HealthModel": {
+        "properties": {
+          "agreed": {
+            "title": "Agreed",
+            "type": "integer"
+          },
+          "decisions": {
+            "title": "Decisions",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          }
+        },
+        "required": [
+          "decisions",
+          "agreed",
+          "rate",
+          "model"
+        ],
+        "title": "HealthModel",
+        "type": "object"
+      },
+      "HealthWeek": {
+        "properties": {
+          "agreed": {
+            "title": "Agreed",
+            "type": "integer"
+          },
+          "decisions": {
+            "title": "Decisions",
+            "type": "integer"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "starts": {
+            "title": "Starts",
+            "type": "string"
+          },
+          "week": {
+            "title": "Week",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decisions",
+          "agreed",
+          "rate",
+          "week",
+          "starts"
+        ],
+        "title": "HealthWeek",
+        "type": "object"
+      },
       "InterpretRequest": {
         "properties": {
           "known_clients": {
@@ -1313,6 +1604,287 @@
         "title": "MatchRunRead",
         "type": "object"
       },
+      "ModelActivate": {
+        "properties": {
+          "force": {
+            "default": false,
+            "title": "Force",
+            "type": "boolean"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "ModelActivate",
+        "type": "object"
+      },
+      "ModelHealth": {
+        "properties": {
+          "by_band": {
+            "items": {
+              "$ref": "#/components/schemas/BandOutcome"
+            },
+            "title": "By Band",
+            "type": "array"
+          },
+          "min_decisions": {
+            "title": "Min Decisions",
+            "type": "integer"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/HealthModel"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/Agreement"
+          },
+          "planning_rejections": {
+            "title": "Planning Rejections",
+            "type": "integer"
+          },
+          "reject_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Reject Reasons",
+            "type": "object"
+          },
+          "shortlist_override_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shortlist Override Rate"
+          },
+          "weeks": {
+            "items": {
+              "$ref": "#/components/schemas/HealthWeek"
+            },
+            "title": "Weeks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "overall",
+          "shortlist_override_rate",
+          "by_band",
+          "weeks",
+          "models",
+          "reject_reasons",
+          "planning_rejections",
+          "min_decisions"
+        ],
+        "title": "ModelHealth",
+        "type": "object"
+      },
+      "ModelRead": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "calibrated": {
+            "title": "Calibrated",
+            "type": "boolean"
+          },
+          "combiner": {
+            "title": "Combiner",
+            "type": "boolean"
+          },
+          "decision_set_version": {
+            "title": "Decision Set Version",
+            "type": "string"
+          },
+          "fingerprint": {
+            "title": "Fingerprint",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "registered_at": {
+            "title": "Registered At",
+            "type": "string"
+          },
+          "scores": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelScores"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "fingerprint",
+          "decision_set_version",
+          "note",
+          "registered_at",
+          "active",
+          "calibrated",
+          "combiner",
+          "scores"
+        ],
+        "title": "ModelRead",
+        "type": "object"
+      },
+      "ModelScores": {
+        "description": "The model's newest evaluation, next to the simple ranking on the same tasks.",
+        "properties": {
+          "baseline_pairwise_order": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseline Pairwise Order"
+          },
+          "hit_at_1": {
+            "title": "Hit At 1",
+            "type": "number"
+          },
+          "hit_at_5": {
+            "title": "Hit At 5",
+            "type": "number"
+          },
+          "pairwise_order": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pairwise Order"
+          },
+          "report_id": {
+            "title": "Report Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "report_id",
+          "pairwise_order",
+          "baseline_pairwise_order",
+          "hit_at_5",
+          "hit_at_1"
+        ],
+        "title": "ModelScores",
+        "type": "object"
+      },
+      "ModelSwitch": {
+        "properties": {
+          "at": {
+            "title": "At",
+            "type": "string"
+          },
+          "forced": {
+            "title": "Forced",
+            "type": "boolean"
+          },
+          "from_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Model"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "to_model": {
+            "title": "To Model",
+            "type": "string"
+          }
+        },
+        "required": [
+          "at",
+          "from_model",
+          "to_model",
+          "forced",
+          "reason"
+        ],
+        "title": "ModelSwitch",
+        "type": "object"
+      },
+      "ModelsRead": {
+        "properties": {
+          "active": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ModelSwitch"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelRead"
+            },
+            "title": "Models",
+            "type": "array"
+          },
+          "pinned_dir": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned Dir"
+          }
+        },
+        "required": [
+          "active",
+          "pinned_dir",
+          "models",
+          "history"
+        ],
+        "title": "ModelsRead",
+        "type": "object"
+      },
       "Page_AdminRunRead_": {
         "properties": {
           "items": {
@@ -1559,6 +2131,28 @@
           "offset"
         ],
         "title": "Page[TaskRead]",
+        "type": "object"
+      },
+      "PasswordChange": {
+        "properties": {
+          "current_password": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Current Password",
+            "type": "string"
+          },
+          "new_password": {
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "PasswordChange",
         "type": "object"
       },
       "RejectReason": {
@@ -2442,6 +3036,75 @@
         "title": "TokenResponse",
         "type": "object"
       },
+      "UserAdminRead": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "must_change_password": {
+            "title": "Must Change Password",
+            "type": "boolean"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "display_name",
+          "role",
+          "is_active",
+          "must_change_password",
+          "created_at"
+        ],
+        "title": "UserAdminRead",
+        "type": "object"
+      },
+      "UserCreate": {
+        "properties": {
+          "display_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "email": {
+            "maxLength": 254,
+            "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+            "title": "Email",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          }
+        },
+        "required": [
+          "email",
+          "display_name",
+          "role"
+        ],
+        "title": "UserCreate",
+        "type": "object"
+      },
       "UserRead": {
         "properties": {
           "display_name": {
@@ -2455,6 +3118,11 @@
           "id": {
             "title": "Id",
             "type": "string"
+          },
+          "must_change_password": {
+            "default": false,
+            "title": "Must Change Password",
+            "type": "boolean"
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -2473,10 +3141,69 @@
         "enum": [
           "admin",
           "resource_manager",
+          "hr",
           "viewer"
         ],
         "title": "UserRole",
         "type": "string"
+      },
+      "UserUpdate": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "UserUpdate",
+        "type": "object"
+      },
+      "UserWithPassword": {
+        "description": "The temporary password is shown once, here; only its hash is stored.",
+        "properties": {
+          "temporary_password": {
+            "title": "Temporary Password",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserAdminRead"
+          }
+        },
+        "required": [
+          "user",
+          "temporary_password"
+        ],
+        "title": "UserWithPassword",
+        "type": "object"
       },
       "ValidationError": {
         "properties": {
@@ -2541,6 +3268,57 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/health": {
+      "get": {
+        "description": "How often managers agree with the model: overall, by band, week by week and per model.",
+        "operationId": "model_health_api_v1_admin_health_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "weeks",
+            "required": false,
+            "schema": {
+              "default": 26,
+              "maximum": 104,
+              "minimum": 1,
+              "title": "Weeks",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelHealth"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Model Health",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
     "/api/v1/admin/learning": {
       "get": {
         "description": "How much manager feedback there is, and how much of it can train the model.",
@@ -2588,6 +3366,302 @@
           }
         ],
         "summary": "Export",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/models": {
+      "get": {
+        "description": "Trained models, their newest evaluation, which one is active, and the switch history.",
+        "operationId": "list_models_api_v1_admin_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Models",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/models/rollback": {
+      "post": {
+        "description": "Return to the model that was active before the last switch.",
+        "operationId": "rollback_api_v1_admin_models_rollback_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rollback",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/models/{name}/activate": {
+      "post": {
+        "description": "Make a model active. Refused (409) when it has no evaluation or ranks worse than the\nactive one, unless `force`. The worker switches to it before its next run.",
+        "operationId": "activate_api_v1_admin_models__name__activate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelActivate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Activate",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "description": "Everyone who can sign in, with role and status (never password hashes).",
+        "operationId": "list_users_api_v1_admin_users_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserAdminRead"
+                  },
+                  "title": "Response List Users Api V1 Admin Users Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Users",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "description": "Add a person. Returns a temporary password once; they must replace it at first sign-in.\n409 `email_taken`.",
+        "operationId": "create_user_api_v1_admin_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserWithPassword"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create User",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{user_id}": {
+      "patch": {
+        "description": "Rename, change role, deactivate or reactivate. Deactivating ends their sessions.\n422 `cannot_demote_self`; 409 `last_admin`.",
+        "operationId": "update_user_api_v1_admin_users__user_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserAdminRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update User",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{user_id}/reset-password": {
+      "post": {
+        "description": "New temporary password, shown once; their sessions end and they must choose a new one.",
+        "operationId": "reset_password_api_v1_admin_users__user_id__reset_password_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserWithPassword"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Reset Password",
         "tags": [
           "admin"
         ]
@@ -2674,6 +3748,53 @@
         ]
       }
     },
+    "/api/v1/auth/password": {
+      "post": {
+        "description": "Choose a new password (required after an admin created the account or reset it).\nSigns out every other session; this one continues with the returned token.",
+        "operationId": "change_password_api_v1_auth_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/auth/refresh": {
       "post": {
         "operationId": "refresh_api_v1_auth_refresh_post",
@@ -2720,6 +3841,140 @@
         "summary": "Refresh",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/clients": {
+      "get": {
+        "description": "Every client, active or not (any signed-in user; used for pickers).",
+        "operationId": "list_clients_api_v1_clients_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClientRead"
+                  },
+                  "title": "Response List Clients Api V1 Clients Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Clients",
+        "tags": [
+          "clients"
+        ]
+      },
+      "post": {
+        "description": "Add a client (HR, admin). 409 `client_exists`.",
+        "operationId": "create_client_api_v1_clients_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Client",
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/api/v1/clients/{code}": {
+      "patch": {
+        "description": "Change a client's details or deactivate it (not offered for new tasks). Audited.",
+        "operationId": "update_client_api_v1_clients__code__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "title": "Code",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Client",
+        "tags": [
+          "clients"
         ]
       }
     },

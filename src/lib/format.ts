@@ -1,4 +1,4 @@
-import type { Band, Level, RejectReason } from '@/api/types'
+import type { Band, Level, RejectReason, UserRole } from '@/api/types'
 
 export const percent = (p: number): string => `${Math.round(p * 100)}%`
 
@@ -73,4 +73,11 @@ export const REJECT_REASON_LABELS: Record<RejectReason, string> = {
   client_preference: 'Client preference',
   already_planned: 'Already planned elsewhere',
   other: 'Other',
+}
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  admin: 'Admin',
+  resource_manager: 'Resource manager',
+  hr: 'HR',
+  viewer: 'Viewer',
 }
