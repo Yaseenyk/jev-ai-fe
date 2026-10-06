@@ -158,3 +158,15 @@ test('HR uploads a resume for a request and sees at once whether it fits, ready 
   expect(screen.getByRole('checkbox', { name: 'Pick Asha Test' })).toBeChecked()
   expect(screen.getByRole('button', { name: /Send 1 to the manager/ })).toBeEnabled()
 })
+
+test('viewers see no hiring requests and no "ask HR" box', async () => {
+  await signInAs('viewer@srtm.local')
+  const view = renderRoute('/hiring-requests')
+  await screen.findByRole('heading', { name: /^Tasks$/ })
+  expect(view.router.state.location.pathname).toBe('/tasks')
+  view.unmount()
+
+  renderRoute(`/runs/${run.run.id}`)
+  await screen.findByText(/Matching results/)
+  expect(screen.queryByRole('region', { name: 'No internal fit' })).not.toBeInTheDocument()
+})

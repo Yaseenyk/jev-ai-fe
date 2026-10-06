@@ -24,9 +24,10 @@ import { RequestStatusBadge } from '@/features/hr/ui'
 export function NoInternalFit({ taskId }: { taskId: string }) {
   const isHr = useManagesPeople()
   const canAsk = useCanEdit()
-  const requests = useHiringRequests()
+  const requests = useHiringRequests(undefined, isHr || canAsk)
   const [asking, setAsking] = useState(false)
   const open = requests.data?.find((r) => r.task_id === taskId && r.status !== 'closed')
+  if (!isHr && !canAsk) return null
 
   return (
     <section

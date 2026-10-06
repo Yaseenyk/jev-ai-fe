@@ -171,10 +171,12 @@ export function useDeleteCandidate() {
 }
 
 // --- Hiring requests and notifications ----------------------------------------------------------
-export const useHiringRequests = (status?: string) =>
+// Viewers have no requests (the API answers 403), so callers pass `enabled` for them.
+export const useHiringRequests = (status?: string, enabled = true) =>
   useQuery({
     queryKey: ['requests', status ?? 'all'],
     queryFn: () => apiFetch<HiringRequestSummary[]>(`/hiring-requests${qs({ status })}`),
+    enabled,
   })
 
 export const useHiringRequest = (id: string) =>

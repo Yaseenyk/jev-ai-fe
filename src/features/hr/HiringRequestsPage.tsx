@@ -1,10 +1,10 @@
 import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router'
 
 import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useManagesPeople } from '@/features/auth/AuthProvider'
+import { useCanEdit, useManagesPeople } from '@/features/auth/AuthProvider'
 import { useHiringRequests } from '@/features/hr/api'
 import { REQUEST_STATUS_LABELS, REQUEST_STATUSES, type RequestStatus } from '@/features/hr/types'
 import { RequestStatusBadge } from '@/features/hr/ui'
@@ -13,8 +13,10 @@ import { cn } from '@/lib/utils'
 
 export default function HiringRequestsPage() {
   const isHr = useManagesPeople()
+  const canEdit = useCanEdit()
   const [status, setStatus] = useState<RequestStatus | ''>('')
-  const requests = useHiringRequests(status || undefined)
+  const requests = useHiringRequests(status || undefined, isHr || canEdit)
+  if (!isHr && !canEdit) return <Navigate to="/tasks" replace />
 
   return (
     <div className="space-y-6">
