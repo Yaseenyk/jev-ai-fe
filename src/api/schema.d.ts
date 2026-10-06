@@ -459,7 +459,11 @@ export interface paths {
         /** List Employees */
         get: operations["list_employees_api_v1_employees_get"];
         put?: never;
-        post?: never;
+        /**
+         * Create Employee
+         * @description Add one employee. 409 `employee_exists`. Audited.
+         */
+        post: operations["create_employee_api_v1_employees_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1443,6 +1447,32 @@ export interface components {
          * @enum {string}
          */
         Domain: "bfsi" | "healthcare" | "retail" | "manufacturing" | "public_sector" | "education" | "telecom" | "logistics";
+        /** EmployeeCreate */
+        EmployeeCreate: {
+            /** Available From */
+            available_from?: string | null;
+            cost_band: components["schemas"]["CostBand"];
+            /**
+             * Current Allocation Pct
+             * @default 0
+             */
+            current_allocation_pct: number;
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            location: components["schemas"]["Location"];
+            practice: components["schemas"]["Practice"];
+            /** Timezone */
+            timezone?: string | null;
+            /** @default hybrid */
+            work_mode_preference: components["schemas"]["WorkMode"];
+            /** Years Experience */
+            years_experience: number;
+        };
         /** EmployeeDetail */
         EmployeeDetail: {
             /**
@@ -3587,6 +3617,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_EmployeeSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_employee_api_v1_employees_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmployeeCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDetail"];
                 };
             };
             /** @description Validation Error */

@@ -9,6 +9,7 @@ import type {
   CandidateMatch,
   CandidateStatus,
   CandidateSummary,
+  EmployeeCreate,
   EmployeeDetail,
   EmployeeSkill,
   EmployeeSummary,
@@ -51,6 +52,15 @@ function useEmployeeMutation<T>(fn: (input: T) => Promise<unknown>) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: fn,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['employees'] }),
+  })
+}
+
+export const useCreateEmployee = () => {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: EmployeeCreate) =>
+      apiFetch<EmployeeDetail>('/employees', { method: 'POST', body: JSON.stringify(input) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['employees'] }),
   })
 }

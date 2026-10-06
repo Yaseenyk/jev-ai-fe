@@ -1146,6 +1146,94 @@
         "title": "Domain",
         "type": "string"
       },
+      "EmployeeCreate": {
+        "properties": {
+          "available_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available From"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "current_allocation_pct": {
+            "default": 0,
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Current Allocation Pct",
+            "type": "integer"
+          },
+          "designation": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "maxLength": 30,
+            "minLength": 2,
+            "pattern": "^[A-Za-z0-9-]+$",
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "full_name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "practice": {
+            "$ref": "#/components/schemas/Practice"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          },
+          "work_mode_preference": {
+            "$ref": "#/components/schemas/WorkMode",
+            "default": "hybrid"
+          },
+          "years_experience": {
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "practice",
+          "years_experience",
+          "location",
+          "cost_band"
+        ],
+        "title": "EmployeeCreate",
+        "type": "object"
+      },
       "EmployeeDetail": {
         "properties": {
           "available_from": {
@@ -6449,6 +6537,51 @@
           }
         ],
         "summary": "List Employees",
+        "tags": [
+          "employees"
+        ]
+      },
+      "post": {
+        "description": "Add one employee. 409 `employee_exists`. Audited.",
+        "operationId": "create_employee_api_v1_employees_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmployeeCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Employee",
         "tags": [
           "employees"
         ]

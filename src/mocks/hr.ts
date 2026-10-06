@@ -5,6 +5,7 @@ import { HttpResponse, bypass, http } from 'msw'
 import type { Task } from '@/api/types'
 
 import type {
+  EmployeeCreate,
   CandidateCreate,
   CandidateDetail,
   CandidateMatch,
@@ -409,6 +410,33 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
     }),
 
     // --- Employees -----------------------------------------------------------------------
+    http.post(api('/employees'), async ({ request }) => {
+      const body = (await request.json()) as EmployeeCreate
+      const code = body.employee_code.trim().toUpperCase()
+      if (employees.some((e) => e.employee_code === code)) {
+        return problem(409, 'employee_exists', `Employee ${code} already exists`)
+      }
+      const made: EmployeeDetail = {
+        ...body,
+        id: crypto.randomUUID(),
+        employee_code: code,
+        timezone:
+          body.location === 'usa'
+            ? 'America/New_York'
+            : body.location === 'uk'
+              ? 'Europe/London'
+              : 'Asia/Kolkata',
+        work_mode_preference: 'hybrid',
+        client_clearances: [],
+        summary: '',
+        skill_count: 0,
+        skills: [],
+        projects: [],
+        leaves: [],
+      }
+      employees = [made, ...employees]
+      return HttpResponse.json(made, { status: 201 })
+    }),
     http.get(api('/employees'), ({ request }) => {
       const url = new URL(request.url)
       const q = (url.searchParams.get('q') ?? '').toLowerCase()

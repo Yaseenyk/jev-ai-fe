@@ -59,6 +59,19 @@ export type EmployeeUpdate = Partial<
   >
 >
 
+export interface EmployeeCreate {
+  employee_code: string
+  full_name: string
+  designation: string
+  level: Level
+  practice: string
+  years_experience: number
+  location: string
+  cost_band: string
+  current_allocation_pct: number
+  available_from: string
+}
+
 export type ImportKind = 'clients' | 'employees' | 'employee_skills'
 
 export interface ImportPreview {
