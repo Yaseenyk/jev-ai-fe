@@ -214,6 +214,20 @@
         "title": "BandOutcome",
         "type": "object"
       },
+      "Body_extract_resume_api_v1_candidates_extract_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_extract_resume_api_v1_candidates_extract_post",
+        "type": "object"
+      },
       "CandidateFeaturesRead": {
         "description": "Facts computed by code (not AI) for one person and task.",
         "properties": {
@@ -278,6 +292,66 @@
           "inconsistent_data"
         ],
         "title": "CandidateFeaturesRead",
+        "type": "object"
+      },
+      "CandidateProfile": {
+        "properties": {
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/Domain"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "education": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Education",
+            "type": "array"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "notice_days": {
+            "title": "Notice Days",
+            "type": "integer"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/ProfileSkill"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "years_experience": {
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "designation",
+          "level",
+          "years_experience",
+          "location",
+          "notice_days",
+          "domains",
+          "skills",
+          "education",
+          "summary"
+        ],
+        "title": "CandidateProfile",
         "type": "object"
       },
       "ClientCreate": {
@@ -440,6 +514,46 @@
           }
         },
         "title": "ClientUpdate",
+        "type": "object"
+      },
+      "Contact": {
+        "description": "Found in code for HR's form only; never sent to the LLM.",
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "title": "Contact",
         "type": "object"
       },
       "CostBand": {
@@ -969,6 +1083,56 @@
           "facts"
         ],
         "title": "ExplanationRead",
+        "type": "object"
+      },
+      "ExtractionRead": {
+        "properties": {
+          "contact": {
+            "$ref": "#/components/schemas/Contact"
+          },
+          "extraction_id": {
+            "title": "Extraction Id",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "profile": {
+            "$ref": "#/components/schemas/CandidateProfile"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Removed",
+            "type": "array"
+          },
+          "unmatched_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unmatched Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "extraction_id",
+          "removed",
+          "contact",
+          "profile",
+          "unmatched_skills",
+          "notes",
+          "model"
+        ],
+        "title": "ExtractionRead",
         "type": "object"
       },
       "FeedbackAction": {
@@ -2153,6 +2317,39 @@
           "new_password"
         ],
         "title": "PasswordChange",
+        "type": "object"
+      },
+      "ProfileSkill": {
+        "properties": {
+          "last_used": {
+            "title": "Last Used",
+            "type": "string"
+          },
+          "proficiency": {
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "years": {
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "skill_id",
+          "skill_name",
+          "proficiency",
+          "years",
+          "last_used"
+        ],
+        "title": "ProfileSkill",
         "type": "object"
       },
       "RejectReason": {
@@ -3841,6 +4038,53 @@
         "summary": "Refresh",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/candidates/extract": {
+      "post": {
+        "description": "Read a resume (PDF or .docx) into a profile for HR to check. Nothing is saved.",
+        "operationId": "extract_resume_api_v1_candidates_extract_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_extract_resume_api_v1_candidates_extract_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExtractionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Extract Resume",
+        "tags": [
+          "candidates"
         ]
       }
     },

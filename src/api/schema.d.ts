@@ -280,6 +280,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/candidates/extract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Extract Resume
+         * @description Read a resume (PDF or .docx) into a profile for HR to check. Nothing is saved.
+         */
+        post: operations["extract_resume_api_v1_candidates_extract_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients": {
         parameters: {
             query?: never;
@@ -700,6 +720,11 @@ export interface components {
             /** Rejected */
             rejected: number;
         };
+        /** Body_extract_resume_api_v1_candidates_extract_post */
+        Body_extract_resume_api_v1_candidates_extract_post: {
+            /** File */
+            file: string;
+        };
         /**
          * CandidateFeaturesRead
          * @description Facts computed by code (not AI) for one person and task.
@@ -725,6 +750,25 @@ export interface components {
             related_skill_hits: number;
             /** Years Gap */
             years_gap: number;
+        };
+        /** CandidateProfile */
+        CandidateProfile: {
+            /** Designation */
+            designation: string;
+            /** Domains */
+            domains: components["schemas"]["Domain"][];
+            /** Education */
+            education: string[];
+            level: components["schemas"]["Level"];
+            location: components["schemas"]["Location"];
+            /** Notice Days */
+            notice_days: number;
+            /** Skills */
+            skills: components["schemas"]["ProfileSkill"][];
+            /** Summary */
+            summary: string;
+            /** Years Experience */
+            years_experience: number;
         };
         /** ClientCreate */
         ClientCreate: {
@@ -766,6 +810,18 @@ export interface components {
             notes?: string | null;
             /** Timezone */
             timezone?: string | null;
+        };
+        /**
+         * Contact
+         * @description Found in code for HR's form only; never sent to the LLM.
+         */
+        Contact: {
+            /** Email */
+            email?: string | null;
+            /** Full Name */
+            full_name?: string | null;
+            /** Phone */
+            phone?: string | null;
         };
         /**
          * CostBand
@@ -941,6 +997,21 @@ export interface components {
             strengths: components["schemas"]["ExplanationPointRead"][];
             /** Summary */
             summary: string;
+        };
+        /** ExtractionRead */
+        ExtractionRead: {
+            contact: components["schemas"]["Contact"];
+            /** Extraction Id */
+            extraction_id: string;
+            /** Model */
+            model: string;
+            /** Notes */
+            notes: string[];
+            profile: components["schemas"]["CandidateProfile"];
+            /** Removed */
+            removed: string[];
+            /** Unmatched Skills */
+            unmatched_skills: string[];
         };
         /**
          * FeedbackAction
@@ -1302,6 +1373,19 @@ export interface components {
             current_password: string;
             /** New Password */
             new_password: string;
+        };
+        /** ProfileSkill */
+        ProfileSkill: {
+            /** Last Used */
+            last_used: string;
+            /** Proficiency */
+            proficiency: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Skill Name */
+            skill_name: string;
+            /** Years */
+            years: number;
         };
         /**
          * RejectReason
@@ -2044,6 +2128,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    extract_resume_api_v1_candidates_extract_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_extract_resume_api_v1_candidates_extract_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtractionRead"];
                 };
             };
             /** @description Validation Error */
