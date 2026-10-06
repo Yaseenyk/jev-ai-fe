@@ -245,7 +245,7 @@ export interface HiringRequestDetail extends HiringRequestSummary {
 
 export interface AppNotification {
   id: string
-  kind: 'request_new' | 'request_sent' | 'request_reviewed' | 'candidate_fit'
+  kind: 'request_new' | 'request_sent' | 'request_reviewed' | 'candidate_fit' | 'model_ready'
   title: string
   body: string
   link: string

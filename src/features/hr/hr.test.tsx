@@ -201,3 +201,21 @@ test('HR records the expected pay band on a candidate', async () => {
   await user.click(await screen.findByRole('option', { name: 'Band C' }))
   await waitFor(() => expect(band).toHaveTextContent('Band C'))
 })
+
+test('a scanned resume is sent to ChatGPT only after HR agrees', async () => {
+  const user = userEvent.setup()
+  renderRoute('/candidates/new')
+  await user.upload(
+    await screen.findByLabelText('Resume file'),
+    new File(['scan'], 'scan-cv.pdf', { type: 'application/pdf' }),
+  )
+  await user.click(screen.getByRole('button', { name: /Read the resume/ }))
+  expect(await screen.findByText('This is a scanned file')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save candidate' })).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Send the scanned pages to ChatGPT' }))
+  expect(
+    await screen.findByText(/page images, including personal details, were sent to ChatGPT/),
+  ).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Save candidate' })).toBeInTheDocument()
+})

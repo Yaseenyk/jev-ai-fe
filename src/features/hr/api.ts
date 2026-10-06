@@ -136,9 +136,12 @@ export const useTaskCandidates = (taskId: string) =>
 
 export const useExtractResume = () =>
   useMutation({
-    mutationFn: (file: File) => {
+    // allowImages: HR agreed that a scanned file's page images (personal details included) go
+    // to the LLM; the API refuses a scan without it (code scanned_needs_consent).
+    mutationFn: ({ file, allowImages = false }: { file: File; allowImages?: boolean }) => {
       const form = new FormData()
       form.set('file', file)
+      if (allowImages) form.set('allow_images', 'true')
       return apiFetch<Extraction>('/candidates/extract', { method: 'POST', body: form })
     },
   })

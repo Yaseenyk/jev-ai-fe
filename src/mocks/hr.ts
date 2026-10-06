@@ -563,6 +563,15 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
       if (!/\.(pdf|docx?)$/i.test(file.name)) {
         return problem(422, 'unsupported_file', 'Upload a PDF or Word resume')
       }
+      // Demo: a file named like "scan…" acts as a scanned PDF (the real API detects no text).
+      const scan = /scan/i.test(file.name)
+      if (scan && form.get('allow_images') !== 'true') {
+        return problem(
+          422,
+          'scanned_needs_consent',
+          'This is a scanned file. Reading it sends the page images, including personal details, to ChatGPT.',
+        )
+      }
       // Demo: a sample profile stands in for reading the file; the real API reads it in code.
       let hash = 0
       for (let i = 0; i < file.name.length; i++) hash += file.name.charCodeAt(i)
@@ -570,14 +579,16 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
       if (!sample) return problem(500, 'no_sample', 'No demo profiles loaded')
       const extraction: Extraction = {
         extraction_id: crypto.randomUUID(),
-        removed: [
-          'name',
-          'email address',
-          'phone number',
-          'postal address',
-          'LinkedIn link',
-          'date of birth',
-        ],
+        removed: scan
+          ? []
+          : [
+              'name',
+              'email address',
+              'phone number',
+              'postal address',
+              'LinkedIn link',
+              'date of birth',
+            ],
         contact: {
           full_name: sample.full_name,
           email: sample.email ?? undefined,
@@ -585,7 +596,12 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         },
         profile: structuredClone(sample.profile),
         unmatched_skills: ['Team leadership', 'Agile ceremonies'],
-        notes: ['Level estimated from 2 lead roles in the last 3 years'],
+        notes: [
+          ...(scan
+            ? ['Scanned file: the page images, including personal details, were sent to ChatGPT.']
+            : []),
+          'Level estimated from 2 lead roles in the last 3 years',
+        ],
         model: 'demo-extractor',
       }
       extractions.set(extraction.extraction_id, { sample })

@@ -1,7 +1,8 @@
-import { ArrowLeft, FileText, Loader2, ShieldCheck, Upload, X } from 'lucide-react'
+import { ArrowLeft, FileText, Loader2, ScanText, ShieldCheck, Upload, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 
+import { ApiError } from '@/api/client'
 import type { Level } from '@/api/types'
 import { ErrorState } from '@/components/QueryStates'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -21,6 +22,9 @@ import { useCreateCandidate, useExtractResume, useHiringRequest } from '@/featur
 import type { CandidateProfile, Extraction } from '@/features/hr/types'
 import { Panel, SkillChip } from '@/features/hr/ui'
 import { LEVEL_TITLES, locationLabel } from '@/lib/format'
+
+const isScan = (error: Error) =>
+  error instanceof ApiError && error.problem?.code === 'scanned_needs_consent'
 
 const SOURCES = ['Naukri', 'LinkedIn', 'Referral', 'Job portal', 'Walk-in', 'Campus']
 const LOCATIONS = ['hyderabad', 'bengaluru', 'pune', 'chennai', 'remote_india', 'usa', 'uk']
@@ -91,7 +95,7 @@ export default function UploadResumePage() {
             </div>
             <Button
               disabled={!file || extract.isPending}
-              onClick={() => file && extract.mutate(file)}
+              onClick={() => file && extract.mutate({ file })}
             >
               {extract.isPending ? (
                 <Loader2 className="animate-spin" aria-hidden />
@@ -101,7 +105,30 @@ export default function UploadResumePage() {
               Read the resume
             </Button>
           </div>
-          {extract.isError && <ErrorState error={extract.error} />}
+          {extract.isError &&
+            (isScan(extract.error) ? (
+              <Alert className="mt-3">
+                <ScanText />
+                <AlertTitle>This is a scanned file</AlertTitle>
+                <AlertDescription>
+                  <p>
+                    It has no text our code can read, so personal details cannot be removed first.
+                    Reading it sends the page images, including the name, contact details and photo,
+                    to ChatGPT.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-2"
+                    disabled={!file || extract.isPending}
+                    onClick={() => file && extract.mutate({ file, allowImages: true })}
+                  >
+                    Send the scanned pages to ChatGPT
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <ErrorState error={extract.error} />
+            ))}
         </Panel>
       ) : (
         <ReviewForm

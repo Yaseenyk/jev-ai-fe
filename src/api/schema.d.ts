@@ -313,7 +313,9 @@ export interface paths {
         /**
          * Extract Resume
          * @description Read a resume (PDF or .docx) into a profile for HR to check. No candidate is created;
-         *     the file is kept for a day so that saving with this `extraction_id` keeps it.
+         *     the file is kept for a day so that saving with this `extraction_id` keeps it. A scanned PDF
+         *     (no text) answers 422 `scanned_needs_consent` unless `allow_images` is true: its page images,
+         *     personal details included, then go to the LLM (docs/08 §1a).
          */
         post: operations["extract_resume_api_v1_candidates_extract_post"];
         delete?: never;
@@ -1159,6 +1161,11 @@ export interface components {
         };
         /** Body_extract_resume_api_v1_candidates_extract_post */
         Body_extract_resume_api_v1_candidates_extract_post: {
+            /**
+             * Allow Images
+             * @default false
+             */
+            allow_images: boolean;
             /** File */
             file: string;
         };
@@ -2193,7 +2200,7 @@ export interface components {
          * NotificationKind
          * @enum {string}
          */
-        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit";
+        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit" | "model_ready";
         /** NotificationRead */
         NotificationRead: {
             /** Body */
