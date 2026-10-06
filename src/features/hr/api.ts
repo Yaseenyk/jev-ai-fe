@@ -137,7 +137,13 @@ export function useCreateCandidate() {
   return useMutation({
     mutationFn: (input: CandidateCreate) =>
       apiFetch<CandidateDetail>('/candidates', { method: 'POST', body: JSON.stringify(input) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['candidates'] }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['candidates'] })
+      // A new candidate is scored against every task's pool.
+      await qc.invalidateQueries({
+        predicate: (q) => q.queryKey[0] === 'tasks' && q.queryKey[2] === 'candidates',
+      })
+    },
   })
 }
 

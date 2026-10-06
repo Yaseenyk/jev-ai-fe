@@ -1,8 +1,9 @@
 import { ArrowLeft, Check, Loader2, Send, ThumbsDown, ThumbsUp, Upload } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 
 import { EmptyState, ErrorState } from '@/components/QueryStates'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,7 +16,12 @@ import {
   useStartRequest,
   useTaskCandidates,
 } from '@/features/hr/api'
-import { type HiringRequestDetail, MAX_SUBMISSIONS, type Submission } from '@/features/hr/types'
+import {
+  type CandidateMatch,
+  type HiringRequestDetail,
+  MAX_SUBMISSIONS,
+  type Submission,
+} from '@/features/hr/types'
 import {
   CandidateStatusBadge,
   MatchReasons,
@@ -24,7 +30,7 @@ import {
   ScoreBar,
   SkillChip,
 } from '@/features/hr/ui'
-import { dateTime, levelLabel, locationLabel } from '@/lib/format'
+import { BAND_LABELS, dateTime, levelLabel, locationLabel, percent } from '@/lib/format'
 
 export default function HiringRequestPage() {
   const { requestId = '' } = useParams()
@@ -70,7 +76,9 @@ function HrView({ request: r }: { request: HiringRequestDetail }) {
   const start = useStartRequest(r.id)
   const send = useSendCandidates(r.id)
   const close = useCloseRequest(r.id)
-  const [picked, setPicked] = useState<string[]>([])
+  // Set when HR comes back from uploading a resume for this request.
+  const uploaded = (useLocation().state as { uploaded?: string } | null)?.uploaded
+  const [picked, setPicked] = useState<string[]>(uploaded ? [uploaded] : [])
   const [note, setNote] = useState('')
   const sentIds = new Set(r.submissions.map((s) => s.candidate.id))
   const room = MAX_SUBMISSIONS - r.submissions.length
@@ -164,6 +172,9 @@ function HrView({ request: r }: { request: HiringRequestDetail }) {
             </EmptyState>
           ) : (
             <>
+              {uploaded && (
+                <UploadedFit match={pool.data.find((m) => m.candidate.id === uploaded)} />
+              )}
               <p className="text-muted-foreground mb-2 text-sm">
                 Ranked by fit to this task. Pick up to {room} to send (1–{MAX_SUBMISSIONS} per
                 request).
@@ -240,6 +251,34 @@ function HrView({ request: r }: { request: HiringRequestDetail }) {
         </Button>
       )}
     </div>
+  )
+}
+
+/** "Is the resume HR just uploaded a fit for this task?" */
+function UploadedFit({ match }: { match: CandidateMatch | undefined }) {
+  if (!match) {
+    return (
+      <Alert className="mb-3">
+        <AlertTitle>The uploaded resume does not fit this task</AlertTitle>
+        <AlertDescription>
+          It misses the must-have skills or the location. The candidate stays in the pool for other
+          tasks.
+        </AlertDescription>
+      </Alert>
+    )
+  }
+  return (
+    <Alert className="mb-3">
+      <Check />
+      <AlertTitle>
+        {match.candidate.full_name} fits this task: {percent(match.score)} ·{' '}
+        {BAND_LABELS[match.band]}
+      </AlertTitle>
+      <AlertDescription>
+        {match.matched_skills.length > 0 && <>Has {match.matched_skills.join(', ')}. </>}
+        Ticked below, ready to send to the manager.
+      </AlertDescription>
+    </Alert>
   )
 }
 

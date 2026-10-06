@@ -130,3 +130,31 @@ test('HR can see external candidates from a task with no internal fit', async ()
   const ranked = await screen.findByRole('list', { name: 'Ranked candidates' })
   expect(within(ranked).getAllByText(/^#\d+$/).length).toBeGreaterThan(0)
 })
+
+test('HR uploads a resume for a request and sees at once whether it fits, ready to send', async () => {
+  const user = userEvent.setup()
+  await signInAs('hr@srtm.local')
+  const { router } = renderRoute('/hiring-requests')
+  await user.click(await screen.findByRole('link', { name: /TSK-0020/ }))
+  const requestPath = await waitFor(() => {
+    expect(router.state.location.pathname).toMatch(/^\/hiring-requests\/req-/)
+    return router.state.location.pathname
+  })
+  await user.click(await screen.findByRole('link', { name: /Upload resumes/ }))
+  await user.upload(
+    await screen.findByLabelText('Resume file'),
+    // The mock reads a sample profile chosen by file name; this one fits TSK-0020.
+    new File(['resume'], 'cv-0.pdf', { type: 'application/pdf' }),
+  )
+  await user.click(screen.getByRole('button', { name: /Read the resume/ }))
+  const name = await screen.findByLabelText('Full name')
+  await user.clear(name)
+  await user.type(name, 'Asha Test')
+  await user.click(screen.getByRole('checkbox', { name: /candidate agreed/ }))
+  await user.click(screen.getByRole('button', { name: 'Save candidate' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(requestPath))
+  expect(await screen.findByText(/^Asha Test fits this task: \d+%/)).toBeInTheDocument()
+  expect(screen.getByRole('checkbox', { name: 'Pick Asha Test' })).toBeChecked()
+  expect(screen.getByRole('button', { name: /Send 1 to the manager/ })).toBeEnabled()
+})

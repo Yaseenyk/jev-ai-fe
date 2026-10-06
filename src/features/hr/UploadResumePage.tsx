@@ -165,7 +165,9 @@ function ReviewForm({
       },
       {
         onSuccess: (c) =>
-          void navigate(requestId ? `/hiring-requests/${requestId}` : `/candidates/${c.id}`),
+          void navigate(requestId ? `/hiring-requests/${requestId}` : `/candidates/${c.id}`, {
+            state: { uploaded: c.id },
+          }),
       },
     )
 
