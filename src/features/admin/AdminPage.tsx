@@ -2,7 +2,9 @@ import { Navigate, useSearchParams } from 'react-router'
 
 import { PageHeader } from '@/components/PageHeader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CompaniesTab } from '@/features/admin/CompaniesTab'
 import { EvalTab } from '@/features/admin/EvalTab'
+import { useCompanies } from '@/features/admin/api'
 import { HealthTab } from '@/features/admin/HealthTab'
 import { DecisionApiTab } from '@/features/admin/DecisionApiTab'
 import { LearningTab } from '@/features/admin/LearningTab'
@@ -21,14 +23,18 @@ const TABS = [
   { value: 'models', label: 'Models', body: <ModelsTab /> },
   { value: 'users', label: 'Users', body: <UsersTab /> },
   { value: 'decision-api', label: 'Decision API', body: <DecisionApiTab /> },
+  { value: 'companies', label: 'Companies', body: <CompaniesTab /> },
 ]
 
 export default function AdminPage() {
   const { user } = useAuth()
   const [params, setParams] = useSearchParams()
+  const companies = useCompanies()
   if (user?.role !== 'admin') return <Navigate to="/tasks" replace />
+  // Only the operator's admins manage companies; the API refuses everyone else.
+  const tabs = TABS.filter((t) => t.value !== 'companies' || companies.isSuccess)
   const asked = params.get('tab')
-  const tab = TABS.some((t) => t.value === asked) ? (asked as string) : 'runs'
+  const tab = tabs.some((t) => t.value === asked) ? (asked as string) : 'runs'
 
   return (
     <div className="space-y-6">
@@ -42,7 +48,7 @@ export default function AdminPage() {
       >
         <div className="overflow-x-auto border-b">
           <TabsList variant="line" className="gap-5 p-0 group-data-horizontal/tabs:h-10">
-            {TABS.map((t) => (
+            {tabs.map((t) => (
               <TabsTrigger
                 key={t.value}
                 value={t.value}
@@ -53,7 +59,7 @@ export default function AdminPage() {
             ))}
           </TabsList>
         </div>
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <TabsContent key={t.value} value={t.value} className="mt-4">
             {t.body}
           </TabsContent>

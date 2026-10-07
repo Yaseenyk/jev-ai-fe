@@ -3,6 +3,8 @@ import { http, HttpResponse } from 'msw'
 import type {
   FeedbackInput,
   ApiProject,
+  Company,
+  CompanyCreate,
   ApiProjectCreate,
   FeedbackReport,
   Page,
@@ -44,6 +46,15 @@ function page<T>(items: T[], url: URL): Page<T> {
 export function createHandlers(db: Db, session?: Storage) {
   let feedbackGiven = 0
   const apiProjects: ApiProject[] = []
+  const companies: Company[] = [
+    {
+      id: 'sparity',
+      name: 'Sparity',
+      created_at: '2026-10-01T09:00:00Z',
+      users: 6,
+      employees: 720,
+    },
+  ]
   const feedbackReports: FeedbackReport[] = [
     {
       id: 'fbr-1',
@@ -433,6 +444,31 @@ export function createHandlers(db: Db, session?: Storage) {
     http.get(api('/eval/reports'), ({ request }) =>
       HttpResponse.json(page([], new URL(request.url))),
     ),
+    // Companies (ADR 022): the mock admin is the operator's.
+    http.get(api('/admin/companies'), () => HttpResponse.json(companies)),
+    http.post(api('/admin/companies'), async ({ request }) => {
+      const body = (await request.json()) as CompanyCreate
+      if (companies.some((c) => c.id === body.id)) {
+        return problem(
+          409,
+          'Company exists',
+          'company_exists',
+          `A company called ${body.id} exists`,
+        )
+      }
+      const company: Company = {
+        id: body.id,
+        name: body.name,
+        created_at: new Date().toISOString(),
+        users: 1,
+        employees: 0,
+      }
+      companies.push(company)
+      return HttpResponse.json(
+        { company, admin_email: body.admin_email.toLowerCase(), temporary_password: temporary() },
+        { status: 201 },
+      )
+    }),
     // Decision API (ADR 021): projects and keys in memory; the key itself is shown once.
     http.get(api('/admin/api-projects'), () => HttpResponse.json(apiProjects)),
     http.post(api('/admin/api-projects'), async ({ request }) => {

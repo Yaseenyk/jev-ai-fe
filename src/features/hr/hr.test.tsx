@@ -188,7 +188,7 @@ test('HR adds an employee and lands on their page; a taken code is refused', asy
   await user.type(within(again).getByLabelText(/^Role/), 'Tester')
   await user.click(within(again).getByRole('button', { name: 'Add employee' }))
   expect(await within(again).findByText(/already exists/)).toBeInTheDocument()
-})
+}, 30_000) // two full forms typed key by key
 
 test('HR records the expected pay band on a candidate', async () => {
   const user = userEvent.setup()

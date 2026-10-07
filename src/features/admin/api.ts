@@ -8,6 +8,9 @@ import type {
   EvalReport,
   ApiProject,
   ApiProjectCreate,
+  Company,
+  CompanyCreate,
+  CompanyCreated,
   DecisionRequest,
   EvalReportSummary,
   NewApiKey,
@@ -183,6 +186,30 @@ export function useRollbackModel() {
   return useMutation({
     mutationFn: () => apiFetch<ModelsList>('/admin/models/rollback', { method: 'POST' }),
     onSuccess: (data) => qc.setQueryData(MODELS, data),
+  })
+}
+
+const COMPANIES = ['admin', 'companies'] as const
+
+/** Customer companies (ADR 022). Only the operator's admins may list them: anyone else gets 403,
+ * which hides the tab. */
+export function useCompanies() {
+  return useQuery({
+    queryKey: COMPANIES,
+    queryFn: () => apiFetch<Company[]>('/admin/companies'),
+    retry: false,
+  })
+}
+
+export function useCreateCompany() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CompanyCreate) =>
+      apiFetch<CompanyCreated>('/admin/companies', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: COMPANIES }),
   })
 }
 

@@ -290,3 +290,40 @@ test('a test report opens with the model against the simple ranking', async () =
   expect(await screen.findByText('94% (simple ranking 72%)')).toBeInTheDocument()
   expect(screen.getByText('74% (simple ranking 43%)')).toBeInTheDocument()
 })
+
+test("the operator's admin adds a company and sees its first admin's password once", async () => {
+  asAdmin()
+  const user = userEvent.setup()
+  renderRoute('/admin?tab=companies')
+  const table = await screen.findByRole('table', { name: 'Companies' })
+  expect(within(table).getByText('Sparity')).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Add company' }))
+  const dialog = await screen.findByRole('dialog')
+  await user.type(within(dialog).getByLabelText('Company name'), 'Acme Corp')
+  expect(within(dialog).getByLabelText('Short id')).toHaveValue('acme-corp')
+  await user.type(within(dialog).getByLabelText("First admin's name"), 'Asha Rao')
+  await user.type(within(dialog).getByLabelText("First admin's work email"), 'Asha@Acme.com')
+  await user.click(within(dialog).getByRole('button', { name: 'Add company' }))
+
+  expect(await screen.findByText('Acme Corp is ready')).toBeInTheDocument()
+  expect(screen.getByLabelText('Temporary password')).not.toBeEmptyDOMElement()
+  expect(screen.getByText(/asha@acme\.com/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Done' }))
+  expect(await within(table).findByText('Acme Corp')).toBeInTheDocument()
+})
+
+test("another company's admin does not see the Companies tab", async () => {
+  asAdmin()
+  server.use(
+    http.get('*/api/v1/admin/companies', () =>
+      HttpResponse.json(
+        { title: 'Forbidden', status: 403, code: 'forbidden', detail: 'Operator only' },
+        { status: 403 },
+      ),
+    ),
+  )
+  renderRoute('/admin?tab=companies')
+  expect(await screen.findByRole('tab', { name: 'Runs' })).toHaveAttribute('data-state', 'active')
+  expect(screen.queryByRole('tab', { name: 'Companies' })).not.toBeInTheDocument()
+})
