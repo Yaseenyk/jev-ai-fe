@@ -87,3 +87,22 @@ export async function downloadAudit(since: string, until: string): Promise<void>
   a.click()
   URL.revokeObjectURL(url)
 }
+
+/** Starts matching for each task; returns how many started (a task already running counts). */
+export function useStartRuns() {
+  return useMutation({
+    mutationFn: async (taskIds: string[]) => {
+      let started = 0
+      for (const id of taskIds) {
+        try {
+          await apiFetch(`/tasks/${id}/match-runs`, { method: 'POST' })
+          started += 1
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 409) started += 1
+          else if (!(e instanceof ApiError && e.status === 429)) throw e
+        }
+      }
+      return { started, asked: taskIds.length }
+    },
+  })
+}

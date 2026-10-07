@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/AuthProvider'
-import { useBench, useSkillGaps, useStaffing } from '@/features/planning/api'
+import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
 import { useTasks } from '@/features/tasks/api'
 import { BAND_LABELS, date, percent } from '@/lib/format'
 
@@ -333,7 +333,12 @@ function PersonLine({ p }: { p: ProposedPerson }) {
 function StaffingTab() {
   const tasks = useTasks({ q: '', priority: '', domain: '' }, 'open')
   const staffing = useStaffing()
+  const startRuns = useStartRuns()
   const [picked, setPicked] = useState<string[]>([])
+  const NO_RUN = 'Run matching for this task first.'
+  const needRun = (staffing.data?.tasks ?? [])
+    .filter((t) => t.unfilled_reason === NO_RUN)
+    .map((t) => t.task_id)
 
   if (tasks.isPending) return <Skeleton className="h-96 w-full rounded-xl" />
   if (tasks.isError) return <ErrorState error={tasks.error} />
@@ -372,7 +377,10 @@ function StaffingTab() {
         <Button
           className="w-full"
           disabled={picked.length === 0 || staffing.isPending}
-          onClick={() => staffing.mutate(picked)}
+          onClick={() => {
+            startRuns.reset()
+            staffing.mutate(picked)
+          }}
         >
           {staffing.isPending ? (
             <Loader2 className="animate-spin" aria-hidden />
@@ -404,6 +412,24 @@ function StaffingTab() {
                 hint="Bill rate minus cost, at each task's allocation"
               />
             </dl>
+            {needRun.length > 0 && (
+              <div className="bg-surface flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm">
+                <p>
+                  {startRuns.data
+                    ? `Matching started for ${startRuns.data.started} of ${startRuns.data.asked} tasks. Propose again in a minute.`
+                    : `${needRun.length} task${needRun.length === 1 ? ' has' : 's have'} no finished matching run yet.`}
+                </p>
+                <Button
+                  variant="outline"
+                  disabled={startRuns.isPending || Boolean(startRuns.data)}
+                  onClick={() => startRuns.mutate(needRun)}
+                >
+                  {startRuns.isPending && <Loader2 className="animate-spin" aria-hidden />}
+                  Run matching for {needRun.length === 1 ? 'it' : `these ${needRun.length}`}
+                </Button>
+              </div>
+            )}
+            {startRuns.isError && <ErrorState error={startRuns.error} />}
             <ol className="space-y-3">
               {staffing.data.tasks.map((t) => (
                 <StaffedCard key={t.task_id} t={t} />

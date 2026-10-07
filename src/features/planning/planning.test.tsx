@@ -98,3 +98,35 @@ test('the audit tab explains what the decisions export holds', async () => {
   expect(await screen.findByRole('button', { name: /Download decisions/ })).toBeInTheDocument()
   expect(screen.getByText(/protected attributes are not stored/)).toBeInTheDocument()
 })
+
+test('tasks without a finished run can be matched from the plan in one click', async () => {
+  server.use(
+    http.post('*/api/v1/planning/staffing', () =>
+      HttpResponse.json({
+        tasks: [
+          {
+            task_id: first.id,
+            task_code: first.code,
+            title: first.title,
+            proposed: null,
+            alternates: [],
+            unfilled_reason: 'Run matching for this task first.',
+          },
+        ],
+        filled: 0,
+        total_weekly_margin_usd: 0,
+      }),
+    ),
+    http.post('*/api/v1/tasks/:taskId/match-runs', () =>
+      HttpResponse.json({ run_id: 'r-new', status: 'queued' }, { status: 202 }),
+    ),
+  )
+  const user = userEvent.setup()
+  renderRoute('/planning?tab=staffing')
+  const list = await screen.findByRole('region', { name: 'Tasks to staff' })
+  await user.click(within(list).getByRole('checkbox', { name: new RegExp(first.code) }))
+  await user.click(screen.getByRole('button', { name: /Propose a team \(1\)/ }))
+  expect(await screen.findByText('Run matching for this task first.')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Run matching for it' }))
+  expect(await screen.findByText(/Matching started for 1 of 1 tasks/)).toBeInTheDocument()
+})
