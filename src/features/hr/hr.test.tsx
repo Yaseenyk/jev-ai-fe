@@ -263,3 +263,12 @@ test("a company's own skill name is mapped once and the rows are checked again",
     screen.queryByRole('region', { name: "Values we don't recognise" }),
   ).not.toBeInTheDocument()
 })
+
+test('the Company page lists employees and switches to clients', async () => {
+  const user = userEvent.setup()
+  const { router } = renderRoute('/company')
+  expect(await screen.findByRole('heading', { name: 'Company' })).toBeInTheDocument()
+  expect(await screen.findByText(employee.full_name)).toBeInTheDocument()
+  await user.click(screen.getByRole('tab', { name: 'Clients' }))
+  expect(router.state.location.search).toContain('tab=clients')
+})

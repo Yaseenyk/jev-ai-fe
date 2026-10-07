@@ -76,6 +76,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/companies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Companies
+         * @description Customer companies (operator's admins only).
+         */
+        get: operations["list_companies_api_v1_admin_companies_get"];
+        put?: never;
+        /**
+         * Create Company
+         * @description A new customer company and its first admin, whose temporary password is shown once.
+         *     403 for anyone but the operator's admins; 409 `company_exists` / `email_taken`.
+         */
+        post: operations["create_company_api_v1_admin_companies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/feedback-reports": {
         parameters: {
             query?: never;
@@ -1952,6 +1977,47 @@ export interface components {
              */
             note: string;
             outcome?: components["schemas"]["HiringOutcome"] | null;
+        };
+        /** CompanyCreate */
+        CompanyCreate: {
+            /** Admin Email */
+            admin_email: string;
+            /** Admin Name */
+            admin_name: string;
+            /**
+             * Id
+             * @description e.g. acme-corp
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * CompanyCreated
+         * @description The company's first admin signs in with this password once, then chooses their own.
+         */
+        CompanyCreated: {
+            /** Admin Email */
+            admin_email: string;
+            company: components["schemas"]["CompanyRead"];
+            /** Temporary Password */
+            temporary_password: string;
+        };
+        /** CompanyRead */
+        CompanyRead: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Employees */
+            employees: number;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Users */
+            users: number;
         };
         /**
          * Contact
@@ -3913,6 +3979,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DecisionRequestRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_companies_api_v1_admin_companies_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyRead"][];
+                };
+            };
+        };
+    };
+    create_company_api_v1_admin_companies_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompanyCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyCreated"];
                 };
             };
             /** @description Validation Error */

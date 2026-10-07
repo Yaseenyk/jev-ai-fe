@@ -1174,6 +1174,100 @@
         "title": "CloseIn",
         "type": "object"
       },
+      "CompanyCreate": {
+        "properties": {
+          "admin_email": {
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Admin Email",
+            "type": "string"
+          },
+          "admin_name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Admin Name",
+            "type": "string"
+          },
+          "id": {
+            "description": "e.g. acme-corp",
+            "maxLength": 40,
+            "minLength": 2,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "admin_email",
+          "admin_name"
+        ],
+        "title": "CompanyCreate",
+        "type": "object"
+      },
+      "CompanyCreated": {
+        "description": "The company's first admin signs in with this password once, then chooses their own.",
+        "properties": {
+          "admin_email": {
+            "title": "Admin Email",
+            "type": "string"
+          },
+          "company": {
+            "$ref": "#/components/schemas/CompanyRead"
+          },
+          "temporary_password": {
+            "title": "Temporary Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "company",
+          "admin_email",
+          "temporary_password"
+        ],
+        "title": "CompanyCreated",
+        "type": "object"
+      },
+      "CompanyRead": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "employees": {
+            "title": "Employees",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "users": {
+            "title": "Users",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created_at",
+          "users",
+          "employees"
+        ],
+        "title": "CompanyRead",
+        "type": "object"
+      },
       "Contact": {
         "description": "Found in code for HR's form only; never sent to the LLM.",
         "properties": {
@@ -6653,6 +6747,82 @@
         "summary": "Recent Requests",
         "tags": [
           "decision API"
+        ]
+      }
+    },
+    "/api/v1/admin/companies": {
+      "get": {
+        "description": "Customer companies (operator's admins only).",
+        "operationId": "list_companies_api_v1_admin_companies_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CompanyRead"
+                  },
+                  "title": "Response List Companies Api V1 Admin Companies Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Companies",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "description": "A new customer company and its first admin, whose temporary password is shown once.\n403 for anyone but the operator's admins; 409 `company_exists` / `email_taken`.",
+        "operationId": "create_company_api_v1_admin_companies_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCreated"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Company",
+        "tags": [
+          "admin"
         ]
       }
     },

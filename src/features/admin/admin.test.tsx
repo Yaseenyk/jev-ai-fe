@@ -246,3 +246,47 @@ test('an accepted suggestion can be marked done', async () => {
   await user.click(await within(theme).findByRole('button', { name: 'Mark as done' }))
   expect(await within(theme).findByText('Done')).toBeInTheDocument()
 })
+
+test('the Runs tab lists recent runs with a link to each', async () => {
+  asAdmin()
+  renderRoute('/admin')
+  const table = await screen.findByRole('table')
+  const links = await within(table).findAllByRole('link')
+  expect(links.length).toBeGreaterThan(0)
+  expect(links[0]).toHaveAttribute('href', expect.stringMatching(/^\/runs\//))
+})
+
+test('the Test reports tab explains how to get a first report', async () => {
+  asAdmin()
+  renderRoute('/admin?tab=eval')
+  expect(await screen.findByText('No test reports yet')).toBeInTheDocument()
+})
+
+test('a test report opens with the model against the simple ranking', async () => {
+  asAdmin()
+  const report = {
+    id: 'r1',
+    name: 'eval-40',
+    created_at: '2026-10-07T10:00:00Z',
+    dataset_seed: 7,
+    decision_set_version: 'v1',
+    model: 'student-v3-mini',
+    tasks: 40,
+    retrieval_recall: 0.98,
+    model_hit5: 0.94,
+    baseline_hit5: 0.72,
+    model_hit1: 0.74,
+    baseline_hit1: 0.43,
+    ece: 0.23,
+  }
+  server.use(
+    http.get('*/api/v1/eval/reports', () =>
+      HttpResponse.json({ items: [report], total: 1, limit: 50, offset: 0 }),
+    ),
+    http.get('*/api/v1/eval/reports/r1', () => HttpResponse.json({ ...report, metrics: {} })),
+  )
+  renderRoute('/admin?tab=eval&report=r1')
+  expect(await screen.findByText('Test report: student-v3-mini')).toBeInTheDocument()
+  expect(await screen.findByText('94% (simple ranking 72%)')).toBeInTheDocument()
+  expect(screen.getByText('74% (simple ranking 43%)')).toBeInTheDocument()
+})
