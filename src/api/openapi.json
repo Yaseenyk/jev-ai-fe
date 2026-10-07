@@ -3437,6 +3437,14 @@
             "title": "Rows",
             "type": "array"
           },
+          "unmapped": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Unmapped"
+            },
+            "title": "Unmapped",
+            "type": "array"
+          },
           "valid": {
             "title": "Valid",
             "type": "integer"
@@ -6111,6 +6119,36 @@
         "title": "TokenResponse",
         "type": "object"
       },
+      "Unmapped": {
+        "description": "A value in the file we do not recognise; mapping it once fixes every row using it.",
+        "properties": {
+          "kind": {
+            "enum": [
+              "level",
+              "practice",
+              "location",
+              "skill"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "rows": {
+            "title": "Rows",
+            "type": "integer"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "value",
+          "rows"
+        ],
+        "title": "Unmapped",
+        "type": "object"
+      },
       "UserAdminRead": {
         "properties": {
           "created_at": {
@@ -6318,6 +6356,39 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "ValueMapping": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "level",
+              "practice",
+              "location",
+              "skill"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "source": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Source",
+            "type": "string"
+          },
+          "target": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "source",
+          "target"
+        ],
+        "title": "ValueMapping",
         "type": "object"
       },
       "Verdict": {
@@ -9681,6 +9752,130 @@
         ]
       }
     },
+    "/api/v1/imports/mappings": {
+      "get": {
+        "description": "The company's own names for levels, practices, locations and skills, mapped to ours.",
+        "operationId": "list_mappings_api_v1_imports_mappings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ValueMapping"
+                  },
+                  "title": "Response List Mappings Api V1 Imports Mappings Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Mappings",
+        "tags": [
+          "employees"
+        ]
+      },
+      "put": {
+        "operationId": "save_mapping_api_v1_imports_mappings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValueMapping"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValueMapping"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Mapping",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/imports/mappings/{kind}/{source}": {
+      "delete": {
+        "operationId": "delete_mapping_api_v1_imports_mappings__kind___source__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "title": "Kind",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source",
+            "required": true,
+            "schema": {
+              "title": "Source",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Mapping",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
     "/api/v1/imports/preview": {
       "post": {
         "description": "Check every row of a CSV file; nothing is saved.",
@@ -9772,6 +9967,55 @@
           }
         ],
         "summary": "Commit Import",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/imports/{preview_id}/recheck": {
+      "post": {
+        "description": "Check the same uploaded file again after mapping values (item 12).",
+        "operationId": "recheck_import_api_v1_imports__preview_id__recheck_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "preview_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Preview Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Recheck Import",
         "tags": [
           "employees"
         ]

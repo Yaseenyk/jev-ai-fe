@@ -25,6 +25,7 @@ import type {
   HrSummary,
   ImportKind,
   ImportPreview,
+  MappingKind,
   ProjectOption,
   TaskMatch,
   Verdict,
@@ -138,6 +139,19 @@ export const usePreviewImport = () =>
       form.set('file', file)
       return apiFetch<ImportPreview>('/imports/preview', { method: 'POST', body: form })
     },
+  })
+
+/** Check the same uploaded file again after mapping values (nothing is uploaded again). */
+export const useRecheckImport = () =>
+  useMutation({
+    mutationFn: (previewId: string) =>
+      apiFetch<ImportPreview>(`/imports/${previewId}/recheck`, { method: 'POST' }),
+  })
+
+export const useSaveMapping = () =>
+  useMutation({
+    mutationFn: (input: { kind: MappingKind; source: string; target: string }) =>
+      apiFetch('/imports/mappings', { method: 'PUT', body: JSON.stringify(input) }),
   })
 
 export const useCommitImport = () =>

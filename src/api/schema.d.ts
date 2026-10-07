@@ -1091,6 +1091,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/imports/mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Mappings
+         * @description The company's own names for levels, practices, locations and skills, mapped to ours.
+         */
+        get: operations["list_mappings_api_v1_imports_mappings_get"];
+        /** Save Mapping */
+        put: operations["save_mapping_api_v1_imports_mappings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/mappings/{kind}/{source}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Mapping */
+        delete: operations["delete_mapping_api_v1_imports_mappings__kind___source__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/imports/preview": {
         parameters: {
             query?: never;
@@ -1125,6 +1163,26 @@ export interface paths {
          * @description Save the valid rows of a checked file (rows with problems are skipped). Audited.
          */
         post: operations["commit_import_api_v1_imports__preview_id__commit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{preview_id}/recheck": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Recheck Import
+         * @description Check the same uploaded file again after mapping values (item 12).
+         */
+        post: operations["recheck_import_api_v1_imports__preview_id__recheck_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2698,6 +2756,11 @@ export interface components {
             preview_id: string;
             /** Rows */
             rows: components["schemas"]["ImportRow"][];
+            /**
+             * Unmapped
+             * @default []
+             */
+            unmapped: components["schemas"]["Unmapped"][];
             /** Valid */
             valid: number;
         };
@@ -3587,6 +3650,21 @@ export interface components {
              */
             token_type: "bearer";
         };
+        /**
+         * Unmapped
+         * @description A value in the file we do not recognise; mapping it once fixes every row using it.
+         */
+        Unmapped: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "level" | "practice" | "location" | "skill";
+            /** Rows */
+            rows: number;
+            /** Value */
+            value: string;
+        };
         /** UserAdminRead */
         UserAdminRead: {
             /**
@@ -3663,6 +3741,18 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** ValueMapping */
+        ValueMapping: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "level" | "practice" | "location" | "skill";
+            /** Source */
+            source: string;
+            /** Target */
+            target: string;
         };
         /**
          * Verdict
@@ -5712,6 +5802,89 @@ export interface operations {
             };
         };
     };
+    list_mappings_api_v1_imports_mappings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValueMapping"][];
+                };
+            };
+        };
+    };
+    save_mapping_api_v1_imports_mappings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ValueMapping"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValueMapping"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_mapping_api_v1_imports_mappings__kind___source__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                kind: string;
+                source: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     preview_import_api_v1_imports_preview_post: {
         parameters: {
             query?: never;
@@ -5763,6 +5936,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recheck_import_api_v1_imports__preview_id__recheck_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                preview_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreview"];
                 };
             };
             /** @description Validation Error */

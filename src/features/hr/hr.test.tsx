@@ -239,3 +239,27 @@ test('HR uploads an employee resume and accepts a skill it shows', async () => {
   const skills = await screen.findByRole('table', { name: 'Skills' })
   expect(within(skills).getByText(skill)).toBeInTheDocument()
 })
+
+test("a company's own skill name is mapped once and the rows are checked again", async () => {
+  const user = userEvent.setup()
+  renderRoute('/import')
+  const csv = [
+    'employee_code,skill,proficiency,years,last_used',
+    'SPY-00001,PyLang,4,3,2026-09-01',
+  ].join('\n')
+  await user.upload(
+    await screen.findByLabelText('CSV file'),
+    new File([csv], 'skills.csv', { type: 'text/csv' }),
+  )
+  await user.click(screen.getByRole('button', { name: /Check the file/ }))
+  const map = await screen.findByRole('region', { name: "Values we don't recognise" })
+  expect(within(map).getByText('“PyLang”')).toBeInTheDocument()
+  await user.click(within(map).getByRole('combobox', { name: 'Meaning of PyLang' }))
+  await user.click(await screen.findByRole('option', { name: 'Python' }))
+  await user.click(within(map).getByRole('button', { name: /Save 1 and check the rows again/ }))
+  const rows = await screen.findByRole('region', { name: 'Rows' })
+  expect(await within(rows).findByText(/1 ready, 0 with problems/)).toBeInTheDocument()
+  expect(
+    screen.queryByRole('region', { name: "Values we don't recognise" }),
+  ).not.toBeInTheDocument()
+})

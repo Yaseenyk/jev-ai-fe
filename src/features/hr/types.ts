@@ -124,7 +124,11 @@ export interface ImportPreview {
   }[]
   valid: number
   invalid: number
+  /** Values in the file that are not ours and have no saved mapping (item 12). */
+  unmapped?: { kind: MappingKind; value: string; rows: number }[]
 }
+
+export type MappingKind = 'level' | 'practice' | 'location' | 'skill'
 
 export const CANDIDATE_STATUSES = [
   'new',

@@ -24,6 +24,7 @@ import type {
   RequestStatus,
   Submission,
   EmployeeResume,
+  MappingKind,
   SentState,
   Verdict,
   HrSummary,
@@ -146,6 +147,67 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
     history: [{ at: c.uploaded_at, by: 'hr@srtm.local', status: 'new', note: 'Resume uploaded' }],
   }))
   const previews = new Map<string, ImportPreview>()
+  // Import mapping (item 12): the company's own names, mapped once to ours.
+  const mappings = new Map<string, string>()
+  const uploads = new Map<string, { kind: ImportKind; header: string[]; lines: string[][] }>()
+  const checkImport = (
+    previewId: string,
+    kind: ImportKind,
+    header: string[],
+    lines: string[][],
+  ): ImportPreview => {
+    const columns = IMPORT_COLUMNS[kind]
+    const unmapped = new Map<string, { kind: MappingKind; value: string; rows: number }>()
+    const note = (k: MappingKind, value: string) => {
+      const key = `${k}:${value}`
+      const u = unmapped.get(key) ?? { kind: k, value, rows: 0 }
+      unmapped.set(key, { ...u, rows: u.rows + 1 })
+    }
+    const rows = lines.map((cells, i) => {
+      const values = Object.fromEntries(header.map((h, j) => [h, cells[j] ?? '']))
+      const errors: string[] = []
+      for (const c of columns) if (!values[c]) errors.push(`${c} is empty`)
+      const level = values.level
+      if (level && !LEVELS.includes(level) && !mappings.has(`level:${level.toLowerCase()}`)) {
+        note('level', level)
+        errors.push(`level "${level}" is not one of ours: map it once below`)
+      }
+      const skill = values.skill
+      if (
+        skill &&
+        !skillNames.has(skill.toLowerCase()) &&
+        !mappings.has(`skill:${skill.toLowerCase()}`)
+      ) {
+        note('skill', skill)
+        errors.push(`unknown skill "${skill}": map it once below`)
+      }
+      if (values.proficiency && !/^[1-5]$/.test(values.proficiency)) {
+        errors.push('proficiency must be 1–5')
+      }
+      const exists =
+        kind === 'clients' ? false : employees.some((e) => e.employee_code === values.employee_code)
+      if (kind === 'employee_skills' && values.employee_code && !exists) {
+        errors.push(`no employee ${values.employee_code}`)
+      }
+      return {
+        row: i + 2,
+        values,
+        action: exists ? ('update' as const) : ('create' as const),
+        errors,
+      }
+    })
+    const preview: ImportPreview = {
+      preview_id: previewId,
+      kind,
+      columns,
+      rows,
+      valid: rows.filter((r) => r.errors.length === 0).length,
+      invalid: rows.filter((r) => r.errors.length > 0).length,
+      unmapped: [...unmapped.values()],
+    }
+    previews.set(previewId, preview)
+    return preview
+  }
   const extractions = new Map<string, { sample: MockCandidate }>()
   const skillNames = new Map(db.skills.map((s) => [s.name.toLowerCase(), s]))
 
@@ -715,41 +777,19 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
       if (missing.length) {
         return problem(422, 'import_columns', `Missing columns: ${missing.join(', ')}`)
       }
-      const rows = lines.map((cells, i) => {
-        const values = Object.fromEntries(header.map((h, j) => [h, cells[j] ?? '']))
-        const errors: string[] = []
-        for (const c of columns) if (!values[c]) errors.push(`${c} is empty`)
-        if (values.level && !LEVELS.includes(values.level)) errors.push(`level must be L1–L6`)
-        if (values.skill && !skillNames.has(values.skill.toLowerCase())) {
-          errors.push(`unknown skill "${values.skill}"`)
-        }
-        if (values.proficiency && !/^[1-5]$/.test(values.proficiency)) {
-          errors.push('proficiency must be 1–5')
-        }
-        const exists =
-          kind === 'clients'
-            ? false
-            : employees.some((e) => e.employee_code === values.employee_code)
-        if (kind === 'employee_skills' && values.employee_code && !exists) {
-          errors.push(`no employee ${values.employee_code}`)
-        }
-        return {
-          row: i + 2,
-          values,
-          action: exists ? ('update' as const) : ('create' as const),
-          errors,
-        }
-      })
-      const preview: ImportPreview = {
-        preview_id: crypto.randomUUID(),
-        kind,
-        columns,
-        rows,
-        valid: rows.filter((r) => r.errors.length === 0).length,
-        invalid: rows.filter((r) => r.errors.length > 0).length,
-      }
-      previews.set(preview.preview_id, preview)
+      const preview = checkImport(crypto.randomUUID(), kind, header, lines)
+      uploads.set(preview.preview_id, { kind, header, lines })
       return HttpResponse.json(preview)
+    }),
+    http.post(api('/imports/:id/recheck'), ({ params }) => {
+      const u = uploads.get(String(params.id))
+      if (!u) return problem(404, 'preview_not_found', 'Upload the file again')
+      return HttpResponse.json(checkImport(String(params.id), u.kind, u.header, u.lines))
+    }),
+    http.put(api('/imports/mappings'), async ({ request }) => {
+      const body = (await request.json()) as { kind: string; source: string; target: string }
+      mappings.set(`${body.kind}:${body.source.trim().toLowerCase()}`, body.target)
+      return HttpResponse.json({ ...body, source: body.source.trim().toLowerCase() })
     }),
     http.post(api('/imports/:id/commit'), ({ params }) => {
       const preview = previews.get(String(params.id))

@@ -17,9 +17,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useManagesPeople } from '@/features/auth/AuthProvider'
-import { useCommitImport, usePreviewImport } from '@/features/hr/api'
-import type { ImportKind } from '@/features/hr/types'
+import type { Level } from '@/api/types'
+import {
+  useCommitImport,
+  usePreviewImport,
+  useRecheckImport,
+  useSaveMapping,
+} from '@/features/hr/api'
+import type { ImportKind, ImportPreview, MappingKind } from '@/features/hr/types'
 import { Panel } from '@/features/hr/ui'
+import { useSkills } from '@/features/newTask/api'
+import { LEVEL_TITLES, humanize, levelLabel, locationLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 const KINDS: Record<ImportKind, { label: string; help: string; template: string }> = {
@@ -46,9 +54,10 @@ export default function ImportPage() {
   const [kind, setKind] = useState<ImportKind>('employee_skills')
   const [file, setFile] = useState<File | null>(null)
   const preview = usePreviewImport()
+  const recheck = useRecheckImport()
   const commit = useCommitImport()
   if (!allowed) return <Navigate to="/tasks" replace />
-  const p = preview.data
+  const p = recheck.data ?? preview.data
 
   const downloadTemplate = () => {
     const url = URL.createObjectURL(new Blob([KINDS[kind].template], { type: 'text/csv' }))
@@ -132,6 +141,14 @@ export default function ImportPage() {
           </Button>
         </div>
       </Panel>
+
+      {p && !commit.data && (p.unmapped ?? []).length > 0 && (
+        <MappingPanel
+          unmapped={p.unmapped ?? []}
+          busy={recheck.isPending}
+          onSaved={() => recheck.mutate(p.preview_id)}
+        />
+      )}
 
       {p && !commit.data && (
         <Panel
@@ -217,5 +234,91 @@ export default function ImportPage() {
         </Alert>
       )}
     </div>
+  )
+}
+
+const LOCATION_VALUES = ['hyderabad', 'bengaluru', 'pune', 'chennai', 'remote_india', 'usa', 'uk']
+const PRACTICE_VALUES = ['app_dev', 'data_analytics', 'cloud', 'devops', 'ai_ml', 'qa']
+const KIND_NAMES: Record<MappingKind, string> = {
+  level: 'Level',
+  practice: 'Practice',
+  location: 'Location',
+  skill: 'Skill',
+}
+
+/** The company's own names (e.g. "SE-2", "Hyd") mapped once to ours; later imports reuse them. */
+function MappingPanel({
+  unmapped,
+  busy,
+  onSaved,
+}: {
+  unmapped: NonNullable<ImportPreview['unmapped']>
+  busy: boolean
+  onSaved: () => void
+}) {
+  const save = useSaveMapping()
+  const skills = useSkills()
+  const [chosen, setChosen] = useState<Record<string, string>>({})
+  const key = (u: { kind: string; value: string }) => `${u.kind}:${u.value}`
+  const options = (kind: MappingKind): { value: string; label: string }[] =>
+    kind === 'level'
+      ? (Object.keys(LEVEL_TITLES) as Level[]).map((l) => ({ value: l, label: levelLabel(l) }))
+      : kind === 'practice'
+        ? PRACTICE_VALUES.map((v) => ({ value: v, label: humanize(v) }))
+        : kind === 'location'
+          ? LOCATION_VALUES.map((v) => ({ value: v, label: locationLabel(v) }))
+          : (skills.data ?? []).map((k) => ({ value: k.id, label: k.name }))
+  const picked = unmapped.filter((u) => chosen[key(u)])
+  const saveAll = async () => {
+    for (const u of picked) {
+      await save.mutateAsync({ kind: u.kind, source: u.value, target: chosen[key(u)] ?? '' })
+    }
+    onSaved()
+  }
+  return (
+    <Panel title="Values we don't recognise" label="Values we don't recognise">
+      <p className="text-muted-foreground mb-3 text-sm">
+        Your file uses its own names for some values. Tell us what each one means once; the rows are
+        checked again, and future imports use the same choice.
+      </p>
+      <ul className="divide-y text-sm">
+        {unmapped.map((u) => (
+          <li key={key(u)} className="flex flex-wrap items-center gap-3 py-2">
+            <span className="text-muted-foreground w-24">{KIND_NAMES[u.kind]}</span>
+            <span className="min-w-32 font-medium">&ldquo;{u.value}&rdquo;</span>
+            <span className="text-muted-foreground text-xs">
+              {u.rows} row{u.rows === 1 ? '' : 's'}
+            </span>
+            <span className="text-muted-foreground" aria-hidden>
+              means
+            </span>
+            <Select
+              value={chosen[key(u)] ?? ''}
+              onValueChange={(v) => setChosen((c) => ({ ...c, [key(u)]: v }))}
+            >
+              <SelectTrigger className="w-56" aria-label={`Meaning of ${u.value}`}>
+                <SelectValue placeholder="Choose…" />
+              </SelectTrigger>
+              <SelectContent>
+                {options(u.kind).map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </li>
+        ))}
+      </ul>
+      {save.isError && <ErrorState error={save.error} />}
+      <div className="mt-3 flex justify-end">
+        <Button
+          disabled={picked.length === 0 || save.isPending || busy}
+          onClick={() => void saveAll()}
+        >
+          Save {picked.length || ''} and check the rows again
+        </Button>
+      </div>
+    </Panel>
   )
 }
