@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { apiFetch } from '@/api/client'
+import { apiBlob, apiFetch } from '@/api/client'
 import type { Page } from '@/api/types'
 import type {
   AppNotification,
@@ -314,3 +314,30 @@ export function useReadNotifications() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   })
 }
+
+/** HR puts an outside candidate in front of the task's manager without being asked. */
+export function useSuggest(taskId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { candidate_id: string; note: string }) =>
+      apiFetch<HiringRequestDetail>(`/tasks/${taskId}/suggestions`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      for (const key of ['requests', 'notifications', 'candidates', 'hr']) {
+        void qc.invalidateQueries({ queryKey: [key] })
+      }
+      void qc.invalidateQueries({ queryKey: ['tasks', taskId, 'resume-checks'] })
+    },
+  })
+}
+
+/** The resume file as uploaded (HR, or the manager it was sent to). */
+export const useResumeFile = (candidateId: string) =>
+  useQuery({
+    queryKey: ['candidates', candidateId, 'resume'],
+    queryFn: () => apiBlob(`/candidates/${candidateId}/resume`),
+    retry: false,
+    staleTime: Infinity,
+  })

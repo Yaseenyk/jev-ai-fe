@@ -7,6 +7,7 @@ import {
   Pencil,
   Play,
   RotateCcw,
+  Send,
   X,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -18,13 +19,24 @@ import { PageHeader } from '@/components/PageHeader'
 import { ErrorState } from '@/components/QueryStates'
 import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Textarea } from '@/components/ui/textarea'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { PriorityBadge, TaskStatusBadge } from '@/features/tasks/PriorityBadge'
 import { StartRunway } from '@/features/tasks/StartRunway'
 import { useCanEdit, useManagesPeople } from '@/features/auth/AuthProvider'
-import { useResumeChecks } from '@/features/hr/api'
-import type { CandidateMatch } from '@/features/hr/types'
+import { CandidatesFromHr } from '@/features/hr/CandidatesFromHr'
+import { useResumeChecks, useSuggest } from '@/features/hr/api'
+import type { CandidateMatch, SentState } from '@/features/hr/types'
 import { ScoreBar } from '@/features/hr/ui'
 import { type CloseAs, CloseTaskDialog } from '@/features/tasks/CloseTaskDialog'
 import { useChangeTaskStatus, useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
@@ -220,6 +232,7 @@ function TaskDetail({ task }: { task: Task }) {
           </Panel>
 
           {managesPeople && !canEdit && <ResumeChecks taskId={task.id} closed={closed} />}
+          {canEdit && !managesPeople && <CandidatesFromHr taskId={task.id} />}
 
           <section aria-label="Matching runs" className="bg-surface rounded-xl border">
             <div className="border-b px-5 py-3">
@@ -428,7 +441,13 @@ function ResumeChecks({ taskId, closed }: { taskId: string; closed: boolean }) {
       ) : (
         <ul className="space-y-3 p-4" aria-label="Checked resumes">
           {checks.data.map((m) => (
-            <CheckCard key={m.candidate.id} m={m} fresh={m.candidate.id === uploaded} />
+            <CheckCard
+              key={m.candidate.id}
+              m={m}
+              fresh={m.candidate.id === uploaded}
+              taskId={taskId}
+              closed={closed}
+            />
           ))}
         </ul>
       )}
@@ -436,7 +455,18 @@ function ResumeChecks({ taskId, closed }: { taskId: string; closed: boolean }) {
   )
 }
 
-function CheckCard({ m, fresh }: { m: CandidateMatch; fresh: boolean }) {
+function CheckCard({
+  m,
+  fresh,
+  taskId,
+  closed,
+}: {
+  m: CandidateMatch
+  fresh: boolean
+  taskId: string
+  closed: boolean
+}) {
+  const [suggesting, setSuggesting] = useState(false)
   const fit = fitOf(m)
   const blockers = m.blockers ?? []
   const ask = toConfirm(m)
@@ -511,11 +541,79 @@ function CheckCard({ m, fresh }: { m: CandidateMatch; fresh: boolean }) {
         </div>
         <div className="flex flex-col items-end gap-2">
           {m.score > 0 && <ScoreBar score={m.score} band={m.band} />}
+          {m.sent ? (
+            <SentBadge sent={m.sent} />
+          ) : (
+            !closed && (
+              <Button size="sm" onClick={() => setSuggesting(true)}>
+                <Send aria-hidden /> Suggest to the manager
+              </Button>
+            )
+          )}
           <Button variant="outline" size="sm" asChild>
             <Link to={`/candidates/${m.candidate.id}`}>Open profile</Link>
           </Button>
+          {suggesting && (
+            <SuggestDialog taskId={taskId} m={m} onClose={() => setSuggesting(false)} />
+          )}
         </div>
       </div>
     </li>
+  )
+}
+
+function SentBadge({ sent }: { sent: SentState }) {
+  if (sent === 'fit') return <StatusBadge tone="ready">Manager: fit, contact them</StatusBadge>
+  if (sent === 'not_fit') return <StatusBadge tone="neutral">Manager: not a fit</StatusBadge>
+  return <StatusBadge tone="info">Sent to the manager</StatusBadge>
+}
+
+/** One field, so a dialog: what the manager should know about this person. */
+function SuggestDialog({
+  taskId,
+  m,
+  onClose,
+}: {
+  taskId: string
+  m: CandidateMatch
+  onClose: () => void
+}) {
+  const suggest = useSuggest(taskId)
+  const [note, setNote] = useState('')
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Suggest {m.candidate.full_name} to the manager?</DialogTitle>
+          <DialogDescription>
+            The task&rsquo;s manager is notified and sees the resume, the profile and the fit on
+            this task. They decide; you are told their answer.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-1.5">
+          <Label htmlFor="suggest-note">Note for the manager (optional)</Label>
+          <Textarea
+            id="suggest-note"
+            placeholder="e.g. Strong Python and Power BI; no BigQuery yet but used Snowflake"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+        </div>
+        {suggest.isError && <ErrorState error={suggest.error} />}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            disabled={suggest.isPending}
+            onClick={() =>
+              suggest.mutate({ candidate_id: m.candidate.id, note }, { onSuccess: onClose })
+            }
+          >
+            <Send aria-hidden /> Send to the manager
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

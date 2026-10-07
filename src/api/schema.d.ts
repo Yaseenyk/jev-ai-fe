@@ -369,6 +369,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/candidates/{candidate_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Candidate Resume
+         * @description The resume file as uploaded. HR and admins; a manager only for a candidate sent to them.
+         */
+        get: operations["candidate_resume_api_v1_candidates__candidate_id__resume_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients": {
         parameters: {
             query?: never;
@@ -1165,6 +1185,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tasks/{task_id}/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Suggest Candidate
+         * @description HR suggests an outside candidate for the task without being asked; the task's manager
+         *     (or every resource manager if unknown) is notified. 409 `task_closed`, `already_sent`.
+         */
+        post: operations["suggest_candidate_api_v1_tasks__task_id__suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1402,6 +1443,8 @@ export interface components {
             reasons: string[];
             /** Score */
             score: number;
+            /** Sent */
+            sent?: ("waiting" | "fit" | "not_fit") | null;
         };
         /** CandidateProfile */
         CandidateProfile: {
@@ -2673,6 +2716,19 @@ export interface components {
             /** Years Experience */
             years_experience: number;
         };
+        /**
+         * SuggestionIn
+         * @description HR suggests an outside candidate for a task without a manager asking.
+         */
+        SuggestionIn: {
+            /** Candidate Id */
+            candidate_id: string;
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+        };
         /** TaskCreate */
         TaskCreate: {
             /** Allocation Pct Required */
@@ -3623,6 +3679,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskMatch"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    candidate_resume_api_v1_candidates__candidate_id__resume_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -5153,6 +5240,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    suggest_candidate_api_v1_tasks__task_id__suggestions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SuggestionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HiringRequestDetail"];
                 };
             };
             /** @description Validation Error */

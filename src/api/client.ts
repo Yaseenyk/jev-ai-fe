@@ -26,17 +26,31 @@ async function send(path: string, init?: RequestInit): Promise<Response> {
   })
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+async function sendAuthed(path: string, init?: RequestInit): Promise<Response> {
   let res = await send(path, init)
   // An expired access token is renewed once from the refresh cookie, then the call is retried.
   if (res.status === 401 && !path.startsWith('/auth/')) {
     if (await refreshAccessToken()) res = await send(path, init)
     if (res.status === 401) signedOut()
   }
-  if (!res.ok) {
-    const isProblem = res.headers.get('content-type')?.includes('json') ?? false
-    throw new ApiError(res.status, isProblem ? ((await res.json()) as Problem) : null)
-  }
+  return res
+}
+
+async function failure(res: Response): Promise<ApiError> {
+  const isProblem = res.headers.get('content-type')?.includes('json') ?? false
+  return new ApiError(res.status, isProblem ? ((await res.json()) as Problem) : null)
+}
+
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await sendAuthed(path, init)
+  if (!res.ok) throw await failure(res)
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
+}
+
+/** A file the API serves (e.g. a resume), with the same sign-in handling as apiFetch. */
+export async function apiBlob(path: string): Promise<Blob> {
+  const res = await sendAuthed(path)
+  if (!res.ok) throw await failure(res)
+  return res.blob()
 }

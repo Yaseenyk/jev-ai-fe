@@ -217,3 +217,36 @@ test('a notice period the resume does not state is asked, never guessed', async 
   await user.type(screen.getByLabelText(/^Notice period/), '15')
   expect(screen.getByRole('button', { name: 'Save candidate' })).toBeEnabled()
 })
+
+test('HR suggests an outside candidate; the manager opens the resume and decides on the task page', async () => {
+  const user = userEvent.setup()
+  await signInAs('hr@srtm.local')
+  const hrView = renderRoute(`/candidates/new?task=${task.id}`)
+  await user.upload(
+    await screen.findByLabelText('Resume file'),
+    new File(['resume'], 'cv-0.pdf', { type: 'application/pdf' }),
+  )
+  await user.click(screen.getByRole('button', { name: /Read the resume/ }))
+  const name = await screen.findByLabelText(/^Full name/)
+  await user.clear(name)
+  await user.type(name, 'Meera Suggest')
+  await user.click(screen.getByRole('checkbox', { name: /candidate agreed/ }))
+  await user.click(screen.getByRole('button', { name: 'Save candidate' }))
+  const card = await screen.findByRole('listitem', { name: 'Meera Suggest' })
+  await user.click(within(card).getByRole('button', { name: /Suggest to the manager/ }))
+  const dialog = await screen.findByRole('dialog')
+  await user.type(within(dialog).getByLabelText(/Note for the manager/), 'Strong fit')
+  await user.click(within(dialog).getByRole('button', { name: /Send to the manager/ }))
+  expect(await within(card).findByText('Sent to the manager')).toBeInTheDocument()
+  hrView.unmount()
+
+  await signInAs('manager1@srtm.local')
+  renderRoute(`/tasks/${task.id}`)
+  const section = await screen.findByRole('region', { name: 'Candidates from HR' })
+  await user.click(within(section).getByRole('button', { name: /Meera/ }))
+  const sheet = await screen.findByRole('dialog')
+  expect(await within(sheet).findByText(/No resume file is kept/)).toBeInTheDocument()
+  expect(within(sheet).getByText('Strong fit')).toBeInTheDocument()
+  await user.click(within(sheet).getByRole('button', { name: /Fit, HR can contact them/ }))
+  expect(await within(sheet).findByText('You said: fit')).toBeInTheDocument()
+})

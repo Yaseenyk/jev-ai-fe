@@ -191,10 +191,14 @@ export interface TaskMatch {
   blockers?: string[]
 }
 
+export type SentState = 'waiting' | 'fit' | 'not_fit'
+
 export interface CandidateMatch extends Omit<
   TaskMatch,
   'task_id' | 'task_code' | 'title' | 'client_code'
 > {
+  /** Sent to the manager for this task, and their answer. */
+  sent?: SentState | null
   candidate: CandidateSummary
 }
 

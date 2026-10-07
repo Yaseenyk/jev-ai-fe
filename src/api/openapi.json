@@ -598,6 +598,22 @@
           "score": {
             "title": "Score",
             "type": "number"
+          },
+          "sent": {
+            "anyOf": [
+              {
+                "enum": [
+                  "waiting",
+                  "fit",
+                  "not_fit"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent"
           }
         },
         "required": [
@@ -4420,6 +4436,26 @@
         "title": "SubmittedCandidate",
         "type": "object"
       },
+      "SuggestionIn": {
+        "description": "HR suggests an outside candidate for a task without a manager asking.",
+        "properties": {
+          "candidate_id": {
+            "title": "Candidate Id",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "candidate_id"
+        ],
+        "title": "SuggestionIn",
+        "type": "object"
+      },
       "TaskCreate": {
         "properties": {
           "allocation_pct_required": {
@@ -6398,6 +6434,53 @@
           }
         ],
         "summary": "Candidate Matches",
+        "tags": [
+          "candidates"
+        ]
+      }
+    },
+    "/api/v1/candidates/{candidate_id}/resume": {
+      "get": {
+        "description": "The resume file as uploaded. HR and admins; a manager only for a candidate sent to them.",
+        "operationId": "candidate_resume_api_v1_candidates__candidate_id__resume_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Candidate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Candidate Resume",
         "tags": [
           "candidates"
         ]
@@ -9153,6 +9236,65 @@
         "summary": "Change Status",
         "tags": [
           "tasks"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/suggestions": {
+      "post": {
+        "description": "HR suggests an outside candidate for the task without being asked; the task's manager\n(or every resource manager if unknown) is notified. 409 `task_closed`, `already_sent`.",
+        "operationId": "suggest_candidate_api_v1_tasks__task_id__suggestions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestionIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HiringRequestDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Suggest Candidate",
+        "tags": [
+          "hiring"
         ]
       }
     },

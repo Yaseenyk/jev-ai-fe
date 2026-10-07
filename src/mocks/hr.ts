@@ -23,6 +23,7 @@ import type {
   HiringRequestSummary,
   RequestStatus,
   Submission,
+  SentState,
   Verdict,
   HrSummary,
   ImportKind,
@@ -224,6 +225,14 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
     to: string // 'hr' = every HR user; otherwise one manager's email
   }
   const MANAGER = 'manager1@srtm.local'
+  const sentFor = (taskId: string, candidateId: string): SentState | null => {
+    for (const r of requests) {
+      if (r.task_id !== taskId) continue
+      const sub = r.submissions.find((x) => x.candidate_id === candidateId)
+      if (sub) return sub.verdict ?? 'waiting'
+    }
+    return null
+  }
   const hoursAgo = (h: number) => new Date(Date.now() - h * 3_600_000).toISOString()
   const taskByCode = (code: string) => db.tasks.find((t) => t.code === code)
   const matchesFor = (taskId: string) =>
@@ -344,8 +353,21 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
     ...requestSummary(r),
     submissions: r.submissions.flatMap((s) => {
       const c = candidates.find((x) => x.id === s.candidate_id)
-      const m = c?.matches.find((x) => x.task_id === r.task_id)
-      if (!c || !m) return []
+      if (!c) return []
+      // Like the API, someone who does not fit is still shown, as not a fit.
+      const m: TaskMatch = c.matches.find((x) => x.task_id === r.task_id) ?? {
+        task_id: r.task_id,
+        task_code: r.task_code,
+        title: r.task_title,
+        client_code: r.client_code,
+        score: 0,
+        band: 'hidden',
+        must_have_coverage: 0,
+        matched_skills: [],
+        missing_skills: [],
+        reasons: [],
+        blockers: ['Has none of the must-have skills'],
+      }
       return [
         {
           hr_note: s.hr_note,
@@ -884,6 +906,7 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
             missing_skills: m?.missing_skills ?? musts.map((r) => r.skill.name),
             reasons: m?.reasons ?? [`Has 0 of ${musts.length} must-have skills`],
             blockers: m ? (m.blockers ?? []) : ['Has none of the must-have skills'],
+            sent: sentFor(task.id, c.id),
             candidate: candidateSummary(c),
           }
         })
@@ -925,6 +948,65 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
       })
       return HttpResponse.json(requestSummary(req), { status: 201 })
     }),
+    // HR suggests someone without being asked: in the demo the task's manager is manager1.
+    http.post(api('/tasks/:id/suggestions'), async ({ params, request }) => {
+      const body = (await request.json()) as { candidate_id: string; note: string }
+      const task = await taskFor(String(params.id), request)
+      if (!task) return problem(404, 'task_not_found', 'Task not found')
+      let r = requests.find((x) => x.task_id === task.id && x.status !== 'closed')
+      if (r?.submissions.some((x) => x.candidate_id === body.candidate_id)) {
+        return problem(409, 'already_sent', 'This candidate was already sent for this task')
+      }
+      if (!r) {
+        r = {
+          id: `req-${nextId++}`,
+          task_id: task.id,
+          task_code: task.code,
+          task_title: task.title,
+          client_code: task.client_code,
+          requested_by: MANAGER,
+          requested_at: new Date().toISOString(),
+          wanted: 1,
+          note: '',
+          status: 'in_progress',
+          sent_count: 0,
+          fit_count: 0,
+          submissions: [],
+        }
+        requests = [r, ...requests]
+      }
+      const c = candidates.find((x) => x.id === body.candidate_id)
+      if (c) matchFor(c, task)
+      const updated = update(r.id, (x) => ({
+        ...x,
+        status: 'sent',
+        submissions: [
+          ...x.submissions,
+          {
+            candidate_id: body.candidate_id,
+            hr_note: body.note,
+            verdict: null,
+            verdict_note: '',
+            decided_at: null,
+          },
+        ],
+      }))
+      if (!updated) return problem(404, 'request_not_found', 'Request not found')
+      candidates = candidates.map((x) =>
+        x.id === body.candidate_id && x.status === 'new' ? { ...x, status: 'screened' } : x,
+      )
+      notify(MANAGER, {
+        kind: 'request_sent',
+        title: `HR suggested 1 candidate for ${task.code}`,
+        body: 'Mark each one fit or not a fit.',
+        link: `/tasks/${task.id}`,
+      })
+      return HttpResponse.json(requestDetail(updated), { status: 201 })
+    }),
+    // The demo keeps no resume files.
+    http.get(api('/candidates/:id/resume'), () =>
+      problem(404, 'resume_not_found', 'No resume file is kept for this candidate'),
+    ),
     http.get(api('/hiring-requests'), ({ request }) => {
       const status = new URL(request.url).searchParams.get('status')
       const mine = isHr()
