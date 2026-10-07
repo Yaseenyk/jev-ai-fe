@@ -348,6 +348,153 @@
         "title": "BandOutcome",
         "type": "object"
       },
+      "BenchPerson": {
+        "properties": {
+          "best_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskFit"
+            },
+            "title": "Best Tasks",
+            "type": "array"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "current_allocation_pct": {
+            "title": "Current Allocation Pct",
+            "type": "integer"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "free_now_pct": {
+            "title": "Free Now Pct",
+            "type": "integer"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "fully_free_from": {
+            "format": "date",
+            "title": "Fully Free From",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "on_leave_today": {
+            "title": "On Leave Today",
+            "type": "boolean"
+          },
+          "practice": {
+            "$ref": "#/components/schemas/Practice"
+          },
+          "weekly_idle_cost_usd": {
+            "title": "Weekly Idle Cost Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "practice",
+          "current_allocation_pct",
+          "free_now_pct",
+          "fully_free_from",
+          "on_leave_today",
+          "weekly_idle_cost_usd",
+          "best_tasks"
+        ],
+        "title": "BenchPerson",
+        "type": "object"
+      },
+      "BenchReport": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BenchPerson"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/BenchSummary"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "summary",
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "BenchReport",
+        "type": "object"
+      },
+      "BenchSummary": {
+        "properties": {
+          "free_now": {
+            "title": "Free Now",
+            "type": "integer"
+          },
+          "free_now_fte": {
+            "title": "Free Now Fte",
+            "type": "number"
+          },
+          "freeing_30": {
+            "title": "Freeing 30",
+            "type": "integer"
+          },
+          "freeing_60": {
+            "title": "Freeing 60",
+            "type": "integer"
+          },
+          "freeing_90": {
+            "title": "Freeing 90",
+            "type": "integer"
+          },
+          "weekly_idle_cost_usd": {
+            "title": "Weekly Idle Cost Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "free_now",
+          "free_now_fte",
+          "weekly_idle_cost_usd",
+          "freeing_30",
+          "freeing_60",
+          "freeing_90"
+        ],
+        "title": "BenchSummary",
+        "type": "object"
+      },
       "BestMatch": {
         "properties": {
           "score": {
@@ -1150,6 +1297,47 @@
           }
         },
         "title": "ClientUpdate",
+        "type": "object"
+      },
+      "CloseCandidate": {
+        "properties": {
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "why": {
+            "title": "Why",
+            "type": "string"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "why"
+        ],
+        "title": "CloseCandidate",
         "type": "object"
       },
       "CloseIn": {
@@ -2860,6 +3048,60 @@
         "title": "ExplanationRead",
         "type": "object"
       },
+      "ExternalOption": {
+        "properties": {
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          },
+          "candidate_id": {
+            "title": "Candidate Id",
+            "type": "string"
+          },
+          "cost_band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostBand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "margin": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Margin"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "notice_days": {
+            "title": "Notice Days",
+            "type": "integer"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "candidate_id",
+          "full_name",
+          "score",
+          "band",
+          "notice_days",
+          "cost_band",
+          "margin"
+        ],
+        "title": "ExternalOption",
+        "type": "object"
+      },
       "ExtractionRead": {
         "properties": {
           "contact": {
@@ -3240,6 +3482,49 @@
           "starts"
         ],
         "title": "HealthWeek",
+        "type": "object"
+      },
+      "HireOrMove": {
+        "properties": {
+          "external": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExternalOption"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "internal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InternalOption"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "recommendation": {
+            "title": "Recommendation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "recommendation",
+          "reasons",
+          "internal",
+          "external"
+        ],
+        "title": "HireOrMove",
         "type": "object"
       },
       "HiringOutcome": {
@@ -3644,6 +3929,66 @@
         "title": "InputRead",
         "type": "object"
       },
+      "InternalOption": {
+        "properties": {
+          "available_from": {
+            "format": "date",
+            "title": "Available From",
+            "type": "string"
+          },
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/Margin"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "score",
+          "band",
+          "margin",
+          "available_from",
+          "run_id"
+        ],
+        "title": "InternalOption",
+        "type": "object"
+      },
       "InterpretRequest": {
         "properties": {
           "known_clients": {
@@ -3997,6 +4342,34 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "Margin": {
+        "properties": {
+          "below_target": {
+            "title": "Below Target",
+            "type": "boolean"
+          },
+          "margin_pct": {
+            "title": "Margin Pct",
+            "type": "number"
+          },
+          "weekly_bill_usd": {
+            "title": "Weekly Bill Usd",
+            "type": "integer"
+          },
+          "weekly_cost_usd": {
+            "title": "Weekly Cost Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "weekly_cost_usd",
+          "weekly_bill_usd",
+          "margin_pct",
+          "below_target"
+        ],
+        "title": "Margin",
         "type": "object"
       },
       "MatchRunCreated": {
@@ -4951,6 +5324,125 @@
         "title": "ProjectOption",
         "type": "object"
       },
+      "ProposedPerson": {
+        "properties": {
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/Margin"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "score",
+          "band",
+          "margin"
+        ],
+        "title": "ProposedPerson",
+        "type": "object"
+      },
+      "RateCard": {
+        "properties": {
+          "margin_target_pct": {
+            "title": "Margin Target Pct",
+            "type": "number"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/RateCardRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "synthetic": {
+            "title": "Synthetic",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rows",
+          "margin_target_pct",
+          "synthetic"
+        ],
+        "title": "RateCard",
+        "type": "object"
+      },
+      "RateCardIn": {
+        "properties": {
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/RateCardRow"
+            },
+            "maxItems": 5,
+            "minItems": 5,
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rows"
+        ],
+        "title": "RateCardIn",
+        "type": "object"
+      },
+      "RateCardRow": {
+        "properties": {
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "weekly_bill_usd": {
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Weekly Bill Usd",
+            "type": "integer"
+          },
+          "weekly_cost_usd": {
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Weekly Cost Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cost_band",
+          "weekly_cost_usd",
+          "weekly_bill_usd"
+        ],
+        "title": "RateCardRow",
+        "type": "object"
+      },
       "RejectReason": {
         "enum": [
           "skill_gap",
@@ -5127,6 +5619,91 @@
         "title": "SkillCategory",
         "type": "string"
       },
+      "SkillGap": {
+        "properties": {
+          "available_now": {
+            "title": "Available Now",
+            "type": "integer"
+          },
+          "closest": {
+            "items": {
+              "$ref": "#/components/schemas/CloseCandidate"
+            },
+            "title": "Closest",
+            "type": "array"
+          },
+          "gap": {
+            "title": "Gap",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "shortage",
+              "tight",
+              "covered"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "task_codes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Task Codes",
+            "type": "array"
+          },
+          "tasks_needing": {
+            "title": "Tasks Needing",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "skill_id",
+          "skill_name",
+          "tasks_needing",
+          "task_codes",
+          "available_now",
+          "gap",
+          "status",
+          "closest"
+        ],
+        "title": "SkillGap",
+        "type": "object"
+      },
+      "SkillGapReport": {
+        "properties": {
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/SkillGap"
+            },
+            "title": "Gaps",
+            "type": "array"
+          },
+          "horizon_days": {
+            "title": "Horizon Days",
+            "type": "integer"
+          },
+          "open_tasks": {
+            "title": "Open Tasks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "horizon_days",
+          "open_tasks",
+          "gaps"
+        ],
+        "title": "SkillGapReport",
+        "type": "object"
+      },
       "SkillRead": {
         "properties": {
           "aliases": {
@@ -5220,6 +5797,106 @@
           "must_have"
         ],
         "title": "SkillRequirementRead",
+        "type": "object"
+      },
+      "StaffedTask": {
+        "properties": {
+          "alternates": {
+            "items": {
+              "$ref": "#/components/schemas/ProposedPerson"
+            },
+            "title": "Alternates",
+            "type": "array"
+          },
+          "proposed": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProposedPerson"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "unfilled_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unfilled Reason"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_code",
+          "title",
+          "proposed",
+          "alternates",
+          "unfilled_reason"
+        ],
+        "title": "StaffedTask",
+        "type": "object"
+      },
+      "StaffingIn": {
+        "properties": {
+          "task_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 30,
+            "minItems": 1,
+            "title": "Task Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "task_ids"
+        ],
+        "title": "StaffingIn",
+        "type": "object"
+      },
+      "StaffingPlan": {
+        "description": "A proposal only: managers still accept or reject each person on the task's shortlist.",
+        "properties": {
+          "filled": {
+            "title": "Filled",
+            "type": "integer"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/StaffedTask"
+            },
+            "title": "Tasks",
+            "type": "array"
+          },
+          "total_weekly_margin_usd": {
+            "title": "Total Weekly Margin Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tasks",
+          "filled",
+          "total_weekly_margin_usd"
+        ],
+        "title": "StaffingPlan",
         "type": "object"
       },
       "Submission": {
@@ -5491,6 +6168,40 @@
           "requirements"
         ],
         "title": "TaskCreate",
+        "type": "object"
+      },
+      "TaskFit": {
+        "properties": {
+          "must_have_coverage": {
+            "title": "Must Have Coverage",
+            "type": "number"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_code",
+          "title",
+          "start_date",
+          "must_have_coverage"
+        ],
+        "title": "TaskFit",
         "type": "object"
       },
       "TaskMatch": {
@@ -6750,6 +7461,77 @@
         ]
       }
     },
+    "/api/v1/admin/audit/decisions.csv": {
+      "get": {
+        "description": "Every recommendation of every completed run in the period, with the model, question and\ncut-off versions and the manager's decision on it (CSV).",
+        "operationId": "audit_decisions_api_v1_admin_audit_decisions_csv_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Since"
+            }
+          },
+          {
+            "in": "query",
+            "name": "until",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Until"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Audit Decisions",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
     "/api/v1/admin/companies": {
       "get": {
         "description": "Customer companies (operator's admins only).",
@@ -7164,6 +7946,78 @@
         "summary": "Activate",
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/rate-card": {
+      "get": {
+        "description": "Weekly cost and bill rate per cost band; `synthetic` until an admin saves real ones.",
+        "operationId": "get_rate_card_api_v1_admin_rate_card_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateCard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Rate Card",
+        "tags": [
+          "planning"
+        ]
+      },
+      "put": {
+        "description": "All five bands at once. Audited `rate_card.updated`.",
+        "operationId": "put_rate_card_api_v1_admin_rate_card_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateCardIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RateCard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Rate Card",
+        "tags": [
+          "planning"
         ]
       }
     },
@@ -10558,6 +11412,178 @@
         ]
       }
     },
+    "/api/v1/planning/bench": {
+      "get": {
+        "description": "People free now or within the horizon, what idle capacity costs per week (rate card),\nand up to 3 open tasks each could take next (half the must-haves or more, level within one\nstep, cost band allowed, capacity when the task starts).",
+        "operationId": "bench_api_v1_planning_bench_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "horizon_days",
+            "required": false,
+            "schema": {
+              "default": 90,
+              "maximum": 365,
+              "minimum": 7,
+              "title": "Horizon Days",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BenchReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Bench",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/v1/planning/skill-gaps": {
+      "get": {
+        "description": "Must-have skills that open tasks starting within the horizon need more often than there\nare free people with them, and who is closest to filling each (one level short, or a\nrelated skill): training before hiring.",
+        "operationId": "skill_gaps_api_v1_planning_skill_gaps_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "horizon_days",
+            "required": false,
+            "schema": {
+              "default": 90,
+              "maximum": 365,
+              "minimum": 7,
+              "title": "Horizon Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillGapReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Skill Gaps",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/v1/planning/staffing": {
+      "post": {
+        "description": "Staff several tasks at once from each task's latest matching run without proposing anyone\nfor more than their capacity. A proposal only: nothing is assigned.",
+        "operationId": "staffing_api_v1_planning_staffing_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffingIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffingPlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Staffing",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
     "/api/v1/projects": {
       "get": {
         "description": "Company projects, for adding one to an employee's history.",
@@ -11115,6 +12141,55 @@
         "summary": "Task Candidates",
         "tags": [
           "hiring"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/hire-or-move": {
+      "get": {
+        "description": "The best person inside next to the best outside candidate, with the rule-based\nrecommendation (move_internal / hire / neither) and its reasons.",
+        "operationId": "hire_or_move_api_v1_tasks__task_id__hire_or_move_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HireOrMove"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Hire Or Move",
+        "tags": [
+          "planning"
         ]
       }
     },

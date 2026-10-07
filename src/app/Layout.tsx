@@ -1,5 +1,6 @@
 import {
   Building2,
+  CalendarRange,
   FileUp,
   Inbox,
   Info,
@@ -37,6 +38,7 @@ interface NavItem {
   adminOnly?: boolean
   peopleManagersOnly?: boolean // admin and HR (ADR 019)
   requestsOnly?: boolean // anyone who asks for or answers hiring requests
+  plannersOnly?: boolean // admin, resource managers and HR (ADR 024)
 }
 
 const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
@@ -62,6 +64,13 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         icon: Inbox,
         isActive: (p) => p.startsWith('/hiring-requests'),
         requestsOnly: true,
+      },
+      {
+        to: '/planning',
+        label: 'Planning',
+        icon: CalendarRange,
+        isActive: (p) => p.startsWith('/planning'),
+        plannersOnly: true,
       },
     ],
   },
@@ -138,7 +147,8 @@ function useNavGroups() {
         (canEdit || !item.editorsOnly) &&
         (isAdmin || !item.adminOnly) &&
         (managesPeople || !item.peopleManagersOnly) &&
-        (managesPeople || canEdit || !item.requestsOnly),
+        (managesPeople || canEdit || !item.requestsOnly) &&
+        (managesPeople || canEdit || !item.plannersOnly),
     ),
   })).filter((g) => g.items.length > 0)
 }

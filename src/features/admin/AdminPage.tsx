@@ -2,6 +2,7 @@ import { Navigate, useSearchParams } from 'react-router'
 
 import { PageHeader } from '@/components/PageHeader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AuditTab } from '@/features/admin/AuditTab'
 import { CompaniesTab } from '@/features/admin/CompaniesTab'
 import { EvalTab } from '@/features/admin/EvalTab'
 import { useCompanies } from '@/features/admin/api'
@@ -9,6 +10,7 @@ import { HealthTab } from '@/features/admin/HealthTab'
 import { DecisionApiTab } from '@/features/admin/DecisionApiTab'
 import { LearningTab } from '@/features/admin/LearningTab'
 import { ModelsTab } from '@/features/admin/ModelsTab'
+import { RateCardTab } from '@/features/admin/RateCardTab'
 import { RunsTab } from '@/features/admin/RunsTab'
 import { ThresholdsTab } from '@/features/admin/ThresholdsTab'
 import { UsersTab } from '@/features/admin/UsersTab'
@@ -22,6 +24,8 @@ const TABS = [
   { value: 'learning', label: 'Learning', body: <LearningTab /> },
   { value: 'models', label: 'Models', body: <ModelsTab /> },
   { value: 'users', label: 'Users', body: <UsersTab /> },
+  { value: 'rate-card', label: 'Rate card', body: <RateCardTab /> },
+  { value: 'audit', label: 'Audit', body: <AuditTab /> },
   { value: 'decision-api', label: 'Decision API', body: <DecisionApiTab /> },
   { value: 'companies', label: 'Companies', body: <CompaniesTab /> },
 ]
