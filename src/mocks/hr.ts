@@ -879,6 +879,7 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
             matched_skills: m?.matched_skills ?? [],
             missing_skills: m?.missing_skills ?? musts.map((r) => r.skill.name),
             reasons: m?.reasons ?? [`Has 0 of ${musts.length} must-have skills`],
+            blockers: m ? (m.blockers ?? []) : ['Has none of the must-have skills'],
             candidate: candidateSummary(c),
           }
         })

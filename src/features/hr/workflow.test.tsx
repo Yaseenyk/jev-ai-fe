@@ -197,4 +197,5 @@ test('HR checks a resume from a task page and sees the answer on that task', asy
   expect(within(result).getByText('Ravi Check')).toBeInTheDocument()
   const table = screen.getByRole('table', { name: 'Checked resumes' })
   expect(within(table).getByText('Ravi Check')).toBeInTheDocument()
+  expect(within(table).getByRole('columnheader', { name: 'Fit and why' })).toBeInTheDocument()
 })

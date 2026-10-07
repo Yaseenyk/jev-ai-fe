@@ -373,7 +373,7 @@ function ResumeChecks({ taskId, closed }: { taskId: string; closed: boolean }) {
             <thead className="text-muted-foreground text-left text-xs">
               <tr className="border-b">
                 <th className="px-5 py-2 font-medium">Candidate</th>
-                <th className="px-3 py-2 font-medium">Fit</th>
+                <th className="px-3 py-2 font-medium">Fit and why</th>
                 <th className="px-3 py-2 font-medium">Must-have skills</th>
                 <th className="px-3 py-2 font-medium">Checked</th>
                 <th className="px-5 py-2" />
@@ -396,6 +396,16 @@ function ResumeChecks({ taskId, closed }: { taskId: string; closed: boolean }) {
                     <td className="space-y-1 px-3 py-2.5 align-top">
                       <StatusBadge tone={fit.tone}>{fit.label}</StatusBadge>
                       {m.score > 0 && <ScoreBar score={m.score} band={m.band} />}
+                      {(m.blockers ?? []).length > 0 && (
+                        <ul
+                          className="text-muted-foreground max-w-64 space-y-0.5 text-xs"
+                          aria-label="Why"
+                        >
+                          {(m.blockers ?? []).map((b) => (
+                            <li key={b}>{b}</li>
+                          ))}
+                        </ul>
+                      )}
                     </td>
                     <td className="px-3 py-2.5 align-top text-xs">
                       {m.matched_skills.map((s) => (

@@ -185,6 +185,8 @@ export interface TaskMatch {
   matched_skills: string[]
   missing_skills: string[]
   reasons: string[]
+  /** What stopped this person from being recommended, in plain words. */
+  blockers?: string[]
 }
 
 export interface CandidateMatch extends Omit<

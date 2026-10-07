@@ -559,6 +559,14 @@
           "band": {
             "$ref": "#/components/schemas/Band"
           },
+          "blockers": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Blockers",
+            "type": "array"
+          },
           "candidate": {
             "$ref": "#/components/schemas/CandidateSummary"
           },
@@ -4521,6 +4529,14 @@
         "properties": {
           "band": {
             "$ref": "#/components/schemas/Band"
+          },
+          "blockers": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Blockers",
+            "type": "array"
           },
           "client_code": {
             "title": "Client Code",

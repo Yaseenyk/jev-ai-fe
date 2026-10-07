@@ -1386,6 +1386,11 @@ export interface components {
         /** CandidateMatch */
         CandidateMatch: {
             band: components["schemas"]["Band"];
+            /**
+             * Blockers
+             * @default []
+             */
+            blockers: string[];
             candidate: components["schemas"]["CandidateSummary"];
             /** Matched Skills */
             matched_skills: string[];
@@ -2701,6 +2706,11 @@ export interface components {
         /** TaskMatch */
         TaskMatch: {
             band: components["schemas"]["Band"];
+            /**
+             * Blockers
+             * @default []
+             */
+            blockers: string[];
             /** Client Code */
             client_code: string;
             /** Matched Skills */
