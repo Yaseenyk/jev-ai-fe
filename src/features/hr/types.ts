@@ -308,3 +308,24 @@ export const REQUEST_STATUS_LABELS: Record<RequestStatus, string> = {
   reviewed: 'Manager decided',
   closed: 'Closed',
 }
+
+export type EvidenceStatus = 'on_profile' | 'suggested' | 'accepted' | 'dismissed'
+
+/** An employee's resume, read once into skill evidence HR accepts or dismisses (item 6). */
+export interface EmployeeResume {
+  uploaded_at: string
+  uploaded_by: string | null
+  model: string
+  summary: string
+  domains: string[]
+  evidence: {
+    skill_id: string
+    skill_name: string
+    proficiency: number
+    years: number
+    last_used: string
+    status: EvidenceStatus
+  }[]
+  notes: string[]
+  removed: string[]
+}

@@ -806,6 +806,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/employees/{employee_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Resume */
+        get: operations["get_resume_api_v1_employees__employee_id__resume_get"];
+        put?: never;
+        /**
+         * Upload Resume
+         * @description Read the employee's resume once (personal details removed in code first) into skill
+         *     evidence; replaces an earlier one. The profile changes only when HR accepts a skill.
+         */
+        post: operations["upload_resume_api_v1_employees__employee_id__resume_post"];
+        /** Delete Resume */
+        delete: operations["delete_resume_api_v1_employees__employee_id__resume_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/resume/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Resume File */
+        get: operations["get_resume_file_api_v1_employees__employee_id__resume_file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/resume/skills/{skill_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume Skill
+         * @description Accept a skill the resume shows (adds it to the profile, audited) or dismiss it.
+         */
+        post: operations["resume_skill_api_v1_employees__employee_id__resume_skills__skill_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/employees/{employee_id}/review": {
         parameters: {
             query?: never;
@@ -1602,6 +1662,16 @@ export interface components {
             /** Kind */
             kind: string;
         };
+        /** Body_upload_resume_api_v1_employees__employee_id__resume_post */
+        Body_upload_resume_api_v1_employees__employee_id__resume_post: {
+            /**
+             * Allow Images
+             * @default false
+             */
+            allow_images: boolean;
+            /** File */
+            file: string;
+        };
         /** CandidateCreate */
         CandidateCreate: {
             /** Consent */
@@ -2125,6 +2195,31 @@ export interface components {
             level: components["schemas"]["Level"];
             location: components["schemas"]["Location"];
         };
+        /** EmployeeResumeRead */
+        EmployeeResumeRead: {
+            /** Domains */
+            domains: string[];
+            /** Evidence */
+            evidence: components["schemas"]["Evidence"][];
+            /** Model */
+            model: string;
+            /** Notes */
+            notes: string[];
+            /**
+             * Removed
+             * @default []
+             */
+            removed: string[];
+            /** Summary */
+            summary: string;
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
+            /** Uploaded By */
+            uploaded_by: string | null;
+        };
         /** EmployeeSkillIn */
         EmployeeSkillIn: {
             /**
@@ -2277,6 +2372,35 @@ export interface components {
             retrieval_recall: number | null;
             /** Tasks */
             tasks: number | null;
+        };
+        /** Evidence */
+        Evidence: {
+            /**
+             * Last Used
+             * Format: date
+             */
+            last_used: string;
+            /** Proficiency */
+            proficiency: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Skill Name */
+            skill_name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "on_profile" | "suggested" | "accepted" | "dismissed";
+            /** Years */
+            years: number;
+        };
+        /** EvidenceAction */
+        EvidenceAction: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "accept" | "dismiss";
         };
         /** ExcludedRead */
         ExcludedRead: {
@@ -3059,6 +3183,21 @@ export interface components {
          */
         RejectReason: "skill_gap" | "level_mismatch" | "availability" | "domain_gap" | "client_preference" | "already_planned" | "other";
         /**
+         * ResumeBacking
+         * @description For a shortlist: which of the task's must-have skills the person's resume shows.
+         */
+        ResumeBacking: {
+            /** Backed */
+            backed: string[];
+            /** Not Backed */
+            not_backed: string[];
+            /**
+             * Uploaded At
+             * Format: date-time
+             */
+            uploaded_at: string;
+        };
+        /**
          * RunStatus
          * @enum {string}
          */
@@ -3084,6 +3223,7 @@ export interface components {
             rank: number;
             /** Rank Score */
             rank_score: number;
+            resume?: components["schemas"]["ResumeBacking"] | null;
         };
         /**
          * SkillCategory
@@ -5013,6 +5153,168 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EmployeeDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_resume_api_v1_employees__employee_id__resume_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeResumeRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_resume_api_v1_employees__employee_id__resume_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_resume_api_v1_employees__employee_id__resume_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeResumeRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_resume_api_v1_employees__employee_id__resume_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_resume_file_api_v1_employees__employee_id__resume_file_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_skill_api_v1_employees__employee_id__resume_skills__skill_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+                skill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvidenceAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeResumeRead"];
                 };
             };
             /** @description Validation Error */

@@ -23,6 +23,7 @@ import type {
   HiringRequestSummary,
   RequestStatus,
   Submission,
+  EmployeeResume,
   SentState,
   Verdict,
   HrSummary,
@@ -225,6 +226,7 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
     to: string // 'hr' = every HR user; otherwise one manager's email
   }
   const MANAGER = 'manager1@srtm.local'
+  const employeeResumes = new Map<string, EmployeeResume>()
   const sentFor = (taskId: string, candidateId: string): SentState | null => {
     for (const r of requests) {
       if (r.task_id !== taskId) continue
@@ -562,6 +564,54 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
       return HttpResponse.json({ items, total: all.length, limit, offset })
     }),
     http.get(api('/projects'), () => HttpResponse.json(projectOptions)),
+    // Employee resumes (item 6): a sample reading stands in for the real one.
+    http.post(api('/employees/:id/resume'), ({ params }) => {
+      const e = employees.find((x) => x.id === params.id)
+      const sample = data.candidates[0]
+      if (!e || !sample) return problem(404, 'employee_not_found', 'Employee not found')
+      const have = new Set(e.skills.map((k) => k.skill_id))
+      const made: EmployeeResume = {
+        uploaded_at: new Date().toISOString(),
+        uploaded_by: 'hr@srtm.local',
+        model: 'demo-extractor',
+        summary: sample.profile.summary,
+        domains: sample.profile.domains,
+        evidence: sample.profile.skills.map((k) => ({
+          ...k,
+          status: have.has(k.skill_id) ? 'on_profile' : 'suggested',
+        })),
+        notes: [],
+        removed: ['name', 'email address', 'phone number'],
+      }
+      employeeResumes.set(e.id, made)
+      return HttpResponse.json(made)
+    }),
+    http.get(api('/employees/:id/resume'), ({ params }) => {
+      const r = employeeResumes.get(String(params.id))
+      return r
+        ? HttpResponse.json(r)
+        : problem(404, 'resume_not_found', 'No resume uploaded for this employee')
+    }),
+    http.get(api('/employees/:id/resume/file'), () =>
+      problem(404, 'resume_not_found', 'No resume file is kept for this employee'),
+    ),
+    http.post(api('/employees/:id/resume/skills/:skillId'), async ({ params, request }) => {
+      const body = (await request.json()) as { action: 'accept' | 'dismiss' }
+      const r = employeeResumes.get(String(params.id))
+      const item = r?.evidence.find((x) => x.skill_id === params.skillId)
+      if (!r || !item) return problem(404, 'evidence_not_found', 'This skill is not in the resume')
+      item.status = body.action === 'accept' ? 'accepted' : 'dismissed'
+      if (body.action === 'accept') {
+        employees = employees.map((e) =>
+          e.id === params.id ? { ...e, skills: [...e.skills, { ...item, certified: false }] } : e,
+        )
+      }
+      return HttpResponse.json(r)
+    }),
+    http.delete(api('/employees/:id/resume'), ({ params }) => {
+      employeeResumes.delete(String(params.id))
+      return new HttpResponse(null, { status: 204 })
+    }),
     http.post(api('/employees/:id/projects'), async ({ params, request }) => {
       const body = (await request.json()) as EmployeeProjectCreate
       const option = projectOptions.find((p) => p.id === body.project_id)

@@ -116,6 +116,24 @@ export function ShortlistItemCard({
           </div>
         </div>
 
+        {item.resume && (
+          <p
+            className="text-muted-foreground mx-4 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
+            aria-label="What the resume backs"
+          >
+            <span>Resume backs:</span>
+            {item.resume.backed.map((s) => (
+              <span key={s} className="text-band-shortlist-foreground">
+                {s} ✓
+              </span>
+            ))}
+            {item.resume.not_backed.map((s) => (
+              <span key={s}>{s} ✗</span>
+            ))}
+            <span>(shown only, not scored yet)</span>
+          </p>
+        )}
+
         {item.flags.length > 0 && (
           <div className="text-band-review-foreground bg-band-review mx-4 mb-3 flex gap-2 rounded-md px-3 py-2 text-xs">
             <TriangleAlert className="size-3.5 shrink-0" aria-hidden />

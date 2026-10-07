@@ -219,3 +219,23 @@ test('a scanned resume is sent to ChatGPT only after HR agrees', async () => {
   ).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Save candidate' })).toBeInTheDocument()
 })
+
+test('HR uploads an employee resume and accepts a skill it shows', async () => {
+  const user = userEvent.setup()
+  await signInAs('hr@srtm.local')
+  renderRoute(`/employees/${employee.id}`)
+  const section = await screen.findByRole('region', { name: 'Resume' })
+  expect(await within(section).findByText(/No resume yet/)).toBeInTheDocument()
+  await user.upload(
+    within(section).getByLabelText('Resume file'),
+    new File(['resume'], 'cv.pdf', { type: 'application/pdf' }),
+  )
+  const found = await within(section).findByRole('list', { name: 'Skills found in the resume' })
+  const accept = within(found).getAllByRole('button', { name: 'Accept as skill' })
+  const row = accept[0]?.closest('li')
+  const skill = row?.querySelector('.font-medium')?.textContent ?? ''
+  await user.click(accept[0] as HTMLElement)
+  expect(await within(found).findAllByText('Added to the profile')).not.toHaveLength(0)
+  const skills = await screen.findByRole('table', { name: 'Skills' })
+  expect(within(skills).getByText(skill)).toBeInTheDocument()
+})

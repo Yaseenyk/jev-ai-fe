@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { apiBlob, apiFetch } from '@/api/client'
+import { ApiError, apiBlob, apiFetch } from '@/api/client'
 import type { Page } from '@/api/types'
 import type {
   AppNotification,
@@ -13,6 +13,7 @@ import type {
   DataHealth,
   EmployeeCreate,
   EmployeeDetail,
+  EmployeeResume,
   EmployeeProjectCreate,
   EmployeeSkill,
   EmployeeSummary,
@@ -338,6 +339,63 @@ export const useResumeFile = (candidateId: string) =>
   useQuery({
     queryKey: ['candidates', candidateId, 'resume'],
     queryFn: () => apiBlob(`/candidates/${candidateId}/resume`),
+    retry: false,
+    staleTime: Infinity,
+  })
+
+// --- Employee resumes (item 6) ---------------------------------------------------------------
+export const useEmployeeResume = (employeeId: string) =>
+  useQuery({
+    queryKey: ['employees', employeeId, 'resume'],
+    queryFn: async () => {
+      try {
+        return await apiFetch<EmployeeResume>(`/employees/${employeeId}/resume`)
+      } catch (e) {
+        if (e instanceof ApiError && e.problem?.code === 'resume_not_found') return null
+        throw e
+      }
+    },
+  })
+
+function useResumeMutation<T>(fn: (input: T) => Promise<unknown>) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['employees'] })
+    },
+  })
+}
+
+export const useUploadEmployeeResume = (employeeId: string) =>
+  useResumeMutation(({ file, allowImages = false }: { file: File; allowImages?: boolean }) => {
+    const form = new FormData()
+    form.set('file', file)
+    if (allowImages) form.set('allow_images', 'true')
+    return apiFetch<EmployeeResume>(`/employees/${employeeId}/resume`, {
+      method: 'POST',
+      body: form,
+    })
+  })
+
+export const useResumeSkill = (employeeId: string) =>
+  useResumeMutation(({ skillId, action }: { skillId: string; action: 'accept' | 'dismiss' }) =>
+    apiFetch<EmployeeResume>(`/employees/${employeeId}/resume/skills/${skillId}`, {
+      method: 'POST',
+      body: JSON.stringify({ action }),
+    }),
+  )
+
+export const useDeleteEmployeeResume = (employeeId: string) =>
+  useResumeMutation(() =>
+    apiFetch<undefined>(`/employees/${employeeId}/resume`, { method: 'DELETE' }),
+  )
+
+export const useEmployeeResumeFile = (employeeId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: ['employees', employeeId, 'resume', 'file'],
+    queryFn: () => apiBlob(`/employees/${employeeId}/resume/file`),
+    enabled,
     retry: false,
     staleTime: Infinity,
   })

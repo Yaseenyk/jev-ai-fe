@@ -1,5 +1,14 @@
-import { AlertTriangle, CalendarPlus, CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react'
-import { type ReactNode, useState } from 'react'
+import {
+  AlertTriangle,
+  CalendarPlus,
+  CheckCircle2,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+  Upload,
+} from 'lucide-react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { Navigate, useParams } from 'react-router'
 
 import type { Level } from '@/api/types'
@@ -39,17 +48,23 @@ import {
   useAddLeave,
   useAddProject,
   useConfirmReviewed,
+  useDeleteEmployeeResume,
   useEmployee,
+  useEmployeeResume,
+  useEmployeeResumeFile,
   useProjects,
   useRemoveLeave,
   useRemoveProject,
+  useResumeSkill,
   useSaveSkills,
   useUpdateEmployee,
+  useUploadEmployeeResume,
 } from '@/features/hr/api'
 import type {
   EmployeeDetail,
   EmployeeProjectCreate,
   EmployeeSkill,
+  EvidenceStatus,
   ProjectOutcome,
 } from '@/features/hr/types'
 import { ProfileStatus, ago } from '@/features/hr/EmployeesPage'
@@ -160,6 +175,8 @@ export default function EmployeePage() {
               </Table>
             )}
           </Section>
+
+          <ResumeSection employeeId={e.id} />
 
           <Section
             title="Project history"
@@ -810,5 +827,175 @@ function AddProjectSheet({ employeeId, onClose }: { employeeId: string; onClose:
       )}
       {add.isError && <ErrorState error={add.error} />}
     </FormSheet>
+  )
+}
+
+const EVIDENCE_LABEL: Record<EvidenceStatus, string> = {
+  on_profile: 'Already on the profile',
+  suggested: 'Not on the profile yet',
+  accepted: 'Added to the profile',
+  dismissed: 'Dismissed',
+}
+
+/** The employee's resume, read once: skills it shows that the profile lacks can be accepted. */
+function ResumeSection({ employeeId }: { employeeId: string }) {
+  const resume = useEmployeeResume(employeeId)
+  const upload = useUploadEmployeeResume(employeeId)
+  const act = useResumeSkill(employeeId)
+  const remove = useDeleteEmployeeResume(employeeId)
+  const [viewing, setViewing] = useState(false)
+  const file = useEmployeeResumeFile(employeeId, viewing)
+  const r = resume.data
+  const pick = (
+    <label className="cursor-pointer">
+      <input
+        type="file"
+        accept=".pdf,.docx"
+        aria-label="Resume file"
+        className="sr-only"
+        onChange={(ev) => {
+          const f = ev.target.files?.[0]
+          if (f) upload.mutate({ file: f })
+          ev.target.value = ''
+        }}
+      />
+      <span className="hover:bg-accent inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-sm font-medium">
+        {upload.isPending ? (
+          <Loader2 className="size-4 animate-spin" aria-hidden />
+        ) : (
+          <Upload className="size-4" aria-hidden />
+        )}
+        {r ? 'Replace resume' : 'Upload resume'}
+      </span>
+    </label>
+  )
+  const suggested = r?.evidence.filter((x) => x.status === 'suggested') ?? []
+  return (
+    <Section
+      title="Resume"
+      description="Read once to find skills the profile is missing. Personal details are removed before reading; nothing changes until you accept a skill."
+      action={pick}
+    >
+      {upload.isError && <ErrorState error={upload.error} />}
+      {resume.isPending ? (
+        <Skeleton className="my-3 h-16" />
+      ) : resume.isError ? (
+        <ErrorState error={resume.error} />
+      ) : !r ? (
+        <Empty>
+          No resume yet. Upload one (PDF or Word) to see which skills it shows that the profile does
+          not have.
+        </Empty>
+      ) : (
+        <div className="space-y-4 py-3">
+          <p className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span>
+              Read {date(r.uploaded_at)}
+              {r.uploaded_by ? ` by ${r.uploaded_by}` : ''}
+            </span>
+            <button
+              type="button"
+              className="text-primary underline"
+              onClick={() => setViewing((v) => !v)}
+            >
+              {viewing ? 'Hide the file' : 'View the file'}
+            </button>
+            <button
+              type="button"
+              className="text-destructive underline"
+              disabled={remove.isPending}
+              onClick={() => remove.mutate(undefined)}
+            >
+              Delete resume
+            </button>
+          </p>
+          {viewing && <ResumeFile blob={file.data} failed={file.isError} />}
+          {suggested.length > 0 && (
+            <div
+              className="border-band-review-foreground/20 bg-band-review/30 rounded-lg border p-3 text-sm"
+              role="status"
+            >
+              The resume shows {suggested.length} skill{suggested.length === 1 ? '' : 's'} the
+              profile does not have. Accept the ones that are right.
+            </div>
+          )}
+          <ul className="divide-y text-sm" aria-label="Skills found in the resume">
+            {r.evidence.map((x) => (
+              <li
+                key={x.skill_id}
+                className="flex flex-wrap items-center justify-between gap-2 py-2"
+              >
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{x.skill_name}</span>
+                  <span className="text-muted-foreground text-xs">
+                    level {x.proficiency}/5 · {x.years} yrs · last used {date(x.last_used)}
+                  </span>
+                </span>
+                {x.status === 'suggested' ? (
+                  <span className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      disabled={act.isPending}
+                      onClick={() => act.mutate({ skillId: x.skill_id, action: 'accept' })}
+                    >
+                      Accept as skill
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={act.isPending}
+                      onClick={() => act.mutate({ skillId: x.skill_id, action: 'dismiss' })}
+                    >
+                      Dismiss
+                    </Button>
+                  </span>
+                ) : (
+                  <StatusBadge
+                    tone={
+                      x.status === 'dismissed'
+                        ? 'neutral'
+                        : x.status === 'accepted'
+                          ? 'ready'
+                          : 'info'
+                    }
+                  >
+                    {EVIDENCE_LABEL[x.status]}
+                  </StatusBadge>
+                )}
+              </li>
+            ))}
+          </ul>
+          {r.notes.length > 0 && (
+            <ul className="text-muted-foreground space-y-0.5 text-xs">
+              {r.notes.map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </Section>
+  )
+}
+
+function ResumeFile({ blob, failed }: { blob: Blob | undefined; failed: boolean }) {
+  const url = useMemo(() => (blob ? URL.createObjectURL(blob) : null), [blob])
+  useEffect(
+    () => () => {
+      if (url) URL.revokeObjectURL(url)
+    },
+    [url],
+  )
+  if (failed) return <Empty>The file could not be loaded.</Empty>
+  if (!url || !blob) return <Skeleton className="h-40" />
+  if (blob.type === 'application/pdf') {
+    return <iframe title="Resume" src={url} className="h-[600px] w-full rounded-lg border" />
+  }
+  return (
+    <Button asChild variant="outline" size="sm">
+      <a href={url} download="resume.docx">
+        Download the resume (Word)
+      </a>
+    </Button>
   )
 }

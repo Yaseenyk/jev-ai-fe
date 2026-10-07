@@ -404,6 +404,25 @@
         "title": "Body_preview_import_api_v1_imports_preview_post",
         "type": "object"
       },
+      "Body_upload_resume_api_v1_employees__employee_id__resume_post": {
+        "properties": {
+          "allow_images": {
+            "default": false,
+            "title": "Allow Images",
+            "type": "boolean"
+          },
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_resume_api_v1_employees__employee_id__resume_post",
+        "type": "object"
+      },
       "CandidateCreate": {
         "properties": {
           "consent": {
@@ -1984,6 +2003,74 @@
         "title": "EmployeeRef",
         "type": "object"
       },
+      "EmployeeResumeRead": {
+        "properties": {
+          "domains": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "title": "Evidence",
+            "type": "array"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "removed": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Removed",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "uploaded_at": {
+            "format": "date-time",
+            "title": "Uploaded At",
+            "type": "string"
+          },
+          "uploaded_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uploaded By"
+          }
+        },
+        "required": [
+          "uploaded_at",
+          "uploaded_by",
+          "model",
+          "summary",
+          "domains",
+          "evidence",
+          "notes"
+        ],
+        "title": "EmployeeResumeRead",
+        "type": "object"
+      },
       "EmployeeSkillIn": {
         "properties": {
           "certified": {
@@ -2513,6 +2600,68 @@
           "ece"
         ],
         "title": "EvalReportSummary",
+        "type": "object"
+      },
+      "Evidence": {
+        "properties": {
+          "last_used": {
+            "format": "date",
+            "title": "Last Used",
+            "type": "string"
+          },
+          "proficiency": {
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "on_profile",
+              "suggested",
+              "accepted",
+              "dismissed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "years": {
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "skill_id",
+          "skill_name",
+          "proficiency",
+          "years",
+          "last_used",
+          "status"
+        ],
+        "title": "Evidence",
+        "type": "object"
+      },
+      "EvidenceAction": {
+        "properties": {
+          "action": {
+            "enum": [
+              "accept",
+              "dismiss"
+            ],
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "EvidenceAction",
         "type": "object"
       },
       "ExcludedRead": {
@@ -4708,6 +4857,37 @@
         "title": "RejectReason",
         "type": "string"
       },
+      "ResumeBacking": {
+        "description": "For a shortlist: which of the task's must-have skills the person's resume shows.",
+        "properties": {
+          "backed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Backed",
+            "type": "array"
+          },
+          "not_backed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Not Backed",
+            "type": "array"
+          },
+          "uploaded_at": {
+            "format": "date-time",
+            "title": "Uploaded At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "backed",
+          "not_backed",
+          "uploaded_at"
+        ],
+        "title": "ResumeBacking",
+        "type": "object"
+      },
       "RunStatus": {
         "enum": [
           "queued",
@@ -4796,6 +4976,16 @@
           "rank_score": {
             "title": "Rank Score",
             "type": "number"
+          },
+          "resume": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResumeBacking"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -8585,6 +8775,264 @@
           }
         ],
         "summary": "Remove Project",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/resume": {
+      "delete": {
+        "operationId": "delete_resume_api_v1_employees__employee_id__resume_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Resume",
+        "tags": [
+          "employees"
+        ]
+      },
+      "get": {
+        "operationId": "get_resume_api_v1_employees__employee_id__resume_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeResumeRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Resume",
+        "tags": [
+          "employees"
+        ]
+      },
+      "post": {
+        "description": "Read the employee's resume once (personal details removed in code first) into skill\nevidence; replaces an earlier one. The profile changes only when HR accepts a skill.",
+        "operationId": "upload_resume_api_v1_employees__employee_id__resume_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_resume_api_v1_employees__employee_id__resume_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeResumeRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upload Resume",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/resume/file": {
+      "get": {
+        "operationId": "get_resume_file_api_v1_employees__employee_id__resume_file_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Resume File",
+        "tags": [
+          "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/resume/skills/{skill_id}": {
+      "post": {
+        "description": "Accept a skill the resume shows (adds it to the profile, audited) or dismiss it.",
+        "operationId": "resume_skill_api_v1_employees__employee_id__resume_skills__skill_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "skill_id",
+            "required": true,
+            "schema": {
+              "title": "Skill Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceAction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeResumeRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Resume Skill",
         "tags": [
           "employees"
         ]
