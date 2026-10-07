@@ -35,6 +35,7 @@ import { PriorityBadge, TaskStatusBadge } from '@/features/tasks/PriorityBadge'
 import { StartRunway } from '@/features/tasks/StartRunway'
 import { useCanEdit, useManagesPeople } from '@/features/auth/AuthProvider'
 import { CandidatesFromHr } from '@/features/hr/CandidatesFromHr'
+import { HireOrMoveCard } from '@/features/planning/HireOrMoveCard'
 import { useResumeChecks, useSuggest } from '@/features/hr/api'
 import type { CandidateMatch, SentState } from '@/features/hr/types'
 import { ScoreBar } from '@/features/hr/ui'
@@ -272,6 +273,7 @@ function TaskDetail({ task }: { task: Task }) {
             )}
           </section>
 
+          {!closed && (canEdit || managesPeople) && <HireOrMoveCard taskId={task.id} />}
           {managesPeople && canEdit && <ResumeChecks taskId={task.id} closed={closed} />}
         </div>
 

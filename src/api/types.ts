@@ -93,3 +93,14 @@ export interface Problem {
   detail: string
   request_id?: string | null
 }
+export type BenchReport = Schemas['BenchReport']
+export type BenchPerson = Schemas['BenchPerson']
+export type SkillGapReport = Schemas['SkillGapReport']
+export type SkillGap = Schemas['SkillGap']
+export type StaffingPlan = Schemas['StaffingPlan']
+export type StaffedTask = Schemas['StaffedTask']
+export type ProposedPerson = Schemas['ProposedPerson']
+export type HireOrMove = Schemas['HireOrMove']
+export type Margin = Schemas['Margin']
+export type RateCard = Schemas['RateCard']
+export type RateCardLine = Schemas['RateCardRow']

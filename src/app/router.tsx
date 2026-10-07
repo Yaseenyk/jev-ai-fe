@@ -17,6 +17,7 @@ import TaskCandidatesPage from '@/features/hr/TaskCandidatesPage'
 import UploadResumePage from '@/features/hr/UploadResumePage'
 import LoginPage from '@/features/auth/LoginPage'
 import NewTaskChatPage from '@/features/newTask/NewTaskChatPage'
+import PlanningPage from '@/features/planning/PlanningPage'
 import RunPage from '@/features/runs/RunPage'
 import TaskDetailPage from '@/features/tasks/TaskDetailPage'
 import TaskListPage from '@/features/tasks/TaskListPage'
@@ -50,6 +51,7 @@ export const routes = [
       { path: 'tasks/:taskId', element: <TaskDetailPage /> },
       { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },
+      { path: 'planning', element: <PlanningPage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'company', element: <CompanyPage /> },
       { path: 'clients', element: <Navigate to="/company?tab=clients" replace /> },

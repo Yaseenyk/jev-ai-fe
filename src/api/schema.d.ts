@@ -76,6 +76,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/audit/decisions.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Audit Decisions
+         * @description Every recommendation of every completed run in the period, with the model, question and
+         *     cut-off versions and the manager's decision on it (CSV).
+         */
+        get: operations["audit_decisions_api_v1_admin_audit_decisions_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/companies": {
         parameters: {
             query?: never;
@@ -261,6 +282,30 @@ export interface paths {
          *     active one, unless `force`. The worker switches to it before its next run.
          */
         post: operations["activate_api_v1_admin_models__name__activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/rate-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Rate Card
+         * @description Weekly cost and bill rate per cost band; `synthetic` until an admin saves real ones.
+         */
+        get: operations["get_rate_card_api_v1_admin_rate_card_get"];
+        /**
+         * Put Rate Card
+         * @description All five bands at once. Audited `rate_card.updated`.
+         */
+        put: operations["put_rate_card_api_v1_admin_rate_card_put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1333,6 +1378,71 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/planning/bench": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bench
+         * @description People free now or within the horizon, what idle capacity costs per week (rate card),
+         *     and up to 3 open tasks each could take next (half the must-haves or more, level within one
+         *     step, cost band allowed, capacity when the task starts).
+         */
+        get: operations["bench_api_v1_planning_bench_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/skill-gaps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Skill Gaps
+         * @description Must-have skills that open tasks starting within the horizon need more often than there
+         *     are free people with them, and who is closest to filling each (one level short, or a
+         *     related skill): training before hiring.
+         */
+        get: operations["skill_gaps_api_v1_planning_skill_gaps_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/staffing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Staffing
+         * @description Staff several tasks at once from each task's latest matching run without proposing anyone
+         *     for more than their capacity. A proposal only: nothing is assigned.
+         */
+        post: operations["staffing_api_v1_planning_staffing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects": {
         parameters: {
             query?: never;
@@ -1455,6 +1565,27 @@ export interface paths {
          * @description External candidates ranked for one task (where "no internal fit" leads).
          */
         get: operations["task_candidates_api_v1_tasks__task_id__candidates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}/hire-or-move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Hire Or Move
+         * @description The best person inside next to the best outside candidate, with the rule-based
+         *     recommendation (move_internal / hire / neither) and its reasons.
+         */
+        get: operations["hire_or_move_api_v1_tasks__task_id__hire_or_move_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1721,6 +1852,62 @@ export interface components {
             /** Rejected */
             rejected: number;
         };
+        /** BenchPerson */
+        BenchPerson: {
+            /** Best Tasks */
+            best_tasks: components["schemas"]["TaskFit"][];
+            cost_band: components["schemas"]["CostBand"];
+            /** Current Allocation Pct */
+            current_allocation_pct: number;
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Free Now Pct */
+            free_now_pct: number;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Fully Free From
+             * Format: date
+             */
+            fully_free_from: string;
+            level: components["schemas"]["Level"];
+            /** On Leave Today */
+            on_leave_today: boolean;
+            practice: components["schemas"]["Practice"];
+            /** Weekly Idle Cost Usd */
+            weekly_idle_cost_usd: number;
+        };
+        /** BenchReport */
+        BenchReport: {
+            /** Items */
+            items: components["schemas"]["BenchPerson"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            summary: components["schemas"]["BenchSummary"];
+            /** Total */
+            total: number;
+        };
+        /** BenchSummary */
+        BenchSummary: {
+            /** Free Now */
+            free_now: number;
+            /** Free Now Fte */
+            free_now_fte: number;
+            /** Freeing 30 */
+            freeing_30: number;
+            /** Freeing 60 */
+            freeing_60: number;
+            /** Freeing 90 */
+            freeing_90: number;
+            /** Weekly Idle Cost Usd */
+            weekly_idle_cost_usd: number;
+        };
         /** BestMatch */
         BestMatch: {
             /** Score */
@@ -1968,6 +2155,21 @@ export interface components {
             notes?: string | null;
             /** Timezone */
             timezone?: string | null;
+        };
+        /** CloseCandidate */
+        CloseCandidate: {
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            /** Why */
+            why: string;
         };
         /** CloseIn */
         CloseIn: {
@@ -2562,6 +2764,20 @@ export interface components {
             /** Summary */
             summary: string;
         };
+        /** ExternalOption */
+        ExternalOption: {
+            band: components["schemas"]["Band"];
+            /** Candidate Id */
+            candidate_id: string;
+            cost_band: components["schemas"]["CostBand"] | null;
+            /** Full Name */
+            full_name: string;
+            margin: components["schemas"]["Margin"] | null;
+            /** Notice Days */
+            notice_days: number;
+            /** Score */
+            score: number;
+        };
         /** ExtractionRead */
         ExtractionRead: {
             contact: components["schemas"]["Contact"];
@@ -2695,6 +2911,15 @@ export interface components {
             starts: string;
             /** Week */
             week: string;
+        };
+        /** HireOrMove */
+        HireOrMove: {
+            external: components["schemas"]["ExternalOption"] | null;
+            internal: components["schemas"]["InternalOption"] | null;
+            /** Reasons */
+            reasons: string[];
+            /** Recommendation */
+            recommendation: string;
         };
         /**
          * HiringOutcome
@@ -2866,6 +3091,30 @@ export interface components {
             /** Required */
             required: boolean;
         };
+        /** InternalOption */
+        InternalOption: {
+            /**
+             * Available From
+             * Format: date
+             */
+            available_from: string;
+            band: components["schemas"]["Band"];
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            margin: components["schemas"]["Margin"];
+            /** Run Id */
+            run_id: string;
+            /** Score */
+            score: number;
+        };
         /** InterpretRequest */
         InterpretRequest: {
             /** Known Clients */
@@ -2978,6 +3227,17 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /** Margin */
+        Margin: {
+            /** Below Target */
+            below_target: boolean;
+            /** Margin Pct */
+            margin_pct: number;
+            /** Weekly Bill Usd */
+            weekly_bill_usd: number;
+            /** Weekly Cost Usd */
+            weekly_cost_usd: number;
         };
         /** MatchRunCreated */
         MatchRunCreated: {
@@ -3311,6 +3571,45 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** ProposedPerson */
+        ProposedPerson: {
+            band: components["schemas"]["Band"];
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            margin: components["schemas"]["Margin"];
+            /** Score */
+            score: number;
+        };
+        /** RateCard */
+        RateCard: {
+            /** Margin Target Pct */
+            margin_target_pct: number;
+            /** Rows */
+            rows: components["schemas"]["RateCardRow"][];
+            /** Synthetic */
+            synthetic: boolean;
+        };
+        /** RateCardIn */
+        RateCardIn: {
+            /** Rows */
+            rows: components["schemas"]["RateCardRow"][];
+        };
+        /** RateCardRow */
+        RateCardRow: {
+            cost_band: components["schemas"]["CostBand"];
+            /** Weekly Bill Usd */
+            weekly_bill_usd: number;
+            /** Weekly Cost Usd */
+            weekly_cost_usd: number;
+        };
         /**
          * RejectReason
          * @enum {string}
@@ -3364,6 +3663,37 @@ export interface components {
          * @enum {string}
          */
         SkillCategory: "language" | "framework" | "cloud" | "data" | "ai_ml" | "devops" | "testing" | "domain" | "soft";
+        /** SkillGap */
+        SkillGap: {
+            /** Available Now */
+            available_now: number;
+            /** Closest */
+            closest: components["schemas"]["CloseCandidate"][];
+            /** Gap */
+            gap: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Skill Name */
+            skill_name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "shortage" | "tight" | "covered";
+            /** Task Codes */
+            task_codes: string[];
+            /** Tasks Needing */
+            tasks_needing: number;
+        };
+        /** SkillGapReport */
+        SkillGapReport: {
+            /** Gaps */
+            gaps: components["schemas"]["SkillGap"][];
+            /** Horizon Days */
+            horizon_days: number;
+            /** Open Tasks */
+            open_tasks: number;
+        };
         /** SkillRead */
         SkillRead: {
             /** Aliases */
@@ -3397,6 +3727,37 @@ export interface components {
             /** Must Have */
             must_have: boolean;
             skill: components["schemas"]["SkillRef"];
+        };
+        /** StaffedTask */
+        StaffedTask: {
+            /** Alternates */
+            alternates: components["schemas"]["ProposedPerson"][];
+            proposed: components["schemas"]["ProposedPerson"] | null;
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Title */
+            title: string;
+            /** Unfilled Reason */
+            unfilled_reason: string | null;
+        };
+        /** StaffingIn */
+        StaffingIn: {
+            /** Task Ids */
+            task_ids: string[];
+        };
+        /**
+         * StaffingPlan
+         * @description A proposal only: managers still accept or reject each person on the task's shortlist.
+         */
+        StaffingPlan: {
+            /** Filled */
+            filled: number;
+            /** Tasks */
+            tasks: components["schemas"]["StaffedTask"][];
+            /** Total Weekly Margin Usd */
+            total_weekly_margin_usd: number;
         };
         /** Submission */
         Submission: {
@@ -3492,6 +3853,22 @@ export interface components {
             /** Title */
             title: string;
             work_mode: components["schemas"]["WorkMode"];
+        };
+        /** TaskFit */
+        TaskFit: {
+            /** Must Have Coverage */
+            must_have_coverage: number;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Title */
+            title: string;
         };
         /** TaskMatch */
         TaskMatch: {
@@ -3992,6 +4369,38 @@ export interface operations {
             };
         };
     };
+    audit_decisions_api_v1_admin_audit_decisions_csv_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                until?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_companies_api_v1_admin_companies_get: {
         parameters: {
             query?: never;
@@ -4254,6 +4663,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ModelsRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_rate_card_api_v1_admin_rate_card_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RateCard"];
+                };
+            };
+        };
+    };
+    put_rate_card_api_v1_admin_rate_card_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RateCardIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RateCard"];
                 };
             };
             /** @description Validation Error */
@@ -6299,6 +6761,103 @@ export interface operations {
             };
         };
     };
+    bench_api_v1_planning_bench_get: {
+        parameters: {
+            query?: {
+                horizon_days?: number;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenchReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    skill_gaps_api_v1_planning_skill_gaps_get: {
+        parameters: {
+            query?: {
+                horizon_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillGapReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staffing_api_v1_planning_staffing_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffingPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_projects_api_v1_projects_get: {
         parameters: {
             query?: never;
@@ -6574,6 +7133,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CandidateMatch"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    hire_or_move_api_v1_tasks__task_id__hire_or_move_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HireOrMove"];
                 };
             };
             /** @description Validation Error */
