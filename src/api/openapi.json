@@ -3778,6 +3778,11 @@
             "title": "Skipped",
             "type": "object"
           },
+          "thumb_examples": {
+            "default": 0,
+            "title": "Thumb Examples",
+            "type": "integer"
+          },
           "training_examples": {
             "title": "Training Examples",
             "type": "integer"
@@ -5906,6 +5911,7 @@
             "enum": [
               "open",
               "accepted",
+              "done",
               "dismissed"
             ],
             "title": "Status",
@@ -5940,6 +5946,7 @@
             "enum": [
               "open",
               "accepted",
+              "done",
               "dismissed"
             ],
             "title": "Status",

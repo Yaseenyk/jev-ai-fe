@@ -2795,6 +2795,11 @@ export interface components {
             skipped: {
                 [key: string]: number;
             };
+            /**
+             * Thumb Examples
+             * @default 0
+             */
+            thumb_examples: number;
             /** Training Examples */
             training_examples: number;
             /** Usable Examples */
@@ -3509,7 +3514,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "open" | "accepted" | "dismissed";
+            status: "open" | "accepted" | "done" | "dismissed";
             /** Suggestion */
             suggestion: string;
             /** Title */
@@ -3521,7 +3526,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "open" | "accepted" | "dismissed";
+            status: "open" | "accepted" | "done" | "dismissed";
         };
         /** ThresholdVersionRead */
         ThresholdVersionRead: {

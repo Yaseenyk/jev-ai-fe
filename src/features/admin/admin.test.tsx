@@ -235,3 +235,14 @@ test('an admin adds a decision API project, sees its key once, and can revoke it
   await user.click(await within(project).findByRole('button', { name: 'Revoke' }))
   expect(await within(project).findByText('No active key.')).toBeInTheDocument()
 })
+
+test('an accepted suggestion can be marked done', async () => {
+  asAdmin()
+  const user = userEvent.setup()
+  renderRoute('/admin')
+  await user.click(await screen.findByRole('tab', { name: 'Learning' }))
+  const theme = await screen.findByRole('listitem', { name: 'Candidates from HR are hard to find' })
+  await user.click(within(theme).getByRole('button', { name: 'Accept' }))
+  await user.click(await within(theme).findByRole('button', { name: 'Mark as done' }))
+  expect(await within(theme).findByText('Done')).toBeInTheDocument()
+})

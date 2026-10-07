@@ -509,6 +509,7 @@ export function createHandlers(db: Db, session?: Storage) {
         accepted: 1,
         rejected_by_reason: { skill_gap: 1, availability: 1 },
         usable_examples: 2,
+        thumb_examples: 0,
         training_examples: 2,
         holdout_examples: 0,
         skipped: { planning_reason: 1 },

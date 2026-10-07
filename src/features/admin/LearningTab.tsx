@@ -69,11 +69,12 @@ export function LearningTab() {
         Every accept or reject from a manager can teach the model. This shows how much feedback has
         come in, what it can be used for, and how to retrain with it.
       </p>
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Feedback so far">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-5" aria-label="Feedback so far">
         <Stat label="Feedback received" value={s.feedback_total} />
         <Stat label="Accepted" value={s.accepted} />
         <Stat label="Can train the model" value={s.training_examples} tone="good" />
         <Stat label="Kept aside to test it" value={s.holdout_examples} />
+        <Stat label="From 👍/👎 on rankings" value={s.thumb_examples} />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -185,6 +186,12 @@ const AREA_LABELS: Record<string, string> = {
   candidate_fit: 'Candidates from HR',
   suggestion: 'HR suggestions',
   other: 'Anything else',
+}
+
+/** Where an accepted change is made; others need a change by the team in the code. */
+const WHERE_TO_CHANGE: Record<string, { href: string; label: string } | undefined> = {
+  threshold: { href: '/admin?tab=thresholds', label: 'Change the cut-offs' },
+  training_data: { href: '/admin?tab=learning', label: 'Export training data' },
 }
 
 const KIND_LABELS: Record<string, string> = {
@@ -328,9 +335,37 @@ function Report({ report: r, older }: { report: FeedbackReport; older: number })
                 </>
               ) : (
                 <>
-                  <StatusBadge tone={t.status === 'accepted' ? 'ready' : 'neutral'}>
-                    {t.status === 'accepted' ? 'Accepted: to do' : 'Dismissed'}
+                  <StatusBadge
+                    tone={
+                      t.status === 'done' ? 'ready' : t.status === 'accepted' ? 'info' : 'neutral'
+                    }
+                  >
+                    {t.status === 'done'
+                      ? 'Done'
+                      : t.status === 'accepted'
+                        ? 'Accepted: to do'
+                        : 'Dismissed'}
                   </StatusBadge>
+                  {t.status === 'accepted' && (
+                    <>
+                      {WHERE_TO_CHANGE[t.kind] && (
+                        <a
+                          className="text-primary text-xs underline"
+                          href={WHERE_TO_CHANGE[t.kind]?.href}
+                        >
+                          {WHERE_TO_CHANGE[t.kind]?.label}
+                        </a>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={setStatus.isPending}
+                        onClick={() => setStatus.mutate({ index: i, status: 'done' })}
+                      >
+                        Mark as done
+                      </Button>
+                    </>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
