@@ -148,6 +148,8 @@ export interface CandidateProfile {
   summary: string
   /** Expected pay band, entered by HR; never read from the resume. */
   cost_band?: string | null
+  /** What the resume did not state; HR confirms it with the candidate. */
+  unconfirmed?: ('notice_days' | 'location' | 'level')[]
 }
 
 export interface CandidateSummary {

@@ -728,7 +728,11 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
           email: sample.email ?? undefined,
           phone: sample.phone ?? undefined,
         },
-        profile: structuredClone(sample.profile),
+        // Demo: a file named like "…nonotice…" has no notice period in it.
+        profile: {
+          ...structuredClone(sample.profile),
+          unconfirmed: /nonotice/i.test(file.name) ? ['notice_days'] : [],
+        },
         unmatched_skills: ['Team leadership', 'Agile ceremonies'],
         notes: [
           ...(scan

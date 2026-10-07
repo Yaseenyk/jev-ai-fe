@@ -1,4 +1,12 @@
-import { FileText, Loader2, ScanText, ShieldCheck, Upload, X } from 'lucide-react'
+import {
+  FileText,
+  Loader2,
+  MessageCircleQuestion,
+  ScanText,
+  ShieldCheck,
+  Upload,
+  X,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, useNavigate, useSearchParams } from 'react-router'
 
@@ -186,6 +194,34 @@ function Steps({ current }: { current: 1 | 2 }) {
   )
 }
 
+function LaterBox({
+  id,
+  checked,
+  onChange,
+  text,
+}: {
+  id: string
+  checked: boolean
+  onChange: (v: boolean) => void
+  text: string
+}) {
+  return (
+    <span className="block space-y-1">
+      <span className="text-band-review-foreground block">{text}</span>
+      <label htmlFor={id} className="flex items-center gap-1.5">
+        <input
+          id={id}
+          type="checkbox"
+          className="size-3.5"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        Not known yet: I will ask and update it later
+      </label>
+    </span>
+  )
+}
+
 function TaskBanner({ id }: { id: string }) {
   const task = useTask(id)
   if (!task.data) return null
@@ -230,13 +266,33 @@ function ReviewForm({
   })
   const [profile, setProfile] = useState<CandidateProfile>(x.profile)
   const [consent, setConsent] = useState(false)
+  // What the resume did not say starts empty: HR asks the candidate (nothing is guessed silently).
+  const asked = x.profile.unconfirmed ?? []
+  const [notice, setNotice] = useState(
+    asked.includes('notice_days') ? '' : String(x.profile.notice_days),
+  )
+  const [location, setLocation] = useState(asked.includes('location') ? '' : x.profile.location)
+  const [levelChecked, setLevelChecked] = useState(!asked.includes('level'))
+  const [noticeLater, setNoticeLater] = useState(false)
+  const [locationLater, setLocationLater] = useState(false)
+  const noticeOk = noticeLater || (notice !== '' && Number(notice) >= 0 && Number(notice) <= 180)
+  const locationOk = locationLater || location !== ''
+  const toAsk = [
+    ...(asked.includes('notice_days') ? ['notice period'] : []),
+    ...(asked.includes('location') ? ['where they live or want to work'] : []),
+    ...(!profile.cost_band ? ['expected pay band'] : []),
+  ]
   const set = <K extends keyof CandidateProfile>(key: K, value: CandidateProfile[K]) =>
     setProfile((p) => ({ ...p, [key]: value }))
   const missing = !contact.full_name.trim()
     ? 'Enter the full name to save.'
-    : !consent
-      ? 'Confirm the candidate’s consent to save.'
-      : null
+    : !noticeOk
+      ? 'Enter the notice period, or tick “Not known yet”, to save.'
+      : !locationOk
+        ? 'Choose a location, or tick “Not known yet”, to save.'
+        : !consent
+          ? 'Confirm the candidate’s consent to save.'
+          : null
 
   const save = () =>
     create.mutate(
@@ -246,7 +302,16 @@ function ReviewForm({
         phone: contact.phone.trim() || undefined,
         source,
         consent: true,
-        profile,
+        profile: {
+          ...profile,
+          notice_days: noticeLater || notice === '' ? x.profile.notice_days : Number(notice),
+          location: locationLater || location === '' ? x.profile.location : location,
+          unconfirmed: [
+            ...(noticeLater ? (['notice_days'] as const) : []),
+            ...(locationLater ? (['location'] as const) : []),
+            ...(levelChecked ? [] : (['level'] as const)),
+          ],
+        },
         extraction_id: x.extraction_id,
         task_id: taskId ?? undefined,
       },
@@ -283,6 +348,26 @@ function ReviewForm({
           ))}
         </AlertDescription>
       </Alert>
+
+      {toAsk.length > 0 && (
+        <section
+          aria-label="Ask the candidate"
+          className="border-band-review-foreground/20 bg-band-review/30 flex gap-3 rounded-xl border p-4"
+        >
+          <MessageCircleQuestion
+            className="text-band-review-foreground mt-0.5 size-5 shrink-0"
+            aria-hidden
+          />
+          <div className="space-y-1 text-sm">
+            <p className="font-medium">Ask the candidate before you save</p>
+            <p>
+              The resume does not say: <strong>{toAsk.join(', ')}</strong>. Nothing is guessed: fill
+              these in below, or mark them “Not known yet” and the match will say what is still to
+              confirm.
+            </p>
+          </div>
+        </section>
+      )}
 
       <Panel title="Contact details" label="Contact details">
         <p className="text-muted-foreground mb-3 text-xs">
@@ -324,8 +409,31 @@ function ReviewForm({
               onChange={(e) => set('designation', e.target.value)}
             />
           </Field>
-          <Field id="p-level" label="Level">
-            <Select value={profile.level} onValueChange={(v) => set('level', v as Level)}>
+          <Field
+            id="p-level"
+            label="Level"
+            help={
+              levelChecked ? undefined : (
+                <span className="text-band-review-foreground">
+                  Estimated from {profile.years_experience} years of experience. Check it.{' '}
+                  <button
+                    type="button"
+                    className="text-primary underline"
+                    onClick={() => setLevelChecked(true)}
+                  >
+                    Looks right
+                  </button>
+                </span>
+              )
+            }
+          >
+            <Select
+              value={profile.level}
+              onValueChange={(v) => {
+                set('level', v as Level)
+                setLevelChecked(true)
+              }}
+            >
               <SelectTrigger id="p-level">
                 <SelectValue />
               </SelectTrigger>
@@ -349,10 +457,27 @@ function ReviewForm({
               onChange={(e) => set('years_experience', Number(e.target.value))}
             />
           </Field>
-          <Field id="p-location" label="Location">
-            <Select value={profile.location} onValueChange={(v) => set('location', v)}>
+          <Field
+            id="p-location"
+            label="Location"
+            required={asked.includes('location')}
+            help={
+              asked.includes('location') && (
+                <LaterBox
+                  id="p-location-later"
+                  checked={locationLater}
+                  onChange={(v) => {
+                    setLocationLater(v)
+                    if (v) setLocation('')
+                  }}
+                  text="Not in the resume. Ask the candidate."
+                />
+              )
+            }
+          >
+            <Select value={location} disabled={locationLater} onValueChange={(v) => setLocation(v)}>
               <SelectTrigger id="p-location">
-                <SelectValue />
+                <SelectValue placeholder={locationLater ? 'Not known yet' : 'Choose a location'} />
               </SelectTrigger>
               <SelectContent>
                 {LOCATIONS.map((l) => (
@@ -366,21 +491,38 @@ function ReviewForm({
           <Field
             id="p-notice"
             label="Notice period (days)"
-            help="Used as their availability when matching."
+            required={asked.includes('notice_days')}
+            help={
+              asked.includes('notice_days') ? (
+                <LaterBox
+                  id="p-notice-later"
+                  checked={noticeLater}
+                  onChange={(v) => {
+                    setNoticeLater(v)
+                    if (v) setNotice('')
+                  }}
+                  text="Not in the resume. Ask the candidate; 0 if they can join now."
+                />
+              ) : (
+                'When they can join. Used as their availability when matching.'
+              )
+            }
           >
             <Input
               id="p-notice"
               type="number"
               min={0}
               max={180}
-              value={profile.notice_days}
-              onChange={(e) => set('notice_days', Number(e.target.value))}
+              placeholder={noticeLater ? 'Not known yet' : 'e.g. 30'}
+              disabled={noticeLater}
+              value={notice}
+              onChange={(e) => setNotice(e.target.value)}
             />
           </Field>
           <Field
             id="p-band"
             label="Expected pay band"
-            help="Entered by HR, never read from the resume."
+            help="Ask the candidate. Never read from the resume. Until it is entered, the budget is not checked and the match says so."
           >
             <Select
               value={profile.cost_band ?? 'none'}

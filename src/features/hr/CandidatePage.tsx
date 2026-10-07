@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { useManagesPeople } from '@/features/auth/AuthProvider'
@@ -170,7 +171,27 @@ export default function CandidatePage() {
               items={[
                 { label: 'Source', value: c.source },
                 { label: 'Uploaded', value: date(c.uploaded_at) },
-                { label: 'Can join in', value: `${c.profile.notice_days} days` },
+                {
+                  label: 'Notice period',
+                  value: (
+                    <NoticeEditor
+                      days={c.profile.notice_days}
+                      unconfirmed={(c.profile.unconfirmed ?? []).includes('notice_days')}
+                      saving={update.isPending}
+                      onSave={(days) =>
+                        update.mutate({
+                          profile: {
+                            ...c.profile,
+                            notice_days: days,
+                            unconfirmed: (c.profile.unconfirmed ?? []).filter(
+                              (u) => u !== 'notice_days',
+                            ),
+                          },
+                        })
+                      }
+                    />
+                  ),
+                },
                 {
                   label: 'Expected pay band',
                   value: (
@@ -329,5 +350,49 @@ function MoveDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** Notice period in days; when the resume did not state it, HR is asked to confirm it. */
+function NoticeEditor({
+  days,
+  unconfirmed,
+  saving,
+  onSave,
+}: {
+  days: number
+  unconfirmed: boolean
+  saving: boolean
+  onSave: (days: number) => void
+}) {
+  const [value, setValue] = useState(unconfirmed ? '' : String(days))
+  const valid = value !== '' && Number(value) >= 0 && Number(value) <= 180
+  const changed = unconfirmed || Number(value) !== days
+  return (
+    <div className="space-y-1">
+      {unconfirmed && (
+        <p className="text-band-review-foreground text-xs">
+          Not in the resume. Ask the candidate; 0 if they can join now.
+        </p>
+      )}
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          min={0}
+          max={180}
+          className="h-8 w-24"
+          aria-label="Notice period in days"
+          placeholder="days"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <span className="text-muted-foreground text-xs">days</span>
+        {changed && (
+          <Button size="sm" disabled={!valid || saving} onClick={() => onSave(Number(value))}>
+            Save
+          </Button>
+        )}
+      </div>
+    </div>
   )
 }

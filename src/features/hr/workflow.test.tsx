@@ -193,9 +193,27 @@ test('HR checks a resume from a task page and sees the answer on that task', asy
   await user.click(screen.getByRole('button', { name: 'Save candidate' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(`/tasks/${task.id}`))
-  const result = await screen.findByRole('status', { name: /resume you just checked/ })
-  expect(within(result).getByText('Ravi Check')).toBeInTheDocument()
-  const table = screen.getByRole('table', { name: 'Checked resumes' })
-  expect(within(table).getByText('Ravi Check')).toBeInTheDocument()
-  expect(within(table).getByRole('columnheader', { name: 'Fit and why' })).toBeInTheDocument()
+  const list = await screen.findByRole('list', { name: 'Checked resumes' })
+  const card = within(list).getByRole('listitem', { name: 'Ravi Check' })
+  expect(within(card).getByText('Just checked')).toBeInTheDocument()
+  expect(within(card).getByText(/Good fit|Worth a look|Weak fit|Not a fit/)).toBeInTheDocument()
+})
+
+test('a notice period the resume does not state is asked, never guessed', async () => {
+  const user = userEvent.setup()
+  await signInAs('hr@srtm.local')
+  renderRoute('/candidates/new')
+  await user.upload(
+    await screen.findByLabelText('Resume file'),
+    new File(['resume'], 'cv-nonotice.pdf', { type: 'application/pdf' }),
+  )
+  await user.click(screen.getByRole('button', { name: /Read the resume/ }))
+  const ask = await screen.findByRole('region', { name: 'Ask the candidate' })
+  expect(within(ask).getByText(/notice period/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Notice period/)).toHaveValue(null)
+  await user.click(screen.getByRole('checkbox', { name: /candidate agreed/ }))
+  expect(screen.getByText(/Enter the notice period, or tick/)).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Save candidate' })).toBeDisabled()
+  await user.type(screen.getByLabelText(/^Notice period/), '15')
+  expect(screen.getByRole('button', { name: 'Save candidate' })).toBeEnabled()
 })

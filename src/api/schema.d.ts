@@ -1420,6 +1420,11 @@ export interface components {
             skills: components["schemas"]["ProfileSkill"][];
             /** Summary */
             summary: string;
+            /**
+             * Unconfirmed
+             * @default []
+             */
+            unconfirmed: ("notice_days" | "location" | "level")[];
             /** Years Experience */
             years_experience: number;
         };

@@ -1,11 +1,21 @@
-import { ChevronRight, FileUp, Loader2, Pencil, Play, RotateCcw } from 'lucide-react'
+import {
+  Check,
+  ChevronRight,
+  FileUp,
+  Loader2,
+  MessageCircleQuestion,
+  Pencil,
+  Play,
+  RotateCcw,
+  X,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 
 import type { MatchRun, Task } from '@/api/types'
 import { PageHeader } from '@/components/PageHeader'
-import { EmptyState, ErrorState } from '@/components/QueryStates'
+import { ErrorState } from '@/components/QueryStates'
 import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -15,7 +25,7 @@ import { StartRunway } from '@/features/tasks/StartRunway'
 import { useCanEdit, useManagesPeople } from '@/features/auth/AuthProvider'
 import { useResumeChecks } from '@/features/hr/api'
 import type { CandidateMatch } from '@/features/hr/types'
-import { MatchReasons, ScoreBar } from '@/features/hr/ui'
+import { ScoreBar } from '@/features/hr/ui'
 import { type CloseAs, CloseTaskDialog } from '@/features/tasks/CloseTaskDialog'
 import { useChangeTaskStatus, useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
 import { cn } from '@/lib/utils'
@@ -209,6 +219,8 @@ function TaskDetail({ task }: { task: Task }) {
             </div>
           </Panel>
 
+          {managesPeople && !canEdit && <ResumeChecks taskId={task.id} closed={closed} />}
+
           <section aria-label="Matching runs" className="bg-surface rounded-xl border">
             <div className="border-b px-5 py-3">
               <h2 className="text-sm font-semibold">Matching runs</h2>
@@ -223,14 +235,20 @@ function TaskDetail({ task }: { task: Task }) {
                 <ErrorState error={runs.error} onRetry={() => void runs.refetch()} />
               </div>
             ) : runs.data.items.length === 0 ? (
-              <div className="p-5">
-                <EmptyState title="No runs yet">
-                  {closed
-                    ? 'This task was closed before matching was run.'
-                    : canEdit
-                      ? 'Click “Run matching” to get people recommended for this task.'
-                      : 'The manager runs matching for this task. Their results appear here.'}
-                </EmptyState>
+              <div className="flex items-center gap-3 px-5 py-4">
+                <span className="bg-muted text-muted-foreground grid size-9 shrink-0 place-items-center rounded-full">
+                  <Play className="size-4" aria-hidden />
+                </span>
+                <div className="text-sm">
+                  <p className="font-medium">No runs yet</p>
+                  <p className="text-muted-foreground">
+                    {closed
+                      ? 'This task was closed before matching was run.'
+                      : canEdit
+                        ? 'Click “Run matching” to get people recommended for this task.'
+                        : 'The manager runs matching for this task. Their results appear here.'}
+                  </p>
+                </div>
               </div>
             ) : (
               <ul className="divide-y">
@@ -241,7 +259,7 @@ function TaskDetail({ task }: { task: Task }) {
             )}
           </section>
 
-          {managesPeople && <ResumeChecks taskId={task.id} closed={closed} />}
+          {managesPeople && canEdit && <ResumeChecks taskId={task.id} closed={closed} />}
         </div>
 
         <aside aria-label="Details" className="bg-surface rounded-xl border lg:sticky lg:top-6">
@@ -310,130 +328,194 @@ function CheckResumeButton({ taskId, outline = false }: { taskId: string; outlin
   )
 }
 
-function fitOf(m: CandidateMatch): { label: string; tone: Tone; sentence: string } {
-  if (m.band === 'shortlist')
-    return { label: 'Good fit', tone: 'ready', sentence: 'is a good fit for this task.' }
-  if (m.band === 'review')
-    return { label: 'Worth a look', tone: 'attention', sentence: 'is worth a look for this task.' }
-  if (m.score > 0)
-    return { label: 'Weak fit', tone: 'neutral', sentence: 'is a weak fit for this task.' }
-  return { label: 'Not a fit', tone: 'danger', sentence: 'does not fit this task.' }
+const TONE_BAR: Record<Tone, string> = {
+  ready: 'bg-band-shortlist-foreground',
+  attention: 'bg-band-review-foreground',
+  info: 'bg-primary',
+  neutral: 'bg-muted-foreground/40',
+  danger: 'bg-destructive',
 }
+
+const TONE_NOTE: Record<Tone, string> = {
+  ready: 'bg-band-shortlist/40 text-band-shortlist-foreground',
+  attention: 'bg-band-review/40 text-band-review-foreground',
+  info: 'bg-primary/5 text-primary',
+  neutral: 'bg-muted text-muted-foreground',
+  danger: 'bg-destructive/5 text-destructive',
+}
+
+function fitOf(m: CandidateMatch): { label: string; tone: Tone } {
+  if (m.band === 'shortlist') return { label: 'Good fit', tone: 'ready' }
+  if (m.band === 'review') return { label: 'Worth a look', tone: 'attention' }
+  if (m.score > 0 && (m.blockers ?? []).length === 0) return { label: 'Weak fit', tone: 'neutral' }
+  return { label: 'Not a fit', tone: 'danger' }
+}
+
+/** Things HR still has to ask the candidate (never a reason to reject). */
+const toConfirm = (m: CandidateMatch) =>
+  m.reasons.filter((r) => /not confirmed|not entered yet|estimated/i.test(r))
+
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('')
 
 /** Outside candidates' resumes HR checked against this task, newest first, with the answer. */
 function ResumeChecks({ taskId, closed }: { taskId: string; closed: boolean }) {
   const checks = useResumeChecks(taskId)
   const uploaded = (useLocation().state as { uploaded?: string } | null)?.uploaded
-  const latest = checks.data?.find((m) => m.candidate.id === uploaded)
+  const count = checks.data?.length ?? 0
   return (
-    <section aria-label="Resumes checked for this task" className="bg-surface rounded-xl border">
-      <div className="flex items-start justify-between gap-3 border-b px-5 py-3">
+    <section aria-label="Outside candidates for this task" className="bg-surface rounded-xl border">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3">
         <div>
-          <h2 className="text-sm font-semibold">Resumes checked for this task</h2>
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            Outside candidates for this task
+            {count > 0 && (
+              <span className="bg-muted text-muted-foreground rounded-full px-2 text-xs tabular-nums">
+                {count}
+              </span>
+            )}
+          </h2>
           <p className="text-muted-foreground text-xs">
-            Outside candidates whose resume was checked from this page, and how well each fits.
+            Resumes checked against this task, newest first, with whether each person fits and why.
           </p>
         </div>
-        <Button variant="ghost" size="sm" asChild>
-          <Link to={`/tasks/${taskId}/candidates`}>See all outside candidates</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to={`/tasks/${taskId}/candidates`}>See all outside candidates</Link>
+          </Button>
+          {!closed && count > 0 && (
+            <Button size="sm" variant="outline" asChild>
+              <Link to={`/candidates/new?task=${taskId}`}>
+                <FileUp aria-hidden /> Check another resume
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
       {checks.isPending ? (
-        <Skeleton className="m-5 h-16" />
+        <Skeleton className="m-5 h-24" />
       ) : checks.isError ? (
         <div className="p-5">
           <ErrorState error={checks.error} onRetry={() => void checks.refetch()} />
         </div>
-      ) : checks.data.length === 0 ? (
+      ) : count === 0 ? (
         <div className="p-5">
-          <EmptyState title="No resumes checked yet">
-            {closed
-              ? 'No resume was checked for this task before it closed.'
-              : 'Use “Check a resume for this task” to upload one and see whether the person fits.'}
-          </EmptyState>
+          {closed ? (
+            <p className="text-muted-foreground text-sm">
+              No resume was checked for this task before it closed.
+            </p>
+          ) : (
+            <Link
+              to={`/candidates/new?task=${taskId}`}
+              className="hover:border-primary/50 hover:bg-primary/5 flex items-center gap-4 rounded-xl border border-dashed p-5 transition-colors"
+            >
+              <span className="bg-primary/10 text-primary grid size-11 shrink-0 place-items-center rounded-full">
+                <FileUp className="size-5" aria-hidden />
+              </span>
+              <span className="text-sm">
+                <span className="block font-medium">No resumes checked yet</span>
+                <span className="text-muted-foreground block">
+                  Upload a resume to see at once whether the person fits this task, and why.
+                </span>
+              </span>
+            </Link>
+          )}
         </div>
       ) : (
-        <>
-          {latest && (
-            <div
-              role="status"
-              className="bg-accent/40 m-5 mb-0 space-y-2 rounded-lg border p-4"
-              aria-label="Result of the resume you just checked"
-            >
-              <p className="flex flex-wrap items-center gap-2 text-sm">
-                <StatusBadge tone={fitOf(latest).tone}>{fitOf(latest).label}</StatusBadge>
-                <span>
-                  <strong>{latest.candidate.full_name}</strong> {fitOf(latest).sentence}
-                </span>
-              </p>
-              <MatchReasons match={latest} />
-            </div>
-          )}
-          <table className="w-full text-sm" aria-label="Checked resumes">
-            <thead className="text-muted-foreground text-left text-xs">
-              <tr className="border-b">
-                <th className="px-5 py-2 font-medium">Candidate</th>
-                <th className="px-3 py-2 font-medium">Fit and why</th>
-                <th className="px-3 py-2 font-medium">Must-have skills</th>
-                <th className="px-3 py-2 font-medium">Checked</th>
-                <th className="px-5 py-2" />
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {checks.data.map((m) => {
-                const fit = fitOf(m)
-                return (
-                  <tr
-                    key={m.candidate.id}
-                    className={cn(m.candidate.id === uploaded && 'bg-primary/5')}
-                  >
-                    <td className="px-5 py-2.5 align-top">
-                      <div className="font-medium">{m.candidate.full_name}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {m.candidate.designation} · {levelLabel(m.candidate.level)}
-                      </div>
-                    </td>
-                    <td className="space-y-1 px-3 py-2.5 align-top">
-                      <StatusBadge tone={fit.tone}>{fit.label}</StatusBadge>
-                      {m.score > 0 && <ScoreBar score={m.score} band={m.band} />}
-                      {(m.blockers ?? []).length > 0 && (
-                        <ul
-                          className="text-muted-foreground max-w-64 space-y-0.5 text-xs"
-                          aria-label="Why"
-                        >
-                          {(m.blockers ?? []).map((b) => (
-                            <li key={b}>{b}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </td>
-                    <td className="px-3 py-2.5 align-top text-xs">
-                      {m.matched_skills.map((s) => (
-                        <span key={s} className="mr-2 inline-block">
-                          {s} ✓
-                        </span>
-                      ))}
-                      {m.missing_skills.map((s) => (
-                        <span key={s} className="text-destructive mr-2 inline-block">
-                          {s} ✗
-                        </span>
-                      ))}
-                    </td>
-                    <td className="text-muted-foreground px-3 py-2.5 align-top whitespace-nowrap">
-                      {date(m.candidate.uploaded_at)}
-                    </td>
-                    <td className="px-5 py-2.5 text-right align-top">
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/candidates/${m.candidate.id}`}>Open</Link>
-                      </Button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </>
+        <ul className="space-y-3 p-4" aria-label="Checked resumes">
+          {checks.data.map((m) => (
+            <CheckCard key={m.candidate.id} m={m} fresh={m.candidate.id === uploaded} />
+          ))}
+        </ul>
       )}
     </section>
+  )
+}
+
+function CheckCard({ m, fresh }: { m: CandidateMatch; fresh: boolean }) {
+  const fit = fitOf(m)
+  const blockers = m.blockers ?? []
+  const ask = toConfirm(m)
+  const why =
+    blockers.length > 0
+      ? blockers
+      : fit.tone === 'ready' || fit.tone === 'attention'
+        ? [
+            `Has ${m.matched_skills.length} of ${m.matched_skills.length + m.missing_skills.length} must-have skills`,
+          ]
+        : []
+  return (
+    <li
+      aria-label={m.candidate.full_name}
+      className={cn(
+        'bg-background relative overflow-hidden rounded-xl border pl-4 transition-shadow hover:shadow-sm',
+        fresh && 'ring-primary/40 ring-2',
+      )}
+    >
+      <span className={cn('absolute inset-y-0 left-0 w-1', TONE_BAR[fit.tone])} aria-hidden />
+      <div className="flex flex-wrap items-start gap-4 p-4">
+        <span className="bg-muted grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold">
+          {initials(m.candidate.full_name)}
+        </span>
+        <div className="min-w-0 flex-1 space-y-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link to={`/candidates/${m.candidate.id}`} className="font-semibold hover:underline">
+              {m.candidate.full_name}
+            </Link>
+            <StatusBadge tone={fit.tone}>{fit.label}</StatusBadge>
+            {fresh && <StatusBadge tone="info">Just checked</StatusBadge>}
+          </div>
+          <p className="text-muted-foreground text-xs">
+            {m.candidate.designation} · {levelLabel(m.candidate.level)} ·{' '}
+            {locationLabel(m.candidate.location)} · checked {date(m.candidate.uploaded_at)}
+          </p>
+          {why.map((w) => (
+            <p
+              key={w}
+              className={cn('rounded-lg px-3 py-2 text-sm font-medium', TONE_NOTE[fit.tone])}
+            >
+              {w}
+            </p>
+          ))}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground mr-1">Must-have</span>
+            {m.matched_skills.map((k) => (
+              <span
+                key={k}
+                className="bg-band-shortlist/40 text-band-shortlist-foreground inline-flex items-center gap-1 rounded-full px-2 py-0.5"
+              >
+                <Check className="size-3" aria-hidden /> {k}
+              </span>
+            ))}
+            {m.missing_skills.map((k) => (
+              <span
+                key={k}
+                className="bg-destructive/5 text-destructive inline-flex items-center gap-1 rounded-full px-2 py-0.5"
+              >
+                <X className="size-3" aria-hidden /> {k}
+              </span>
+            ))}
+          </div>
+          {ask.length > 0 && (
+            <p className="text-band-review-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+              <MessageCircleQuestion className="size-3.5" aria-hidden />
+              {ask.map((a) => (
+                <span key={a}>{a}</span>
+              ))}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          {m.score > 0 && <ScoreBar score={m.score} band={m.band} />}
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/candidates/${m.candidate.id}`}>Open profile</Link>
+          </Button>
+        </div>
+      </div>
+    </li>
   )
 }

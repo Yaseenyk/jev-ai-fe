@@ -669,6 +669,19 @@
             "title": "Summary",
             "type": "string"
           },
+          "unconfirmed": {
+            "default": [],
+            "items": {
+              "enum": [
+                "notice_days",
+                "location",
+                "level"
+              ],
+              "type": "string"
+            },
+            "title": "Unconfirmed",
+            "type": "array"
+          },
           "years_experience": {
             "maximum": 50.0,
             "minimum": 0.0,
