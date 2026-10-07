@@ -2300,6 +2300,61 @@
         "title": "FeedbackAction",
         "type": "string"
       },
+      "FeedbackArea": {
+        "description": "Where in the product a piece of feedback was given.",
+        "enum": [
+          "match_results",
+          "shortlist_decision",
+          "task_intake",
+          "resume_reading",
+          "candidate_fit",
+          "suggestion",
+          "other"
+        ],
+        "title": "FeedbackArea",
+        "type": "string"
+      },
+      "FeedbackIn": {
+        "description": "Optional feedback on any action: a thumb, a comment, or both.",
+        "properties": {
+          "area": {
+            "$ref": "#/components/schemas/FeedbackArea"
+          },
+          "comment": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Comment",
+            "type": "string"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeedbackRating"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "target_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Id"
+          }
+        },
+        "required": [
+          "area"
+        ],
+        "title": "FeedbackIn",
+        "type": "object"
+      },
       "FeedbackInput": {
         "properties": {
           "action": {
@@ -2333,6 +2388,14 @@
         ],
         "title": "FeedbackInput",
         "type": "object"
+      },
+      "FeedbackRating": {
+        "enum": [
+          "up",
+          "down"
+        ],
+        "title": "FeedbackRating",
+        "type": "string"
       },
       "FeedbackRead": {
         "properties": {
@@ -2385,6 +2448,92 @@
           "at"
         ],
         "title": "FeedbackRead",
+        "type": "object"
+      },
+      "FeedbackReportRead": {
+        "properties": {
+          "cost_usd": {
+            "title": "Cost Usd",
+            "type": "number"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "feedback_count": {
+            "title": "Feedback Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "period_end": {
+            "format": "date-time",
+            "title": "Period End",
+            "type": "string"
+          },
+          "period_start": {
+            "format": "date-time",
+            "title": "Period Start",
+            "type": "string"
+          },
+          "prompt_version": {
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "themes": {
+            "items": {
+              "$ref": "#/components/schemas/ThemeRead"
+            },
+            "title": "Themes",
+            "type": "array"
+          },
+          "thumbs_down": {
+            "title": "Thumbs Down",
+            "type": "integer"
+          },
+          "thumbs_up": {
+            "title": "Thumbs Up",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "period_start",
+          "period_end",
+          "feedback_count",
+          "thumbs_up",
+          "thumbs_down",
+          "summary",
+          "themes",
+          "model",
+          "prompt_version",
+          "cost_usd",
+          "created_by",
+          "created_at"
+        ],
+        "title": "FeedbackReportRead",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -3623,7 +3772,8 @@
           "request_sent",
           "request_reviewed",
           "candidate_fit",
-          "model_ready"
+          "model_ready",
+          "feedback_report"
         ],
         "title": "NotificationKind",
         "type": "string"
@@ -4456,6 +4606,19 @@
         "title": "SuggestionIn",
         "type": "object"
       },
+      "SuggestionKind": {
+        "description": "What a suggested change from the weekly report would touch.",
+        "enum": [
+          "matching_rule",
+          "threshold",
+          "training_data",
+          "resume_reading",
+          "screen_or_wording",
+          "other"
+        ],
+        "title": "SuggestionKind",
+        "type": "string"
+      },
       "TaskCreate": {
         "properties": {
           "allocation_pct_required": {
@@ -5069,6 +5232,77 @@
         "title": "TaskWithoutFit",
         "type": "object"
       },
+      "ThemeRead": {
+        "properties": {
+          "area": {
+            "$ref": "#/components/schemas/FeedbackArea"
+          },
+          "examples": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 3,
+            "title": "Examples",
+            "type": "array"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/SuggestionKind"
+          },
+          "mentions": {
+            "minimum": 1.0,
+            "title": "Mentions",
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "open",
+              "accepted",
+              "dismissed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "suggestion": {
+            "maxLength": 400,
+            "title": "Suggestion",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "area",
+          "mentions",
+          "examples",
+          "suggestion",
+          "kind",
+          "status"
+        ],
+        "title": "ThemeRead",
+        "type": "object"
+      },
+      "ThemeStatusIn": {
+        "properties": {
+          "status": {
+            "enum": [
+              "open",
+              "accepted",
+              "dismissed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "ThemeStatusIn",
+        "type": "object"
+      },
       "ThresholdVersionRead": {
         "properties": {
           "active": {
@@ -5479,6 +5713,132 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/feedback-reports": {
+      "get": {
+        "description": "The weekly reports, newest first.",
+        "operationId": "list_reports_api_v1_admin_feedback_reports_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FeedbackReportRead"
+                  },
+                  "title": "Response List Reports Api V1 Admin Feedback Reports Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Reports",
+        "tags": [
+          "feedback"
+        ]
+      },
+      "post": {
+        "description": "Write the report now from the feedback since the last one (one LLM call).\n422 `no_feedback`, 503 `llm_unavailable`.",
+        "operationId": "make_report_api_v1_admin_feedback_reports_post",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackReportRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Make Report",
+        "tags": [
+          "feedback"
+        ]
+      }
+    },
+    "/api/v1/admin/feedback-reports/{report_id}/themes/{index}": {
+      "patch": {
+        "description": "Accept or dismiss a suggested change. Audited; accepting does not apply anything.",
+        "operationId": "set_theme_api_v1_admin_feedback_reports__report_id__themes__index__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Report Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "index",
+            "required": true,
+            "schema": {
+              "maximum": 20,
+              "minimum": 0,
+              "title": "Index",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThemeStatusIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackReportRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Theme",
+        "tags": [
+          "feedback"
+        ]
+      }
+    },
     "/api/v1/admin/health": {
       "get": {
         "description": "How often managers agree with the model: overall, by band, week by week and per model.",
@@ -7549,6 +7909,46 @@
         "summary": "Get Report",
         "tags": [
           "eval"
+        ]
+      }
+    },
+    "/api/v1/feedback": {
+      "post": {
+        "description": "Optional feedback on any action: a thumb up or down, a comment, or both.",
+        "operationId": "give_feedback_api_v1_feedback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Give Feedback",
+        "tags": [
+          "feedback"
         ]
       }
     },

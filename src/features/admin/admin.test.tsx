@@ -201,3 +201,19 @@ test('a resource manager is sent away from the Clients page', async () => {
   await screen.findByRole('heading', { name: /^Tasks$/ })
   expect(router.state.location.pathname).toBe('/tasks')
 })
+
+test('the weekly feedback report shows themes an admin accepts or dismisses', async () => {
+  asAdmin()
+  const user = userEvent.setup()
+  renderRoute('/admin')
+  await user.click(await screen.findByRole('tab', { name: 'Learning' }))
+  const report = await screen.findByRole('region', { name: 'What people are telling us' })
+  const theme = await within(report).findByRole('listitem', {
+    name: 'Resume skill levels look too high',
+  })
+  expect(within(theme).getByText(/Give skills mentioned only once level 2/)).toBeInTheDocument()
+  await user.click(within(theme).getByRole('button', { name: 'Accept' }))
+  expect(await within(theme).findByText('Accepted: to do')).toBeInTheDocument()
+  await user.click(within(report).getByRole('button', { name: /Make this week/ }))
+  expect(await screen.findByText(/to ChatGPT once/)).toBeInTheDocument()
+})

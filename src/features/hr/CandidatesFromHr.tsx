@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ApiError } from '@/api/client'
 import { ErrorState } from '@/components/QueryStates'
+import { FeedbackPrompt } from '@/components/FeedbackPrompt'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import {
@@ -216,6 +217,11 @@ function CandidateSheet({
                 automatically.
               </p>
             </section>
+            <FeedbackPrompt
+              area="candidate_fit"
+              targetId={s.candidate.id}
+              question="Was this suggestion from HR useful?"
+            />
           </aside>
         </div>
       </SheetContent>

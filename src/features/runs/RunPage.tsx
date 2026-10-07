@@ -5,6 +5,7 @@ import { ApiError } from '@/api/client'
 import type { Band, DecisionDefinition, MatchRun, ShortlistItem, Thresholds } from '@/api/types'
 import { Segmented } from '@/components/FilterBar'
 import { PageHeader } from '@/components/PageHeader'
+import { FeedbackPrompt } from '@/components/FeedbackPrompt'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { useUrlState } from '@/components/useUrlState'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -167,6 +168,14 @@ function CompletedRun({ run }: { run: MatchRun }) {
             excludedTotal: excluded.data?.total ?? 0,
             definitions: definitions.data,
           }}
+        />
+      )}
+
+      {items.data.length > 0 && (
+        <FeedbackPrompt
+          area="match_results"
+          targetId={run.id}
+          question="Were these recommendations right?"
         />
       )}
 

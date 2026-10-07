@@ -4,6 +4,51 @@
  */
 
 export interface paths {
+    "/api/v1/admin/feedback-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Reports
+         * @description The weekly reports, newest first.
+         */
+        get: operations["list_reports_api_v1_admin_feedback_reports_get"];
+        put?: never;
+        /**
+         * Make Report
+         * @description Write the report now from the feedback since the last one (one LLM call).
+         *     422 `no_feedback`, 503 `llm_unavailable`.
+         */
+        post: operations["make_report_api_v1_admin_feedback_reports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/feedback-reports/{report_id}/themes/{index}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Set Theme
+         * @description Accept or dismiss a suggested change. Audited; accepting does not apply anything.
+         */
+        patch: operations["set_theme_api_v1_admin_feedback_reports__report_id__themes__index__patch"];
+        trace?: never;
+    };
     "/api/v1/admin/health": {
         parameters: {
             query?: never;
@@ -677,6 +722,26 @@ export interface paths {
         get: operations["get_report_api_v1_eval_reports__report_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Give Feedback
+         * @description Optional feedback on any action: a thumb up or down, a comment, or both.
+         */
+        post: operations["give_feedback_api_v1_feedback_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1984,6 +2049,27 @@ export interface components {
          * @enum {string}
          */
         FeedbackAction: "accept" | "reject";
+        /**
+         * FeedbackArea
+         * @description Where in the product a piece of feedback was given.
+         * @enum {string}
+         */
+        FeedbackArea: "match_results" | "shortlist_decision" | "task_intake" | "resume_reading" | "candidate_fit" | "suggestion" | "other";
+        /**
+         * FeedbackIn
+         * @description Optional feedback on any action: a thumb, a comment, or both.
+         */
+        FeedbackIn: {
+            area: components["schemas"]["FeedbackArea"];
+            /**
+             * Comment
+             * @default
+             */
+            comment: string;
+            rating?: components["schemas"]["FeedbackRating"] | null;
+            /** Target Id */
+            target_id?: string | null;
+        };
         /** FeedbackInput */
         FeedbackInput: {
             action: components["schemas"]["FeedbackAction"];
@@ -1991,6 +2077,11 @@ export interface components {
             comment?: string | null;
             reject_reason?: components["schemas"]["RejectReason"] | null;
         };
+        /**
+         * FeedbackRating
+         * @enum {string}
+         */
+        FeedbackRating: "up" | "down";
         /** FeedbackRead */
         FeedbackRead: {
             action: components["schemas"]["FeedbackAction"];
@@ -2004,6 +2095,44 @@ export interface components {
             /** Comment */
             comment: string | null;
             reject_reason: components["schemas"]["RejectReason"] | null;
+        };
+        /** FeedbackReportRead */
+        FeedbackReportRead: {
+            /** Cost Usd */
+            cost_usd: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by: string | null;
+            /** Feedback Count */
+            feedback_count: number;
+            /** Id */
+            id: string;
+            /** Model */
+            model: string;
+            /**
+             * Period End
+             * Format: date-time
+             */
+            period_end: string;
+            /**
+             * Period Start
+             * Format: date-time
+             */
+            period_start: string;
+            /** Prompt Version */
+            prompt_version: string;
+            /** Summary */
+            summary: string;
+            /** Themes */
+            themes: components["schemas"]["ThemeRead"][];
+            /** Thumbs Down */
+            thumbs_down: number;
+            /** Thumbs Up */
+            thumbs_up: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2431,7 +2560,7 @@ export interface components {
          * NotificationKind
          * @enum {string}
          */
-        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit" | "model_ready";
+        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit" | "model_ready" | "feedback_report";
         /** NotificationRead */
         NotificationRead: {
             /** Body */
@@ -2729,6 +2858,12 @@ export interface components {
              */
             note: string;
         };
+        /**
+         * SuggestionKind
+         * @description What a suggested change from the weekly report would touch.
+         * @enum {string}
+         */
+        SuggestionKind: "matching_rule" | "threshold" | "training_data" | "resume_reading" | "screen_or_wording" | "other";
         /** TaskCreate */
         TaskCreate: {
             /** Allocation Pct Required */
@@ -2902,6 +3037,32 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** ThemeRead */
+        ThemeRead: {
+            area: components["schemas"]["FeedbackArea"];
+            /** Examples */
+            examples: string[];
+            kind: components["schemas"]["SuggestionKind"];
+            /** Mentions */
+            mentions: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "accepted" | "dismissed";
+            /** Suggestion */
+            suggestion: string;
+            /** Title */
+            title: string;
+        };
+        /** ThemeStatusIn */
+        ThemeStatusIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "accepted" | "dismissed";
+        };
         /** ThresholdVersionRead */
         ThresholdVersionRead: {
             /** Active */
@@ -3066,6 +3227,82 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_reports_api_v1_admin_feedback_reports_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackReportRead"][];
+                };
+            };
+        };
+    };
+    make_report_api_v1_admin_feedback_reports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackReportRead"];
+                };
+            };
+        };
+    };
+    set_theme_api_v1_admin_feedback_reports__report_id__themes__index__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                report_id: string;
+                index: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ThemeStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackReportRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     model_health_api_v1_admin_health_get: {
         parameters: {
             query?: {
@@ -4304,6 +4541,37 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EvalReportRead"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    give_feedback_api_v1_feedback_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

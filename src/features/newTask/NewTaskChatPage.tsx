@@ -17,6 +17,7 @@ import { useNavigate, useParams } from 'react-router'
 import type { InterpretResponse, Skill, Task } from '@/api/types'
 import { ErrorState } from '@/components/QueryStates'
 import { Button } from '@/components/ui/button'
+import { FeedbackPrompt } from '@/components/FeedbackPrompt'
 import {
   Dialog,
   DialogContent,
@@ -510,6 +511,11 @@ function Chat({
                 >
                   Answer step by step instead
                 </Button>
+                <FeedbackPrompt
+                  area="task_intake"
+                  question="Did we understand your description?"
+                  className="basis-full"
+                />
               </div>
             )}
             {step && current !== null && (

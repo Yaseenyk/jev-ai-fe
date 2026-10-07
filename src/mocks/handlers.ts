@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw'
 
 import type {
   FeedbackInput,
+  FeedbackReport,
   Page,
   Problem,
   Task,
@@ -39,6 +40,45 @@ function page<T>(items: T[], url: URL): Page<T> {
 }
 
 export function createHandlers(db: Db, session?: Storage) {
+  let feedbackGiven = 0
+  const feedbackReports: FeedbackReport[] = [
+    {
+      id: 'fbr-1',
+      period_start: '2026-09-30T00:00:00Z',
+      period_end: '2026-10-07T00:00:00Z',
+      feedback_count: 34,
+      thumbs_up: 21,
+      thumbs_down: 13,
+      summary:
+        'Managers like the top of the shortlists but say resume skill levels look too high. HR asks for clearer notice periods. A few people could not find the candidates HR sent them.',
+      themes: [
+        {
+          title: 'Resume skill levels look too high',
+          area: 'resume_reading',
+          mentions: 6,
+          examples: ['Python 5/5 from one line in the resume', 'levels look inflated'],
+          suggestion:
+            'Give skills mentioned only once level 2, and check ten recent resumes first.',
+          kind: 'resume_reading',
+          status: 'open',
+        },
+        {
+          title: 'Candidates from HR are hard to find',
+          area: 'other',
+          mentions: 3,
+          examples: ['where do I see what HR sent?'],
+          suggestion: 'Link the task page from the notification and show a count on the task list.',
+          kind: 'screen_or_wording',
+          status: 'open',
+        },
+      ],
+      model: 'gpt-5.4-mini',
+      prompt_version: 'feedback_report_v1',
+      cost_usd: 0.0021,
+      created_by: null,
+      created_at: '2026-10-07T00:00:00Z',
+    },
+  ]
   const api = (path: string) => `*/api/v1${path}`
 
   // Mock sign-in: a resource manager unless "viewer..." or "admin..." signs in.
@@ -390,6 +430,36 @@ export function createHandlers(db: Db, session?: Storage) {
     http.get(api('/eval/reports'), ({ request }) =>
       HttpResponse.json(page([], new URL(request.url))),
     ),
+    // People's feedback (ADR 023): stored in memory; a sample weekly report for the admin screen.
+    http.post(api('/feedback'), async ({ request }) => {
+      const body = (await request.json()) as { rating?: string; comment?: string }
+      if (!body.rating && !body.comment?.trim()) {
+        return problem(422, 'Validation error', 'validation_error', 'Give a rating or a comment')
+      }
+      feedbackGiven += 1
+      return new HttpResponse(null, { status: 204 })
+    }),
+    http.get(api('/admin/feedback-reports'), () => HttpResponse.json(feedbackReports)),
+    http.post(api('/admin/feedback-reports'), () => {
+      if (feedbackGiven === 0) {
+        return problem(
+          422,
+          'No feedback',
+          'no_feedback',
+          'No written feedback since the last report',
+        )
+      }
+      return HttpResponse.json(feedbackReports[0], { status: 201 })
+    }),
+    http.patch(api('/admin/feedback-reports/:id/themes/:index'), async ({ params, request }) => {
+      const body = (await request.json()) as { status: FeedbackReport['themes'][number]['status'] }
+      const report = feedbackReports.find((r) => r.id === params.id)
+      const theme = report?.themes[Number(params.index)]
+      if (!report || !theme)
+        return problem(404, 'Not found', 'theme_not_found', 'Suggestion not found')
+      theme.status = body.status
+      return HttpResponse.json(report)
+    }),
     http.get(api('/admin/learning'), () =>
       HttpResponse.json({
         feedback_total: 3,

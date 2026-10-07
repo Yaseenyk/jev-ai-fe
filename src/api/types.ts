@@ -66,6 +66,8 @@ export type ClientUpdate = Schemas['ClientUpdate']
 export type EvalReportSummary = Schemas['EvalReportSummary']
 export type EvalReport = Schemas['EvalReportRead']
 export type LearningSummary = Schemas['LearningSummary']
+export type FeedbackReport = Schemas['FeedbackReportRead']
+export type ThemeStatus = Schemas['ThemeStatusIn']['status']
 
 /** The list envelope every list endpoint returns (docs/06 §1). */
 export interface Page<T> {

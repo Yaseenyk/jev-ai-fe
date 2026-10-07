@@ -13,6 +13,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router'
 import { ApiError } from '@/api/client'
 import type { Level } from '@/api/types'
 import { Field } from '@/components/FormSheet'
+import { FeedbackPrompt } from '@/components/FeedbackPrompt'
 import { PageHeader } from '@/components/PageHeader'
 import { ErrorState } from '@/components/QueryStates'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -583,6 +584,12 @@ function ReviewForm({
           </Field>
         </div>
       </Panel>
+
+      <FeedbackPrompt
+        area="resume_reading"
+        targetId={x.extraction_id}
+        question="Did we read this resume right?"
+      />
 
       <div className="bg-surface space-y-4 rounded-xl border p-4">
         <label className="flex items-start gap-2 text-sm">

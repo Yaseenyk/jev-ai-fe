@@ -83,3 +83,13 @@ test('a run that no longer exists offers a way back instead of a retry', async (
   expect(screen.getByRole('link', { name: 'Back to tasks' })).toHaveAttribute('href', '/tasks')
   expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
 })
+
+test('feedback on matching results is optional: a thumb, then an optional comment', async () => {
+  const user = userEvent.setup()
+  renderRoute(`/runs/${firstRun.run.id}`)
+  const ask = await screen.findByRole('group', { name: 'Were these recommendations right?' })
+  await user.click(within(ask).getByRole('button', { name: /something was wrong/ }))
+  await user.type(within(ask).getByLabelText(/Your comment/), 'Top pick left early last time')
+  await user.click(within(ask).getByRole('button', { name: /Send comment/ }))
+  expect(await screen.findByText(/The team reads this every/)).toBeInTheDocument()
+})

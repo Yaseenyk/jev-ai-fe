@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { BandBadge } from '@/features/shortlist/BandBadge'
 import { DecisionTrail } from '@/features/shortlist/DecisionTrail'
+import { FeedbackPrompt } from '@/components/FeedbackPrompt'
 import { ExplanationBlock } from '@/features/shortlist/ExplanationBlock'
 import { useCanEdit } from '@/features/auth/AuthProvider'
 import { RejectDialog } from '@/features/shortlist/RejectDialog'
@@ -182,6 +183,11 @@ export function ShortlistItemCard({
           <div className="space-y-4 border-t px-4 py-4">
             <DecisionTrail item={item} definitions={definitions} thresholds={thresholds} />
             <ExplanationBlock explanation={item.explanation} status={item.explanation_status} />
+            <FeedbackPrompt
+              area="shortlist_decision"
+              targetId={item.id}
+              question="Is this person ranked right?"
+            />
           </div>
         </CollapsibleContent>
       </Collapsible>

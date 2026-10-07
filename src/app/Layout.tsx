@@ -22,6 +22,7 @@ import {
   useCanEdit,
   useManagesPeople,
 } from '@/features/auth/AuthProvider'
+import { GiveFeedbackButton } from '@/components/FeedbackPrompt'
 import { NotificationsBell } from '@/features/hr/NotificationsBell'
 import { ROLE_LABELS } from '@/lib/format'
 import { env } from '@/lib/env'
@@ -167,6 +168,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 function TopBar({ section }: { section: string | undefined }) {
+  const { pathname } = useLocation()
   const { user, logout } = useAuth()
   return (
     <header className="bg-surface/95 sticky top-0 z-20 flex h-14 items-center gap-3 border-b px-4 backdrop-blur sm:px-6 lg:px-8">
@@ -199,6 +201,7 @@ function TopBar({ section }: { section: string | undefined }) {
             <TooltipContent className="max-w-64">{DEMO_NOTE}</TooltipContent>
           </Tooltip>
         )}
+        <GiveFeedbackButton page={pathname} />
         <NotificationsBell />
         {user && (
           <>

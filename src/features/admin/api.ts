@@ -7,6 +7,8 @@ import type {
   AdminRun,
   EvalReport,
   EvalReportSummary,
+  FeedbackReport,
+  ThemeStatus,
   LearningSummary,
   ModelActivate,
   ModelHealth,
@@ -65,6 +67,33 @@ export function useEvalReport(id: string | null) {
     queryKey: ['admin', 'eval', id],
     queryFn: () => apiFetch<EvalReport>(`/eval/reports/${id ?? ''}`),
     enabled: id !== null,
+  })
+}
+
+export const useFeedbackReports = () =>
+  useQuery({
+    queryKey: ['admin', 'feedback-reports'],
+    queryFn: () => apiFetch<FeedbackReport[]>('/admin/feedback-reports'),
+  })
+
+/** Makes the report now from the feedback since the last one (one LLM call). */
+export function useMakeFeedbackReport() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => apiFetch<FeedbackReport>('/admin/feedback-reports', { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'feedback-reports'] }),
+  })
+}
+
+export function useSetThemeStatus(reportId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ index, status }: { index: number; status: ThemeStatus }) =>
+      apiFetch<FeedbackReport>(`/admin/feedback-reports/${reportId}/themes/${index}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'feedback-reports'] }),
   })
 }
 
