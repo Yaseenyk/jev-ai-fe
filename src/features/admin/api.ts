@@ -6,7 +6,11 @@ import { env } from '@/lib/env'
 import type {
   AdminRun,
   EvalReport,
+  ApiProject,
+  ApiProjectCreate,
+  DecisionRequest,
   EvalReportSummary,
+  NewApiKey,
   FeedbackReport,
   ThemeStatus,
   LearningSummary,
@@ -69,6 +73,42 @@ export function useEvalReport(id: string | null) {
     enabled: id !== null,
   })
 }
+
+export const useApiProjects = () =>
+  useQuery({
+    queryKey: ['admin', 'api-projects'],
+    queryFn: () => apiFetch<ApiProject[]>('/admin/api-projects'),
+  })
+
+export const useApiRequests = (projectId: string) =>
+  useQuery({
+    queryKey: ['admin', 'api-projects', projectId, 'requests'],
+    queryFn: () => apiFetch<DecisionRequest[]>(`/admin/api-projects/${projectId}/requests`),
+  })
+
+function useApiProjectsMutation<I, O>(fn: (input: I) => Promise<O>) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'api-projects'] }),
+  })
+}
+
+export const useCreateApiProject = () =>
+  useApiProjectsMutation((input: ApiProjectCreate) =>
+    apiFetch<ApiProject>('/admin/api-projects', { method: 'POST', body: JSON.stringify(input) }),
+  )
+
+/** The new key comes back once; it is never shown again. */
+export const useCreateApiKey = (projectId: string) =>
+  useApiProjectsMutation(() =>
+    apiFetch<NewApiKey>(`/admin/api-projects/${projectId}/keys`, { method: 'POST' }),
+  )
+
+export const useRevokeApiKey = () =>
+  useApiProjectsMutation((keyId: string) =>
+    apiFetch<undefined>(`/admin/api-keys/${keyId}/revoke`, { method: 'POST' }),
+  )
 
 export const useFeedbackReports = () =>
   useQuery({

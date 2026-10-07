@@ -67,6 +67,10 @@ export type EvalReportSummary = Schemas['EvalReportSummary']
 export type EvalReport = Schemas['EvalReportRead']
 export type LearningSummary = Schemas['LearningSummary']
 export type FeedbackReport = Schemas['FeedbackReportRead']
+export type ApiProject = Schemas['ApiProjectRead']
+export type ApiProjectCreate = Schemas['ApiProjectCreate']
+export type NewApiKey = Schemas['NewApiKey']
+export type DecisionRequest = Schemas['DecisionRequestRead']
 export type ThemeStatus = Schemas['ThemeStatusIn']['status']
 
 /** The list envelope every list endpoint returns (docs/06 §1). */

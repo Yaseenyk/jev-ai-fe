@@ -2,6 +2,8 @@ import { http, HttpResponse } from 'msw'
 
 import type {
   FeedbackInput,
+  ApiProject,
+  ApiProjectCreate,
   FeedbackReport,
   Page,
   Problem,
@@ -41,6 +43,7 @@ function page<T>(items: T[], url: URL): Page<T> {
 
 export function createHandlers(db: Db, session?: Storage) {
   let feedbackGiven = 0
+  const apiProjects: ApiProject[] = []
   const feedbackReports: FeedbackReport[] = [
     {
       id: 'fbr-1',
@@ -430,6 +433,46 @@ export function createHandlers(db: Db, session?: Storage) {
     http.get(api('/eval/reports'), ({ request }) =>
       HttpResponse.json(page([], new URL(request.url))),
     ),
+    // Decision API (ADR 021): projects and keys in memory; the key itself is shown once.
+    http.get(api('/admin/api-projects'), () => HttpResponse.json(apiProjects)),
+    http.post(api('/admin/api-projects'), async ({ request }) => {
+      const body = (await request.json()) as ApiProjectCreate
+      if (apiProjects.some((p) => p.name === body.name)) {
+        return problem(422, 'Exists', 'project_exists', `A project called ${body.name} exists`)
+      }
+      const made: ApiProject = {
+        id: `proj-${apiProjects.length + 1}`,
+        name: body.name,
+        monthly_budget_usd: body.monthly_budget_usd,
+        spent_this_month_usd: 0,
+        store_inputs: body.store_inputs,
+        is_active: true,
+        keys: [],
+      }
+      apiProjects.push(made)
+      return HttpResponse.json(made, { status: 201 })
+    }),
+    http.post(api('/admin/api-projects/:id/keys'), ({ params }) => {
+      const p = apiProjects.find((x) => x.id === params.id)
+      if (!p) return problem(404, 'Not found', 'project_not_found', 'Project not found')
+      const key = `jev_demo${Math.random().toString(36).slice(2, 14)}`
+      const row = {
+        id: `key-${p.keys.length + 1}-${p.id}`,
+        prefix: key.slice(0, 12),
+        created_at: new Date().toISOString(),
+        last_used_at: null,
+        revoked_at: null,
+      }
+      p.keys.unshift(row)
+      return HttpResponse.json({ id: row.id, prefix: row.prefix, key }, { status: 201 })
+    }),
+    http.post(api('/admin/api-keys/:id/revoke'), ({ params }) => {
+      for (const p of apiProjects) {
+        for (const k of p.keys) if (k.id === params.id) k.revoked_at = new Date().toISOString()
+      }
+      return new HttpResponse(null, { status: 204 })
+    }),
+    http.get(api('/admin/api-projects/:id/requests'), () => HttpResponse.json([])),
     // People's feedback (ADR 023): stored in memory; a sample weekly report for the admin screen.
     http.post(api('/feedback'), async ({ request }) => {
       const body = (await request.json()) as { rating?: string; comment?: string }

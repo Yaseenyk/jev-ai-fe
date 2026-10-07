@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { EvalTab } from '@/features/admin/EvalTab'
 import { HealthTab } from '@/features/admin/HealthTab'
+import { DecisionApiTab } from '@/features/admin/DecisionApiTab'
 import { LearningTab } from '@/features/admin/LearningTab'
 import { ModelsTab } from '@/features/admin/ModelsTab'
 import { RunsTab } from '@/features/admin/RunsTab'
@@ -19,6 +20,7 @@ const TABS = [
   { value: 'learning', label: 'Learning', body: <LearningTab /> },
   { value: 'models', label: 'Models', body: <ModelsTab /> },
   { value: 'users', label: 'Users', body: <UsersTab /> },
+  { value: 'decision-api', label: 'Decision API', body: <DecisionApiTab /> },
 ]
 
 export default function AdminPage() {

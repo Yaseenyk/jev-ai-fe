@@ -4,6 +4,78 @@
  */
 
 export interface paths {
+    "/api/v1/admin/api-keys/{key_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Key */
+        post: operations["revoke_key_api_v1_admin_api_keys__key_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/api-projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Projects */
+        get: operations["list_projects_api_v1_admin_api_projects_get"];
+        put?: never;
+        /** Create Project */
+        post: operations["create_project_api_v1_admin_api_projects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/api-projects/{project_id}/keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Key
+         * @description A new key for the project. It is shown once and never stored.
+         */
+        post: operations["create_key_api_v1_admin_api_projects__project_id__keys_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/api-projects/{project_id}/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recent Requests */
+        get: operations["recent_requests_api_v1_admin_api_projects__project_id__requests_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/feedback-reports": {
         parameters: {
             query?: never;
@@ -476,6 +548,86 @@ export interface paths {
          * @description Change a client's details or deactivate it (not offered for new tasks). Audited.
          */
         patch: operations["update_client_api_v1_clients__code__patch"];
+        trace?: never;
+    };
+    "/api/v1/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decide
+         * @description One typed question → probabilities over its options; `answer` is null when unsure.
+         */
+        post: operations["decide_api_v1_decide_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decide/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decide Batch
+         * @description Up to 50 questions; answers in the same order.
+         */
+        post: operations["decide_batch_api_v1_decide_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decide/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Definitions
+         * @description The typed questions this project may ask.
+         */
+        get: operations["definitions_api_v1_decide_definitions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/decide/{request_id}/outcome": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Outcome
+         * @description The caller reports which option turned out right (the training signal).
+         */
+        post: operations["outcome_api_v1_decide__request_id__outcome_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/decisions": {
@@ -1362,6 +1514,51 @@ export interface components {
             /** Rate */
             rate: number | null;
         };
+        /** ApiKeyRead */
+        ApiKeyRead: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: string;
+            /** Last Used At */
+            last_used_at: string | null;
+            /** Prefix */
+            prefix: string;
+            /** Revoked At */
+            revoked_at: string | null;
+        };
+        /** ApiProjectCreate */
+        ApiProjectCreate: {
+            /** Monthly Budget Usd */
+            monthly_budget_usd: number;
+            /** Name */
+            name: string;
+            /**
+             * Store Inputs
+             * @default false
+             */
+            store_inputs: boolean;
+        };
+        /** ApiProjectRead */
+        ApiProjectRead: {
+            /** Id */
+            id: string;
+            /** Is Active */
+            is_active: boolean;
+            /** Keys */
+            keys: components["schemas"]["ApiKeyRead"][];
+            /** Monthly Budget Usd */
+            monthly_budget_usd: number;
+            /** Name */
+            name: string;
+            /** Spent This Month Usd */
+            spent_this_month_usd: number;
+            /** Store Inputs */
+            store_inputs: boolean;
+        };
         /**
          * AssignmentOutcome
          * @enum {string}
@@ -1660,6 +1857,49 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** DecideBatchIn */
+        DecideBatchIn: {
+            /** Requests */
+            requests: components["schemas"]["DecideIn"][];
+        };
+        /** DecideIn */
+        DecideIn: {
+            /** Decision */
+            decision: string;
+            /** Inputs */
+            inputs: {
+                [key: string]: string;
+            };
+        };
+        /** DecideOut */
+        DecideOut: {
+            /** Abstained */
+            abstained: boolean;
+            /** Answer */
+            answer: string | null;
+            /** Confidence */
+            confidence: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Decision */
+            decision: string;
+            /** Flags */
+            flags: string[];
+            /** Id */
+            id: string;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Model */
+            model: string;
+            /** Probabilities */
+            probabilities: {
+                [key: string]: number;
+            };
+            /** Prompt Version */
+            prompt_version: string;
+            /** Version */
+            version: number;
+        };
         /** DecisionOptionRead */
         DecisionOptionRead: {
             /** Description */
@@ -1688,6 +1928,34 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** DecisionRequestRead */
+        DecisionRequestRead: {
+            /** Abstained */
+            abstained: boolean;
+            /** Answer */
+            answer: string | null;
+            /** Confidence */
+            confidence: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decision */
+            decision: string;
+            /** Flags */
+            flags: string[];
+            /** Id */
+            id: string;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Outcome */
+            outcome: string | null;
+            /** Version */
+            version: number;
+        };
         /** DecisionResultRead */
         DecisionResultRead: {
             /** Chosen */
@@ -1705,6 +1973,23 @@ export interface components {
              * @enum {string}
              */
             type: "bool" | "choice" | "score";
+            /** Version */
+            version: number;
+        };
+        /** DefinitionRead */
+        DefinitionRead: {
+            /** Decision */
+            decision: string;
+            /** Inputs */
+            inputs: components["schemas"]["InputRead"][];
+            /** Label */
+            label: string;
+            /** Min Confidence */
+            min_confidence: number;
+            /** Options */
+            options: components["schemas"]["OptionRead"][];
+            /** Question */
+            question: string;
             /** Version */
             version: number;
         };
@@ -2317,6 +2602,17 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** InputRead */
+        InputRead: {
+            /** Label */
+            label: string;
+            /** Max Chars */
+            max_chars: number;
+            /** Name */
+            name: string;
+            /** Required */
+            required: boolean;
+        };
         /** InterpretRequest */
         InterpretRequest: {
             /** Known Clients */
@@ -2557,6 +2853,18 @@ export interface components {
             pinned_dir: string | null;
         };
         /**
+         * NewApiKey
+         * @description The key itself is shown once and never stored.
+         */
+        NewApiKey: {
+            /** Id */
+            id: string;
+            /** Key */
+            key: string;
+            /** Prefix */
+            prefix: string;
+        };
+        /**
          * NotificationKind
          * @enum {string}
          */
@@ -2579,6 +2887,18 @@ export interface components {
             read: boolean;
             /** Title */
             title: string;
+        };
+        /** OptionRead */
+        OptionRead: {
+            /** Description */
+            description: string;
+            /** Value */
+            value: string;
+        };
+        /** OutcomeIn */
+        OutcomeIn: {
+            /** Correct */
+            correct: string;
         };
         /** Page[AdminRunRead] */
         Page_AdminRunRead_: {
@@ -3227,6 +3547,150 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    revoke_key_api_v1_admin_api_keys__key_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_projects_api_v1_admin_api_projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiProjectRead"][];
+                };
+            };
+        };
+    };
+    create_project_api_v1_admin_api_projects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApiProjectCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiProjectRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_key_api_v1_admin_api_projects__project_id__keys_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewApiKey"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recent_requests_api_v1_admin_api_projects__project_id__requests_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionRequestRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_reports_api_v1_admin_feedback_reports_get: {
         parameters: {
             query?: never;
@@ -4035,6 +4499,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClientRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_api_v1_decide_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecideOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decide_batch_api_v1_decide_batch_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideBatchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecideOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definitions_api_v1_decide_definitions_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefinitionRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    outcome_api_v1_decide__request_id__outcome_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string;
+            };
+            path: {
+                request_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutcomeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecideOut"];
                 };
             };
             /** @description Validation Error */

@@ -182,6 +182,130 @@
         "title": "Agreement",
         "type": "object"
       },
+      "ApiKeyRead": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "last_used_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used At"
+          },
+          "prefix": {
+            "title": "Prefix",
+            "type": "string"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          }
+        },
+        "required": [
+          "id",
+          "prefix",
+          "created_at",
+          "last_used_at",
+          "revoked_at"
+        ],
+        "title": "ApiKeyRead",
+        "type": "object"
+      },
+      "ApiProjectCreate": {
+        "properties": {
+          "monthly_budget_usd": {
+            "maximum": 10000.0,
+            "minimum": 0.0,
+            "title": "Monthly Budget Usd",
+            "type": "number"
+          },
+          "name": {
+            "maxLength": 60,
+            "minLength": 2,
+            "pattern": "^[a-z][a-z0-9_-]*$",
+            "title": "Name",
+            "type": "string"
+          },
+          "store_inputs": {
+            "default": false,
+            "title": "Store Inputs",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "monthly_budget_usd"
+        ],
+        "title": "ApiProjectCreate",
+        "type": "object"
+      },
+      "ApiProjectRead": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/ApiKeyRead"
+            },
+            "title": "Keys",
+            "type": "array"
+          },
+          "monthly_budget_usd": {
+            "title": "Monthly Budget Usd",
+            "type": "number"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "spent_this_month_usd": {
+            "title": "Spent This Month Usd",
+            "type": "number"
+          },
+          "store_inputs": {
+            "title": "Store Inputs",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "monthly_budget_usd",
+          "spent_this_month_usd",
+          "store_inputs",
+          "is_active",
+          "keys"
+        ],
+        "title": "ApiProjectRead",
+        "type": "object"
+      },
       "AssignmentOutcome": {
         "enum": [
           "successful",
@@ -1120,6 +1244,127 @@
         "title": "DataHealth",
         "type": "object"
       },
+      "DecideBatchIn": {
+        "properties": {
+          "requests": {
+            "items": {
+              "$ref": "#/components/schemas/DecideIn"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Requests",
+            "type": "array"
+          }
+        },
+        "required": [
+          "requests"
+        ],
+        "title": "DecideBatchIn",
+        "type": "object"
+      },
+      "DecideIn": {
+        "properties": {
+          "decision": {
+            "maxLength": 100,
+            "title": "Decision",
+            "type": "string"
+          },
+          "inputs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Inputs",
+            "type": "object"
+          }
+        },
+        "required": [
+          "decision",
+          "inputs"
+        ],
+        "title": "DecideIn",
+        "type": "object"
+      },
+      "DecideOut": {
+        "properties": {
+          "abstained": {
+            "title": "Abstained",
+            "type": "boolean"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "cost_usd": {
+            "title": "Cost Usd",
+            "type": "number"
+          },
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "integer"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "probabilities": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Probabilities",
+            "type": "object"
+          },
+          "prompt_version": {
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "decision",
+          "version",
+          "answer",
+          "probabilities",
+          "confidence",
+          "abstained",
+          "flags",
+          "model",
+          "prompt_version",
+          "cost_usd",
+          "latency_ms"
+        ],
+        "title": "DecideOut",
+        "type": "object"
+      },
       "DecisionOptionRead": {
         "properties": {
           "description": {
@@ -1185,6 +1430,87 @@
         "title": "DecisionRead",
         "type": "object"
       },
+      "DecisionRequestRead": {
+        "properties": {
+          "abstained": {
+            "title": "Abstained",
+            "type": "boolean"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "cost_usd": {
+            "title": "Cost Usd",
+            "type": "number"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "integer"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "decision",
+          "version",
+          "answer",
+          "confidence",
+          "abstained",
+          "flags",
+          "outcome",
+          "cost_usd",
+          "latency_ms",
+          "created_at"
+        ],
+        "title": "DecisionRequestRead",
+        "type": "object"
+      },
       "DecisionResultRead": {
         "properties": {
           "chosen": {
@@ -1232,6 +1558,55 @@
           "flags"
         ],
         "title": "DecisionResultRead",
+        "type": "object"
+      },
+      "DefinitionRead": {
+        "properties": {
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "inputs": {
+            "items": {
+              "$ref": "#/components/schemas/InputRead"
+            },
+            "title": "Inputs",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "min_confidence": {
+            "title": "Min Confidence",
+            "type": "number"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/OptionRead"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "decision",
+          "version",
+          "label",
+          "question",
+          "options",
+          "inputs",
+          "min_confidence"
+        ],
+        "title": "DefinitionRead",
         "type": "object"
       },
       "Domain": {
@@ -2990,6 +3365,34 @@
         "title": "ImportRow",
         "type": "object"
       },
+      "InputRead": {
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "max_chars": {
+            "title": "Max Chars",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "max_chars",
+          "required"
+        ],
+        "title": "InputRead",
+        "type": "object"
+      },
       "InterpretRequest": {
         "properties": {
           "known_clients": {
@@ -3766,6 +4169,30 @@
         "title": "ModelsRead",
         "type": "object"
       },
+      "NewApiKey": {
+        "description": "The key itself is shown once and never stored.",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "prefix": {
+            "title": "Prefix",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prefix",
+          "key"
+        ],
+        "title": "NewApiKey",
+        "type": "object"
+      },
       "NotificationKind": {
         "enum": [
           "request_new",
@@ -3819,6 +4246,38 @@
           "read"
         ],
         "title": "NotificationRead",
+        "type": "object"
+      },
+      "OptionRead": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "description"
+        ],
+        "title": "OptionRead",
+        "type": "object"
+      },
+      "OutcomeIn": {
+        "properties": {
+          "correct": {
+            "maxLength": 100,
+            "title": "Correct",
+            "type": "string"
+          }
+        },
+        "required": [
+          "correct"
+        ],
+        "title": "OutcomeIn",
         "type": "object"
       },
       "Page_AdminRunRead_": {
@@ -5713,6 +6172,222 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/admin/api-keys/{key_id}/revoke": {
+      "post": {
+        "operationId": "revoke_key_api_v1_admin_api_keys__key_id__revoke_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Key Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Revoke Key",
+        "tags": [
+          "decision API"
+        ]
+      }
+    },
+    "/api/v1/admin/api-projects": {
+      "get": {
+        "operationId": "list_projects_api_v1_admin_api_projects_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ApiProjectRead"
+                  },
+                  "title": "Response List Projects Api V1 Admin Api Projects Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Projects",
+        "tags": [
+          "decision API"
+        ]
+      },
+      "post": {
+        "operationId": "create_project_api_v1_admin_api_projects_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiProjectCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiProjectRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Project",
+        "tags": [
+          "decision API"
+        ]
+      }
+    },
+    "/api/v1/admin/api-projects/{project_id}/keys": {
+      "post": {
+        "description": "A new key for the project. It is shown once and never stored.",
+        "operationId": "create_key_api_v1_admin_api_projects__project_id__keys_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewApiKey"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Key",
+        "tags": [
+          "decision API"
+        ]
+      }
+    },
+    "/api/v1/admin/api-projects/{project_id}/requests": {
+      "get": {
+        "operationId": "recent_requests_api_v1_admin_api_projects__project_id__requests_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DecisionRequestRead"
+                  },
+                  "title": "Response Recent Requests Api V1 Admin Api Projects  Project Id  Requests Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Recent Requests",
+        "tags": [
+          "decision API"
+        ]
+      }
+    },
     "/api/v1/admin/feedback-reports": {
       "get": {
         "description": "The weekly reports, newest first.",
@@ -6977,6 +7652,230 @@
         "summary": "Update Client",
         "tags": [
           "clients"
+        ]
+      }
+    },
+    "/api/v1/decide": {
+      "post": {
+        "description": "One typed question \u2192 probabilities over its options; `answer` is null when unsure.",
+        "operationId": "decide_api_v1_decide_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Authorization",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecideIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecideOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide",
+        "tags": [
+          "decision API"
+        ]
+      }
+    },
+    "/api/v1/decide/batch": {
+      "post": {
+        "description": "Up to 50 questions; answers in the same order.",
+        "operationId": "decide_batch_api_v1_decide_batch_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Authorization",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecideBatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DecideOut"
+                  },
+                  "title": "Response Decide Batch Api V1 Decide Batch Post",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide Batch",
+        "tags": [
+          "decision API"
+        ]
+      }
+    },
+    "/api/v1/decide/definitions": {
+      "get": {
+        "description": "The typed questions this project may ask.",
+        "operationId": "definitions_api_v1_decide_definitions_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Authorization",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DefinitionRead"
+                  },
+                  "title": "Response Definitions Api V1 Decide Definitions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Definitions",
+        "tags": [
+          "decision API"
+        ]
+      }
+    },
+    "/api/v1/decide/{request_id}/outcome": {
+      "post": {
+        "description": "The caller reports which option turned out right (the training signal).",
+        "operationId": "outcome_api_v1_decide__request_id__outcome_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Authorization",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutcomeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecideOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Outcome",
+        "tags": [
+          "decision API"
         ]
       }
     },
