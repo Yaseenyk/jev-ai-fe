@@ -1124,6 +1124,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tasks/{task_id}/resume-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resume Checks
+         * @description Resumes HR uploaded from this task's page, newest first, each with its fit for the task;
+         *     people who do not fit are included with band `hidden` and the reasons.
+         */
+        get: operations["resume_checks_api_v1_tasks__task_id__resume_checks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tasks/{task_id}/status": {
         parameters: {
             query?: never;
@@ -1293,6 +1314,8 @@ export interface components {
             profile: components["schemas"]["CandidateProfile"];
             /** Source */
             source: string;
+            /** Task Id */
+            task_id?: string | null;
         };
         /** CandidateDetail */
         CandidateDetail: {
@@ -5049,6 +5072,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MatchRunCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resume_checks_api_v1_tasks__task_id__resume_checks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateMatch"][];
                 };
             };
             /** @description Validation Error */

@@ -178,6 +178,14 @@ export const useTaskCandidates = (taskId: string) =>
     queryFn: () => apiFetch<CandidateMatch[]>(`/tasks/${taskId}/candidates`),
   })
 
+/** Resumes HR uploaded from this task's page, each with its fit (including people who do not fit). */
+export const useResumeChecks = (taskId: string, enabled = true) =>
+  useQuery({
+    queryKey: ['tasks', taskId, 'resume-checks'],
+    queryFn: () => apiFetch<CandidateMatch[]>(`/tasks/${taskId}/resume-checks`),
+    enabled,
+  })
+
 export const useExtractResume = () =>
   useMutation({
     // allowImages: HR agreed that a scanned file's page images (personal details included) go
@@ -199,7 +207,9 @@ export function useCreateCandidate() {
       await qc.invalidateQueries({ queryKey: ['candidates'] })
       // A new candidate is scored against every task's pool.
       await qc.invalidateQueries({
-        predicate: (q) => q.queryKey[0] === 'tasks' && q.queryKey[2] === 'candidates',
+        predicate: (q) =>
+          q.queryKey[0] === 'tasks' &&
+          (q.queryKey[2] === 'candidates' || q.queryKey[2] === 'resume-checks'),
       })
     },
   })

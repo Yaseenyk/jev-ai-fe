@@ -170,3 +170,31 @@ test('viewers see no hiring requests and no "ask HR" box', async () => {
   await screen.findByText(/Matching results/)
   expect(screen.queryByRole('region', { name: 'No internal fit' })).not.toBeInTheDocument()
 })
+
+test('HR checks a resume from a task page and sees the answer on that task', async () => {
+  const user = userEvent.setup()
+  await signInAs('hr@srtm.local')
+  const { router } = renderRoute(`/tasks/${task.id}`)
+  expect(await screen.findByText(/No resumes checked yet/)).toBeInTheDocument()
+  expect(screen.getByText(/The manager runs matching for the company/)).toBeInTheDocument()
+  await user.click(
+    screen.getAllByRole('link', { name: /Check a resume for this task/ })[0] as HTMLElement,
+  )
+  expect(await screen.findByText(/Checking this person against/)).toBeInTheDocument()
+  await user.upload(
+    await screen.findByLabelText('Resume file'),
+    new File(['resume'], 'cv-0.pdf', { type: 'application/pdf' }),
+  )
+  await user.click(screen.getByRole('button', { name: /Read the resume/ }))
+  const name = await screen.findByLabelText(/^Full name/)
+  await user.clear(name)
+  await user.type(name, 'Ravi Check')
+  await user.click(screen.getByRole('checkbox', { name: /candidate agreed/ }))
+  await user.click(screen.getByRole('button', { name: 'Save candidate' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(`/tasks/${task.id}`))
+  const result = await screen.findByRole('status', { name: /resume you just checked/ })
+  expect(within(result).getByText('Ravi Check')).toBeInTheDocument()
+  const table = screen.getByRole('table', { name: 'Checked resumes' })
+  expect(within(table).getByText('Ravi Check')).toBeInTheDocument()
+})

@@ -212,6 +212,8 @@ export interface CandidateCreate {
   consent: true
   profile: CandidateProfile
   extraction_id?: string
+  /** Uploaded from a task's page to check this person against that task. */
+  task_id?: string
 }
 
 export interface HrSummary {

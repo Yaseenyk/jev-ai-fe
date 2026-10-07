@@ -335,6 +335,18 @@
             "minLength": 1,
             "title": "Source",
             "type": "string"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
           }
         },
         "required": [
@@ -9000,6 +9012,59 @@
         "summary": "Start Run",
         "tags": [
           "match-runs"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/resume-checks": {
+      "get": {
+        "description": "Resumes HR uploaded from this task's page, newest first, each with its fit for the task;\npeople who do not fit are included with band `hidden` and the reasons.",
+        "operationId": "resume_checks_api_v1_tasks__task_id__resume_checks_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CandidateMatch"
+                  },
+                  "title": "Response Resume Checks Api V1 Tasks  Task Id  Resume Checks Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Resume Checks",
+        "tags": [
+          "hiring"
         ]
       }
     },

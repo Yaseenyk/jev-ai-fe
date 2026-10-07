@@ -22,6 +22,7 @@ import { useManagesPeople } from '@/features/auth/AuthProvider'
 import { useCreateCandidate, useExtractResume, useHiringRequest } from '@/features/hr/api'
 import type { CandidateProfile, Extraction } from '@/features/hr/types'
 import { Panel, SkillChip } from '@/features/hr/ui'
+import { useTask } from '@/features/tasks/api'
 import { LEVEL_TITLES, locationLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -35,6 +36,7 @@ export default function UploadResumePage() {
   const allowed = useManagesPeople()
   const [params] = useSearchParams()
   const requestId = params.get('request')
+  const taskId = params.get('task')
   const extract = useExtractResume()
   const [file, setFile] = useState<File | null>(null)
   const [source, setSource] = useState('Naukri')
@@ -46,12 +48,15 @@ export default function UploadResumePage() {
         back={
           requestId
             ? { to: `/hiring-requests/${requestId}`, label: 'Back to the request' }
-            : { to: '/candidates', label: 'All candidates' }
+            : taskId
+              ? { to: `/tasks/${taskId}`, label: 'Back to the task' }
+              : { to: '/candidates', label: 'All candidates' }
         }
         title="Upload a resume"
         description="Our own code reads the file and removes personal details (name, email, phone, address, links, date of birth) before ChatGPT sees anything. ChatGPT only turns the professional part into fields you check here."
       />
       {requestId && <RequestBanner id={requestId} />}
+      {taskId && !requestId && <TaskBanner id={taskId} />}
       <Steps current={extract.data ? 2 : 1} />
 
       {!extract.data ? (
@@ -137,6 +142,7 @@ export default function UploadResumePage() {
           extraction={extract.data}
           source={source}
           requestId={requestId}
+          taskId={taskId}
           onRestart={() => {
             extract.reset()
             setFile(null)
@@ -180,6 +186,17 @@ function Steps({ current }: { current: 1 | 2 }) {
   )
 }
 
+function TaskBanner({ id }: { id: string }) {
+  const task = useTask(id)
+  if (!task.data) return null
+  return (
+    <p className="bg-accent/50 rounded-lg px-3 py-2 text-sm">
+      Checking this person against <strong>{task.data.code}</strong> · {task.data.title}. You see
+      how well they fit on the task&rsquo;s page after saving.
+    </p>
+  )
+}
+
 function RequestBanner({ id }: { id: string }) {
   const request = useHiringRequest(id)
   if (!request.data) return null
@@ -195,11 +212,13 @@ function ReviewForm({
   extraction: x,
   source,
   requestId,
+  taskId,
   onRestart,
 }: {
   extraction: Extraction
   source: string
   requestId: string | null
+  taskId: string | null
   onRestart: () => void
 }) {
   const create = useCreateCandidate()
@@ -229,12 +248,20 @@ function ReviewForm({
         consent: true,
         profile,
         extraction_id: x.extraction_id,
+        task_id: taskId ?? undefined,
       },
       {
         onSuccess: (c) =>
-          void navigate(requestId ? `/hiring-requests/${requestId}` : `/candidates/${c.id}`, {
-            state: { uploaded: c.id },
-          }),
+          void navigate(
+            requestId
+              ? `/hiring-requests/${requestId}`
+              : taskId
+                ? `/tasks/${taskId}`
+                : `/candidates/${c.id}`,
+            {
+              state: { uploaded: c.id },
+            },
+          ),
       },
     )
 

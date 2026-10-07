@@ -44,6 +44,7 @@ interface MockCandidate extends Omit<
   | 'history'
   | 'consent_at'
 > {
+  checked_for_task_id?: string
   notice_days: number
   matches: TaskMatch[]
   history?: CandidateDetail['history']
@@ -761,6 +762,7 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         consent_at: now.toISOString(),
         profile: body.profile,
         matches: sample?.matches ?? [],
+        checked_for_task_id: body.task_id,
         history: [
           { at: now.toISOString(), by: 'hr@srtm.local', status: 'new', note: 'Resume uploaded' },
         ],
@@ -861,6 +863,26 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         })
         .sort((a, b) => b.score - a.score)
       return HttpResponse.json(ranked)
+    }),
+    http.get(api('/tasks/:id/resume-checks'), async ({ params, request }) => {
+      const task = await taskFor(String(params.id), request)
+      if (!task) return problem(404, 'task_not_found', 'Task not found')
+      const musts = task.requirements.filter((r) => r.must_have)
+      const checked: CandidateMatch[] = candidates
+        .filter((c) => c.checked_for_task_id === task.id)
+        .map((c) => {
+          const m = matchFor(c, task)
+          return {
+            score: m?.score ?? 0,
+            band: m?.band ?? 'hidden',
+            must_have_coverage: m?.must_have_coverage ?? 0,
+            matched_skills: m?.matched_skills ?? [],
+            missing_skills: m?.missing_skills ?? musts.map((r) => r.skill.name),
+            reasons: m?.reasons ?? [`Has 0 of ${musts.length} must-have skills`],
+            candidate: candidateSummary(c),
+          }
+        })
+      return HttpResponse.json(checked)
     }),
     // --- Hiring requests ----------------------------------------------------------------------
     http.post(api('/tasks/:id/hiring-requests'), async ({ params, request }) => {
