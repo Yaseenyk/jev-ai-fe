@@ -27,7 +27,7 @@ export function LearningTab() {
   const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState<unknown>(null)
 
-  if (learning.isPending) return <Skeleton className="h-64 w-full rounded-2xl" />
+  if (learning.isPending) return <Skeleton className="h-64 w-full rounded-xl" />
   if (learning.isError) return <ErrorState error={learning.error} />
   const s = learning.data
   const reasons = Object.entries(s.rejected_by_reason).sort((a, b) => b[1] - a[1])
@@ -47,6 +47,10 @@ export function LearningTab() {
 
   return (
     <div className="space-y-6">
+      <p className="text-muted-foreground max-w-3xl text-sm">
+        Every accept or reject from a manager can teach the model. This shows how much feedback has
+        come in, what it can be used for, and how to retrain with it.
+      </p>
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Feedback so far">
         <Stat label="Feedback received" value={s.feedback_total} />
         <Stat label="Accepted" value={s.accepted} />
@@ -55,8 +59,8 @@ export function LearningTab() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="bg-surface rounded-2xl border p-5" aria-label="Rejections by reason">
-          <p className="text-sm font-semibold">Rejections by reason</p>
+        <section className="bg-surface rounded-xl border p-5" aria-label="Rejections by reason">
+          <h2 className="text-sm font-semibold">Rejections by reason</h2>
           {reasons.length === 0 ? (
             <p className="text-muted-foreground mt-2 text-sm">No rejections yet.</p>
           ) : (
@@ -82,7 +86,7 @@ export function LearningTab() {
           )}
           {Object.keys(s.skipped).length > 0 && (
             <div className="mt-5">
-              <p className="text-sm font-semibold">Not used for training</p>
+              <h2 className="text-sm font-semibold">Not used for training</h2>
               <ul className="text-muted-foreground mt-2 space-y-1 text-sm">
                 {Object.entries(s.skipped).map(([why, n]) => (
                   <li key={why}>
@@ -95,10 +99,10 @@ export function LearningTab() {
         </section>
 
         <section
-          className="bg-surface rounded-2xl border p-5"
+          className="bg-surface rounded-xl border p-5"
           aria-label="How feedback becomes training data"
         >
-          <p className="text-sm font-semibold">How feedback becomes training data</p>
+          <h2 className="text-sm font-semibold">How feedback becomes training data</h2>
           <p className="text-muted-foreground mt-1 text-sm">
             Each decision is saved with exactly what the model saw. A manager's answer counts three
             times as much as a teacher label, and only teaches what the manager actually said.
@@ -114,9 +118,9 @@ export function LearningTab() {
         </section>
       </div>
 
-      <section className="bg-surface flex flex-wrap items-center justify-between gap-4 rounded-2xl border p-5">
+      <section className="bg-surface flex flex-wrap items-center justify-between gap-4 rounded-xl border p-5">
         <div className="max-w-xl">
-          <p className="text-sm font-semibold">Retrain with this feedback</p>
+          <h2 className="text-sm font-semibold">Retrain with this feedback</h2>
           <p className="text-muted-foreground text-sm">
             Download the training file, attach it to the student training notebook on Kaggle, and
             run it. The new model reports how often it agrees with managers on the kept-aside
@@ -128,7 +132,7 @@ export function LearningTab() {
         <Button
           onClick={() => void download()}
           disabled={downloading || s.usable_examples === 0}
-          className="rounded-xl"
+          className="rounded-lg"
         >
           {downloading ? <Loader2 className="animate-spin" /> : <Download />}
           Export training data ({s.usable_examples})
@@ -140,7 +144,7 @@ export function LearningTab() {
 
 function Stat({ label, value, tone }: { label: string; value: number; tone?: 'good' }) {
   return (
-    <div className="bg-surface rounded-2xl border px-4 py-3">
+    <div className="bg-surface rounded-xl border px-4 py-3">
       <p className="text-muted-foreground text-xs">{label}</p>
       <p
         className={

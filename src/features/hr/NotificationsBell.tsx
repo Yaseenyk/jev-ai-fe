@@ -1,21 +1,22 @@
-import { Bell } from 'lucide-react'
+import { Bell, BellOff } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useNotifications, useReadNotifications } from '@/features/hr/api'
 import { dateTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 /** In-app notifications for the hiring-request hand-offs (manager ↔ HR). */
-export function NotificationsBell({ compact = false }: { compact?: boolean }) {
+export function NotificationsBell() {
   const notifications = useNotifications()
   const read = useReadNotifications()
   const navigate = useNavigate()
@@ -25,40 +26,48 @@ export function NotificationsBell({ compact = false }: { compact?: boolean }) {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
-        className={cn(
-          'text-muted-foreground hover:bg-muted hover:text-foreground relative grid size-9 shrink-0 place-items-center rounded-lg',
-          !compact && 'lg:size-9',
-        )}
-      >
-        <Bell className="size-4" />
-        {unread > 0 && (
-          <span className="bg-destructive absolute top-1 right-1 grid min-w-4 place-items-center rounded-full px-1 text-[10px] font-semibold text-white">
-            {unread}
-          </span>
-        )}
-      </button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Notifications</DialogTitle>
-            <DialogDescription>
-              Hand-offs between managers and HR on hiring requests.
-            </DialogDescription>
-          </DialogHeader>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+            className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring relative grid size-9 shrink-0 place-items-center rounded-lg focus-visible:ring-2 focus-visible:outline-none"
+          >
+            <Bell className="size-4" />
+            {unread > 0 && (
+              <span className="bg-destructive absolute top-1 right-1 grid min-w-4 place-items-center rounded-full px-1 text-[10px] font-semibold text-white">
+                {unread}
+              </span>
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Notifications</TooltipContent>
+      </Tooltip>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
+          <SheetHeader className="border-b px-5 py-4">
+            <SheetTitle>Notifications</SheetTitle>
+            <SheetDescription>
+              {unread > 0
+                ? `${unread} unread. Hand-offs between managers and HR on hiring requests.`
+                : 'Hand-offs between managers and HR on hiring requests.'}
+            </SheetDescription>
+          </SheetHeader>
           {items.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Nothing yet.</p>
+            <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-sm">
+              <BellOff className="size-6" aria-hidden />
+              <p className="text-foreground font-medium">You are all caught up</p>
+              <p>When a manager or HR hands a request to you, it shows up here.</p>
+            </div>
           ) : (
-            <ul className="-mx-2 max-h-96 overflow-y-auto" aria-label="Notifications">
+            <ul className="flex-1 divide-y overflow-y-auto" aria-label="Notifications">
               {items.map((n) => (
                 <li key={n.id}>
                   <button
                     type="button"
                     className={cn(
-                      'hover:bg-accent/50 w-full rounded-lg px-2 py-2 text-left',
+                      'hover:bg-muted/60 flex w-full gap-3 px-5 py-3 text-left transition-colors',
                       !n.read && 'bg-accent/40',
                     )}
                     onClick={() => {
@@ -67,29 +76,34 @@ export function NotificationsBell({ compact = false }: { compact?: boolean }) {
                       void navigate(n.link)
                     }}
                   >
-                    <p className="text-sm font-medium">
-                      {!n.read && (
-                        <span
-                          className="bg-primary mr-2 inline-block size-2 rounded-full"
-                          aria-label="unread"
-                        />
+                    <span
+                      className={cn(
+                        'mt-1.5 size-2 shrink-0 rounded-full',
+                        n.read ? 'bg-transparent' : 'bg-primary',
                       )}
-                      {n.title}
-                    </p>
-                    <p className="text-muted-foreground text-sm">{n.body}</p>
-                    <p className="text-muted-foreground text-xs">{dateTime(n.created_at)}</p>
+                      aria-label={n.read ? undefined : 'unread'}
+                    />
+                    <span className="min-w-0">
+                      <p className="text-sm font-medium">{n.title}</p>
+                      <p className="text-muted-foreground text-sm">{n.body}</p>
+                      <p className="text-muted-foreground mt-0.5 text-xs">
+                        {dateTime(n.created_at)}
+                      </p>
+                    </span>
                   </button>
                 </li>
               ))}
             </ul>
           )}
           {unread > 0 && (
-            <Button variant="outline" size="sm" onClick={() => read.mutate(undefined)}>
-              Mark all as read
-            </Button>
+            <div className="flex justify-end border-t px-5 py-3">
+              <Button variant="outline" size="sm" onClick={() => read.mutate(undefined)}>
+                Mark all as read
+              </Button>
+            </div>
           )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </>
   )
 }

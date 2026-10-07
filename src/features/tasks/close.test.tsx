@@ -24,9 +24,9 @@ test('a manager cancels a task with a reason, finds it under Closed, and reopens
   expect(screen.queryByRole('button', { name: /run matching/i })).not.toBeInTheDocument()
 
   await user.click(screen.getByRole('link', { name: /All tasks/ }))
-  await user.click(await screen.findByRole('button', { name: 'closed' }))
+  await user.click(await screen.findByRole('button', { name: 'Closed' }))
   const closedRow = await screen.findByRole('link', { name: new RegExp(code) })
-  expect(within(closedRow).getByText('Cancelled')).toBeInTheDocument()
+  expect(within(closedRow.closest('tr') as HTMLElement).getByText('Cancelled')).toBeInTheDocument()
 
   await user.click(closedRow)
   await user.click(await screen.findByRole('button', { name: /Reopen task/ }))

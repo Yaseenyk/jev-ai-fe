@@ -5,6 +5,7 @@ import { HttpResponse, bypass, http } from 'msw'
 import type { Task } from '@/api/types'
 
 import type {
+  EmployeeProjectCreate,
   CandidateProfile,
   EmployeeCreate,
   CandidateCreate,
@@ -88,7 +89,54 @@ function parseCsv(text: string): string[][] {
 }
 
 export function createHrHandlers(db: Db, currentUser: () => { email: string; role: string }) {
-  let employees: EmployeeDetail[] = structuredClone(data.employees)
+  // Data health, as the API computes it (Company screen).
+  const REVIEW_DAYS = 180
+  const MIN_SKILLS = 3
+  const daysAgo = (d: number) => new Date(Date.now() - d * DAY).toISOString()
+  // Demo: a fifth never reviewed, a fifth reviewed ten months ago, the rest recently.
+  let employees: EmployeeDetail[] = structuredClone(data.employees).map((e, i) => ({
+    ...e,
+    reviewed_at: i % 5 === 0 ? null : i % 5 === 1 ? daysAgo(300) : daysAgo(10 + (i % 90)),
+    reviewed_by: i % 5 === 0 ? null : 'hr@srtm.local',
+    projects: e.projects.map((p, j) => ({ ...p, id: `${e.id}:p${j}` })),
+  }))
+  // Company projects for "Add project": the distinct projects in the employees' histories.
+  const projectOptions = [
+    ...new Map(
+      employees.flatMap((e) => e.projects).map((p) => [p.project_name, p.domain] as const),
+    ),
+  ]
+    .map(([name, domain], i) => ({
+      id: `prj-${i + 1}`,
+      code: `PRJ-${String(i + 1).padStart(3, '0')}`,
+      name,
+      client_code: 'CL-ACME',
+      domain,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+  const withHealth = (e: EmployeeDetail): EmployeeDetail => {
+    const missing: EmployeeDetail['missing'] = []
+    if (e.skills.length < MIN_SKILLS) missing.push('few_skills')
+    if (e.projects.length === 0) missing.push('no_projects')
+    const due =
+      e.reviewed_at === null || Date.now() - new Date(e.reviewed_at).getTime() > REVIEW_DAYS * DAY
+    return {
+      ...e,
+      skill_count: e.skills.length,
+      project_count: e.projects.length,
+      missing,
+      needs_review: due,
+    }
+  }
+  const health = (e: EmployeeDetail) => {
+    const h = withHealth(e)
+    return h.missing.length ? 'missing' : h.needs_review ? 'due' : 'ready'
+  }
+  const reviewed = (e: EmployeeDetail): EmployeeDetail => ({
+    ...e,
+    reviewed_at: new Date().toISOString(),
+    reviewed_by: 'hr@srtm.local',
+  })
   let candidates: MockCandidate[] = structuredClone(data.candidates).map((c) => ({
     ...c,
     consent_at: c.uploaded_at,
@@ -98,18 +146,25 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
   const extractions = new Map<string, { sample: MockCandidate }>()
   const skillNames = new Map(db.skills.map((s) => [s.name.toLowerCase(), s]))
 
-  const summary = (e: EmployeeDetail): EmployeeSummary => ({
-    id: e.id,
-    employee_code: e.employee_code,
-    full_name: e.full_name,
-    designation: e.designation,
-    level: e.level,
-    location: e.location,
-    cost_band: e.cost_band,
-    current_allocation_pct: e.current_allocation_pct,
-    available_from: e.available_from,
-    skill_count: e.skills.length,
-  })
+  const summary = (raw: EmployeeDetail): EmployeeSummary => {
+    const e = withHealth(raw)
+    return {
+      id: e.id,
+      employee_code: e.employee_code,
+      full_name: e.full_name,
+      designation: e.designation,
+      level: e.level,
+      location: e.location,
+      cost_band: e.cost_band,
+      current_allocation_pct: e.current_allocation_pct,
+      available_from: e.available_from,
+      skill_count: e.skills.length,
+      project_count: e.project_count,
+      missing: e.missing,
+      reviewed_at: e.reviewed_at,
+      needs_review: e.needs_review,
+    }
+  }
 
   const candidateSummary = (c: MockCandidate): CandidateSummary => ({
     id: c.id,
@@ -431,19 +486,29 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         client_clearances: [],
         summary: '',
         skill_count: 0,
+        project_count: 0,
+        missing: [],
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: 'hr@srtm.local',
+        needs_review: false,
         skills: [],
         projects: [],
         leaves: [],
       }
       employees = [made, ...employees]
-      return HttpResponse.json(made, { status: 201 })
+      return HttpResponse.json(withHealth(made), { status: 201 })
     }),
     http.get(api('/employees'), ({ request }) => {
       const url = new URL(request.url)
       const q = (url.searchParams.get('q') ?? '').toLowerCase()
       const level = url.searchParams.get('level')
       const location = url.searchParams.get('location')
-      const items = employees
+      const wanted = url.searchParams.get('health')
+      const practice = url.searchParams.get('practice')
+      const sort = url.searchParams.get('sort') ?? 'code'
+      const limit = Number(url.searchParams.get('limit') ?? 50)
+      const offset = Number(url.searchParams.get('offset') ?? 0)
+      const all = employees
         .filter(
           (e) =>
             (!q ||
@@ -451,14 +516,80 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
               e.employee_code.toLowerCase().includes(q) ||
               e.designation.toLowerCase().includes(q)) &&
             (!level || e.level === level) &&
-            (!location || e.location === location),
+            (!location || e.location === location) &&
+            (!practice || e.practice === practice) &&
+            (!wanted ||
+              (wanted === 'ready'
+                ? health(e) === 'ready'
+                : wanted === 'missing'
+                  ? withHealth(e).missing.length > 0
+                  : withHealth(e).needs_review)),
         )
         .map(summary)
-      return HttpResponse.json({ items, total: items.length, limit: items.length, offset: 0 })
+        .sort((a, b) =>
+          sort === 'name'
+            ? a.full_name.localeCompare(b.full_name)
+            : sort === 'reviewed'
+              ? (a.reviewed_at ?? '').localeCompare(b.reviewed_at ?? '')
+              : sort === 'available'
+                ? a.available_from.localeCompare(b.available_from)
+                : a.employee_code.localeCompare(b.employee_code),
+        )
+      const items = all.slice(offset, offset + limit)
+      return HttpResponse.json({ items, total: all.length, limit, offset })
+    }),
+    http.get(api('/projects'), () => HttpResponse.json(projectOptions)),
+    http.post(api('/employees/:id/projects'), async ({ params, request }) => {
+      const body = (await request.json()) as EmployeeProjectCreate
+      const option = projectOptions.find((p) => p.id === body.project_id)
+      if (!option) return problem(422, 'unknown_project', 'Choose a project from the list')
+      const entry = {
+        id: crypto.randomUUID(),
+        project_name: option.name,
+        domain: option.domain,
+        role_title: body.role_title,
+        start_date: body.start_date,
+        end_date: body.end_date,
+        outcome: body.outcome,
+      }
+      employees = employees.map((e) =>
+        e.id === params.id ? reviewed({ ...e, projects: [entry, ...e.projects] }) : e,
+      )
+      const changed = employees.find((e) => e.id === params.id)
+      return HttpResponse.json(changed && withHealth(changed), { status: 201 })
+    }),
+    http.delete(api('/employees/:id/projects/:entryId'), ({ params }) => {
+      employees = employees.map((e) =>
+        e.id === params.id
+          ? reviewed({ ...e, projects: e.projects.filter((p) => p.id !== params.entryId) })
+          : e,
+      )
+      const changed = employees.find((e) => e.id === params.id)
+      return HttpResponse.json(changed && withHealth(changed))
+    }),
+    http.get(api('/employees/health'), () => {
+      const all = employees.map(withHealth)
+      return HttpResponse.json({
+        total: all.length,
+        ready: employees.filter((e) => health(e) === 'ready').length,
+        missing: all.filter((e) => e.missing.length > 0).length,
+        due: all.filter((e) => e.needs_review).length,
+        review_after_days: REVIEW_DAYS,
+        min_skills: MIN_SKILLS,
+      })
+    }),
+    http.post(api('/employees/:id/review'), ({ params }) => {
+      employees = employees.map((e) => (e.id === params.id ? reviewed(e) : e))
+      const e = employees.find((x) => x.id === params.id)
+      return e
+        ? HttpResponse.json(withHealth(e))
+        : problem(404, 'employee_not_found', 'Employee not found')
     }),
     http.get(api('/employees/:id'), ({ params }) => {
       const e = employees.find((x) => x.id === params.id)
-      return e ? HttpResponse.json(e) : problem(404, 'employee_not_found', 'Employee not found')
+      return e
+        ? HttpResponse.json(withHealth(e))
+        : problem(404, 'employee_not_found', 'Employee not found')
     }),
     http.patch(api('/employees/:id'), async ({ params, request }) => {
       const body = (await request.json()) as EmployeeUpdate
@@ -468,8 +599,9 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
       ) {
         return problem(422, 'invalid_request', 'current_allocation_pct: must be between 0 and 100')
       }
-      employees = employees.map((e) => (e.id === params.id ? { ...e, ...body } : e))
-      return HttpResponse.json(employees.find((e) => e.id === params.id))
+      employees = employees.map((e) => (e.id === params.id ? reviewed({ ...e, ...body }) : e))
+      const changed = employees.find((e) => e.id === params.id)
+      return HttpResponse.json(changed && withHealth(changed))
     }),
     http.put(api('/employees/:id/skills'), async ({ params, request }) => {
       const skills = (await request.json()) as Omit<EmployeeSkill, 'skill_name'>[]
@@ -477,8 +609,9 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
         ...s,
         skill_name: db.skills.find((k) => k.id === s.skill_id)?.name ?? s.skill_id,
       }))
-      employees = employees.map((e) => (e.id === params.id ? { ...e, skills: named } : e))
-      return HttpResponse.json(employees.find((e) => e.id === params.id))
+      employees = employees.map((e) => (e.id === params.id ? reviewed({ ...e, skills: named }) : e))
+      const changed = employees.find((e) => e.id === params.id)
+      return HttpResponse.json(changed && withHealth(changed))
     }),
     http.post(api('/employees/:id/leaves'), async ({ params, request }) => {
       const body = (await request.json()) as { start_date: string; end_date: string }
@@ -649,7 +782,14 @@ export function createHrHandlers(db: Db, currentUser: () => { email: string; rol
               c.profile.skills.some((s) => s.skill_name.toLowerCase().includes(q))),
         )
         .map(candidateSummary)
-      return HttpResponse.json({ items, total: items.length, limit: items.length, offset: 0 })
+      const limit = Number(url.searchParams.get('limit') ?? 50)
+      const offset = Number(url.searchParams.get('offset') ?? 0)
+      return HttpResponse.json({
+        items: items.slice(offset, offset + limit),
+        total: items.length,
+        limit,
+        offset,
+      })
     }),
     http.get(api('/candidates/:id'), ({ params }) => {
       const c = candidates.find((x) => x.id === params.id)

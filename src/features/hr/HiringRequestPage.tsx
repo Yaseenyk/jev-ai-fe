@@ -1,8 +1,10 @@
-import { ArrowLeft, Check, Loader2, Send, ThumbsDown, ThumbsUp, Upload } from 'lucide-react'
+import { Check, Loader2, Send, ThumbsDown, ThumbsUp, Upload } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
+import { PageHeader } from '@/components/PageHeader'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
+import { StatusBadge } from '@/components/StatusBadge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -24,6 +26,7 @@ import {
 } from '@/features/hr/types'
 import {
   CandidateStatusBadge,
+  DetailList,
   MatchReasons,
   Panel,
   RequestStatusBadge,
@@ -36,36 +39,74 @@ export default function HiringRequestPage() {
   const { requestId = '' } = useParams()
   const request = useHiringRequest(requestId)
   const isHr = useManagesPeople()
+  const start = useStartRequest(requestId)
+  const close = useCloseRequest(requestId)
+  const back = isHr
+    ? { to: '/hiring-requests', label: 'All requests' }
+    : { to: '/hiring-requests', label: 'My requests' }
 
-  if (request.isPending) return <Skeleton className="h-96 w-full rounded-2xl" />
+  if (request.isPending) return <Skeleton className="h-96 w-full rounded-xl" />
   if (request.isError) return <ErrorState error={request.error} />
   const r = request.data
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/hiring-requests"
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> All requests
-      </Link>
-      <header className="space-y-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-semibold">
-            Candidates for {r.task_code} · {r.task_title}
-          </h1>
-          <RequestStatusBadge status={r.status} />
+      <PageHeader
+        back={back}
+        title={`${r.task_code} · ${r.task_title}`}
+        status={<RequestStatusBadge status={r.status} />}
+        description={
+          isHr
+            ? 'Find external candidates for this task and send the best few to the manager. Contact the ones they mark fit.'
+            : 'Candidates HR found for your task. Mark each one fit or not a fit; HR contacts the fit ones.'
+        }
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <Link to={`/tasks/${r.task_id}`}>Open the task</Link>
+            </Button>
+            {isHr && r.status !== 'closed' && (
+              <Button
+                variant="outline"
+                onClick={() => close.mutate(undefined)}
+                disabled={close.isPending}
+              >
+                Close request
+              </Button>
+            )}
+            {isHr && r.status === 'new' && (
+              <Button onClick={() => start.mutate(undefined)} disabled={start.isPending}>
+                Start searching
+              </Button>
+            )}
+          </>
+        }
+      />
+
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="min-w-0 space-y-4">
+          {isHr ? <HrView request={r} /> : <ManagerView request={r} />}
         </div>
-        <p className="text-muted-foreground text-sm">
-          {r.client_code} · asked by {r.requested_by} on {dateTime(r.requested_at)} · {r.wanted}{' '}
-          wanted ·{' '}
-          <Link to={`/tasks/${r.task_id}`} className="text-primary hover:underline">
-            Open the task
-          </Link>
-        </p>
-        {r.note && <p className="bg-muted/50 rounded-lg px-3 py-2 text-sm">“{r.note}”</p>}
-      </header>
-      {isHr ? <HrView request={r} /> : <ManagerView request={r} />}
+        <aside className="space-y-4">
+          <Panel title="Details">
+            <DetailList
+              items={[
+                { label: 'Client', value: r.client_code },
+                { label: 'Asked by', value: r.requested_by },
+                { label: 'Asked on', value: dateTime(r.requested_at) },
+                { label: 'Wanted', value: `${r.wanted} candidates` },
+                { label: 'Sent', value: `${r.sent_count} of ${MAX_SUBMISSIONS} at most` },
+                { label: 'Marked fit', value: r.fit_count },
+              ]}
+            />
+          </Panel>
+          {r.note && (
+            <Panel title="Note from the manager">
+              <p className="text-sm">“{r.note}”</p>
+            </Panel>
+          )}
+        </aside>
+      </div>
     </div>
   )
 }
@@ -73,9 +114,7 @@ export default function HiringRequestPage() {
 // --- HR: find candidates, send up to 10, contact the ones marked fit ------------------------------
 function HrView({ request: r }: { request: HiringRequestDetail }) {
   const pool = useTaskCandidates(r.task_id)
-  const start = useStartRequest(r.id)
   const send = useSendCandidates(r.id)
-  const close = useCloseRequest(r.id)
   // Set when HR comes back from uploading a resume for this request.
   const uploaded = (useLocation().state as { uploaded?: string } | null)?.uploaded
   const [picked, setPicked] = useState<string[]>(uploaded ? [uploaded] : [])
@@ -90,25 +129,20 @@ function HrView({ request: r }: { request: HiringRequestDetail }) {
     )
 
   return (
-    <div className="space-y-4">
+    <>
       {r.status === 'new' && (
-        <div className="bg-band-review/40 flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4">
-          <p className="text-sm">
-            New request. Let the manager know you are on it, then upload resumes from job sites or
-            pick from the candidates below.
-          </p>
-          <Button onClick={() => start.mutate(undefined)} disabled={start.isPending}>
-            Start searching
-          </Button>
-        </div>
+        <Alert>
+          <AlertTitle>New request</AlertTitle>
+          <AlertDescription>
+            Choose “Start searching” so the manager knows you are on it. Then upload resumes from
+            job sites, or pick from the candidates below.
+          </AlertDescription>
+        </Alert>
       )}
 
       {fit.length > 0 && (
-        <Panel
-          title={`Marked fit by the manager — contact them (${fit.length})`}
-          label="Marked fit"
-        >
-          <ul className="divide-y">
+        <Panel title={`Marked fit by the manager: contact them (${fit.length})`} label="Marked fit">
+          <ul className="-my-2 divide-y">
             {fit.map((s) => (
               <li key={s.candidate.id} className="flex flex-wrap items-center gap-3 py-2.5">
                 <div className="min-w-0 flex-1">
@@ -133,12 +167,12 @@ function HrView({ request: r }: { request: HiringRequestDetail }) {
           title={`Sent to the manager (${r.submissions.length} of ${MAX_SUBMISSIONS})`}
           label="Sent to the manager"
         >
-          <ul className="divide-y">
+          <ul className="-my-2 divide-y">
             {r.submissions.map((s) => (
               <li key={s.candidate.id} className="flex flex-wrap items-center gap-3 py-2.5">
                 <Link
                   to={`/candidates/${s.candidate.id}`}
-                  className="min-w-0 flex-1 hover:underline"
+                  className="min-w-0 flex-1 text-sm font-medium hover:underline"
                 >
                   {s.candidate.first_name} · {s.candidate.designation}
                 </Link>
@@ -175,8 +209,8 @@ function HrView({ request: r }: { request: HiringRequestDetail }) {
               {uploaded && (
                 <UploadedFit match={pool.data.find((m) => m.candidate.id === uploaded)} />
               )}
-              <p className="text-muted-foreground mb-2 text-sm">
-                Ranked by fit to this task. Pick up to {room} to send (1–{MAX_SUBMISSIONS} per
+              <p className="text-muted-foreground mb-1 text-sm">
+                Ranked by fit to this task. Tick up to {room} to send (1–{MAX_SUBMISSIONS} per
                 request).
               </p>
               <ul className="divide-y">
@@ -200,57 +234,56 @@ function HrView({ request: r }: { request: HiringRequestDetail }) {
                           >
                             {m.candidate.full_name}
                           </Link>
-                          <span className="text-muted-foreground text-sm">
-                            {m.candidate.designation} · {levelLabel(m.candidate.level)} ·{' '}
-                            {m.candidate.years_experience} yrs ·{' '}
-                            {locationLabel(m.candidate.location)}
-                          </span>
                           <CandidateStatusBadge status={m.candidate.status} />
                         </div>
+                        <p className="text-muted-foreground text-sm">
+                          {m.candidate.designation} · {levelLabel(m.candidate.level)} ·{' '}
+                          {m.candidate.years_experience} yrs · {locationLabel(m.candidate.location)}
+                        </p>
                         <MatchReasons match={m} />
                       </div>
                       <ScoreBar score={m.score} band={m.band} />
                     </li>
                   ))}
               </ul>
-              <div className="mt-3 space-y-2 border-t pt-3">
+              <div className="bg-surface sticky bottom-0 -mx-4 -mb-4 space-y-3 rounded-b-xl border-t px-4 py-4">
                 <Textarea
                   rows={2}
-                  placeholder="Note for the manager (optional)"
+                  placeholder="Note for the manager (optional), e.g. both can join within a month"
                   aria-label="Note for the manager"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                 />
                 {send.isError && <ErrorState error={send.error} />}
-                <Button
-                  disabled={picked.length === 0 || send.isPending}
-                  onClick={() =>
-                    send.mutate({ candidate_ids: picked, note }, { onSuccess: () => setPicked([]) })
-                  }
-                >
-                  {send.isPending ? (
-                    <Loader2 className="animate-spin" aria-hidden />
-                  ) : (
-                    <Send aria-hidden />
-                  )}
-                  Send {picked.length || ''} to the manager
-                </Button>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-muted-foreground text-sm">
+                    {picked.length === 0
+                      ? 'Tick at least one candidate to send.'
+                      : `${picked.length} of ${room} picked`}
+                  </span>
+                  <Button
+                    disabled={picked.length === 0 || send.isPending}
+                    onClick={() =>
+                      send.mutate(
+                        { candidate_ids: picked, note },
+                        { onSuccess: () => setPicked([]) },
+                      )
+                    }
+                  >
+                    {send.isPending ? (
+                      <Loader2 className="animate-spin" aria-hidden />
+                    ) : (
+                      <Send aria-hidden />
+                    )}
+                    Send {picked.length || ''} to the manager
+                  </Button>
+                </div>
               </div>
             </>
           )}
         </Panel>
       )}
-
-      {r.status !== 'closed' && (
-        <Button
-          variant="outline"
-          onClick={() => close.mutate(undefined)}
-          disabled={close.isPending}
-        >
-          Close request
-        </Button>
-      )}
-    </div>
+    </>
   )
 }
 
@@ -293,18 +326,18 @@ function ManagerView({ request: r }: { request: HiringRequestDetail }) {
   }
   const open = r.submissions.filter((s) => s.verdict === null).length
   return (
-    <div className="space-y-4">
+    <>
       <p className="text-sm">
         {open
           ? `${open} of ${r.submissions.length} still need your decision. HR contacts the ones you mark fit.`
           : 'All decided. HR has been told and will contact the ones you marked fit.'}
       </p>
-      <ul className="grid gap-4 lg:grid-cols-2" aria-label="Candidates sent by HR">
+      <ul className="space-y-4" aria-label="Candidates sent by HR">
         {r.submissions.map((s) => (
           <SubmissionCard key={s.candidate.id} requestId={r.id} submission={s} />
         ))}
       </ul>
-    </div>
+    </>
   )
 }
 
@@ -319,7 +352,7 @@ function SubmissionCard({
   const [note, setNote] = useState('')
   const c = s.candidate
   return (
-    <li className="bg-surface space-y-3 rounded-2xl border p-4">
+    <li className="bg-surface space-y-3 rounded-xl border p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold">
@@ -357,14 +390,7 @@ function SubmissionCard({
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              disabled={decide.isPending}
-              onClick={() => decide.mutate({ candidateId: c.id, verdict: 'fit', note })}
-            >
-              <ThumbsUp aria-hidden /> Fit
-            </Button>
+          <div className="flex justify-end gap-2">
             <Button
               size="sm"
               variant="outline"
@@ -372,6 +398,13 @@ function SubmissionCard({
               onClick={() => decide.mutate({ candidateId: c.id, verdict: 'not_fit', note })}
             >
               <ThumbsDown aria-hidden /> Not a fit
+            </Button>
+            <Button
+              size="sm"
+              disabled={decide.isPending}
+              onClick={() => decide.mutate({ candidateId: c.id, verdict: 'fit', note })}
+            >
+              <ThumbsUp aria-hidden /> Fit
             </Button>
           </div>
         </div>
@@ -383,21 +416,11 @@ function SubmissionCard({
 function VerdictBadge({ submission: s }: { submission: Submission }) {
   if (s.verdict === 'fit') {
     return (
-      <span className="bg-band-shortlist text-band-shortlist-foreground inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+      <StatusBadge tone="ready">
         <Check className="size-3" aria-hidden /> Fit
-      </span>
+      </StatusBadge>
     )
   }
-  if (s.verdict === 'not_fit') {
-    return (
-      <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-        Not a fit
-      </span>
-    )
-  }
-  return (
-    <span className="bg-band-review text-band-review-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-      Waiting for manager
-    </span>
-  )
+  if (s.verdict === 'not_fit') return <StatusBadge tone="neutral">Not a fit</StatusBadge>
+  return <StatusBadge tone="attention">Waiting for manager</StatusBadge>
 }

@@ -1,127 +1,191 @@
-import { Search, Upload } from 'lucide-react'
-import { Link, Navigate, useSearchParams } from 'react-router'
+import { Upload } from 'lucide-react'
+import { Link, Navigate } from 'react-router'
 
-import { EmptyState, ErrorState } from '@/components/QueryStates'
+import { type Column, DataTable, Pagination } from '@/components/DataTable'
+import { FilterBar, Segmented } from '@/components/FilterBar'
+import { PageHeader } from '@/components/PageHeader'
+import { ErrorState } from '@/components/QueryStates'
+import { StatusBadge } from '@/components/StatusBadge'
+import { useUrlState } from '@/components/useUrlState'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useManagesPeople } from '@/features/auth/AuthProvider'
-import { useCandidates } from '@/features/hr/api'
-import { CANDIDATE_STATUSES, STATUS_LABELS } from '@/features/hr/types'
+import { useCandidates, useHrSummary } from '@/features/hr/api'
+import { CANDIDATE_STATUSES, type CandidateSummary, STATUS_LABELS } from '@/features/hr/types'
 import { CandidateStatusBadge, daysUntil } from '@/features/hr/ui'
 import { date, levelLabel, locationLabel, percent } from '@/lib/format'
-import { cn } from '@/lib/utils'
+
+const DEFAULTS = { status: '', q: '', page: '1', size: '25' }
+
+const columns: Column<CandidateSummary>[] = [
+  {
+    key: 'name',
+    header: 'Candidate',
+    cell: (c) => (
+      <div className="min-w-0">
+        <Link
+          to={`/candidates/${c.id}`}
+          className="font-medium hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {c.full_name}
+        </Link>
+        <div className="text-muted-foreground text-xs">{c.designation}</div>
+      </div>
+    ),
+  },
+  {
+    key: 'experience',
+    header: 'Experience',
+    cell: (c) => (
+      <div>
+        <div>{levelLabel(c.level)}</div>
+        <div className="text-muted-foreground text-xs">{c.years_experience} years</div>
+      </div>
+    ),
+  },
+  { key: 'location', header: 'Location', cell: (c) => locationLabel(c.location) },
+  {
+    key: 'skills',
+    header: 'Top skills',
+    cell: (c) => (
+      <span className="text-muted-foreground text-xs">{c.top_skills.join(', ') || '—'}</span>
+    ),
+  },
+  {
+    key: 'best',
+    header: 'Best open task',
+    cell: (c) =>
+      c.best_match ? (
+        <div>
+          <div className="tabular-nums">{percent(c.best_match.score)} fit</div>
+          <div className="text-muted-foreground text-xs">{c.best_match.task_code}</div>
+        </div>
+      ) : (
+        <span className="text-muted-foreground text-xs">No open task fits</span>
+      ),
+  },
+  {
+    key: 'kept',
+    header: 'Kept until',
+    cell: (c) => {
+      if (!c.delete_after) return <span className="text-muted-foreground text-xs">Hired</span>
+      const days = daysUntil(c.delete_after)
+      if (days <= 0) return <StatusBadge tone="danger">Past the 1-year limit</StatusBadge>
+      return (
+        <div>
+          <div>{date(c.delete_after)}</div>
+          {days <= 30 && <div className="text-destructive text-xs">in {days} days</div>}
+        </div>
+      )
+    },
+  },
+  { key: 'status', header: 'Status', cell: (c) => <CandidateStatusBadge status={c.status} /> },
+]
 
 export default function CandidatesPage() {
   const allowed = useManagesPeople()
-  const [params, setParams] = useSearchParams()
-  const status = params.get('status') ?? ''
-  const q = params.get('q') ?? ''
-  const candidates = useCandidates({ status: status || undefined, q: q || undefined })
+  const [f, set] = useUrlState(DEFAULTS)
+  const page = Math.max(1, Number(f.page) || 1)
+  const size = Number(f.size) || 25
+  const candidates = useCandidates({
+    status: f.status || undefined,
+    q: f.q || undefined,
+    limit: String(size),
+    offset: String((page - 1) * size),
+  })
+  const summary = useHrSummary()
   if (!allowed) return <Navigate to="/tasks" replace />
 
-  const set = (key: string, value: string) => {
-    const next = new URLSearchParams(params)
-    if (value) next.set(key, value)
-    else next.delete(key)
-    setParams(next, { replace: true })
-  }
+  const counts = summary.data?.candidates_by_status
+  const total = counts ? CANDIDATE_STATUSES.reduce((n, s) => n + (counts[s] ?? 0), 0) : undefined
+  const chips = [
+    ...(f.status
+      ? [
+          {
+            label: `Status: ${(STATUS_LABELS as Record<string, string | undefined>)[f.status] ?? f.status}`,
+            onRemove: () => set({ status: '' }),
+          },
+        ]
+      : []),
+    ...(f.q ? [{ label: `Search: “${f.q}”`, onRemove: () => set({ q: '' }) }] : []),
+  ]
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] leading-tight font-semibold sm:text-[32px]">Candidates</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            People we do not employ yet. Never mixed with employees; deleted one year after upload
-            unless hired.
-          </p>
-        </div>
-        <Button asChild>
-          <Link to="/candidates/new">
-            <Upload aria-hidden /> Upload resume
-          </Link>
-        </Button>
-      </header>
+      <PageHeader
+        title="Candidates"
+        description="People we do not employ yet. Kept apart from employees, and deleted one year after upload unless hired."
+        actions={
+          <Button asChild>
+            <Link to="/candidates/new">
+              <Upload aria-hidden /> Upload resume
+            </Link>
+          </Button>
+        }
+      />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full max-w-xs">
-          <Search
-            className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2"
-            aria-hidden
-          />
-          <Input
-            className="pl-9"
-            placeholder="Name, role or skill"
-            aria-label="Search candidates"
-            value={q}
-            onChange={(e) => set('q', e.target.value)}
+      <section aria-label="Candidate list" className="space-y-3">
+        <FilterBar
+          search={{
+            value: f.q,
+            onChange: (q) => set({ q }),
+            placeholder: 'Name, role or skill',
+            label: 'Search candidates',
+          }}
+          chips={chips}
+          onClear={() => set({ status: '', q: '' })}
+        />
+        <div className="overflow-x-auto">
+          <Segmented
+            label="Filter by status"
+            value={f.status}
+            onChange={(status) => set({ status })}
+            options={[
+              { value: '', label: 'All', count: total },
+              ...CANDIDATE_STATUSES.map((s) => ({
+                value: s,
+                label: STATUS_LABELS[s],
+                count: counts ? (counts[s] ?? 0) : undefined,
+              })),
+            ]}
           />
         </div>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
-          {(['', ...CANDIDATE_STATUSES] as const).map((s) => (
-            <button
-              key={s || 'all'}
-              type="button"
-              aria-pressed={status === s}
-              onClick={() => set('status', s)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-sm',
-                status === s
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'hover:bg-accent/50',
-              )}
-            >
-              {s ? STATUS_LABELS[s] : 'All'}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {candidates.isPending ? (
-        <Skeleton className="h-80 w-full rounded-2xl" />
-      ) : candidates.isError ? (
-        <ErrorState error={candidates.error} />
-      ) : candidates.data.items.length === 0 ? (
-        <EmptyState title="No candidates match">Upload resumes, or clear the filters.</EmptyState>
-      ) : (
-        <ul className="divide-y rounded-2xl border" aria-label="Candidates">
-          {candidates.data.items.map((c) => {
-            const days = c.delete_after ? daysUntil(c.delete_after) : null
-            return (
-              <li key={c.id}>
-                <Link
-                  to={`/candidates/${c.id}`}
-                  className="hover:bg-accent/40 flex flex-wrap items-center gap-3 p-3"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{c.full_name}</p>
-                    <p className="text-muted-foreground truncate text-sm">
-                      {c.designation} · {levelLabel(c.level)} · {c.years_experience} yrs ·{' '}
-                      {locationLabel(c.location)} · {c.top_skills.join(', ')}
-                    </p>
-                  </div>
-                  {c.best_match ? (
-                    <span className="text-muted-foreground text-sm">
-                      Best: {c.best_match.task_code} · {percent(c.best_match.score)}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">No open task fits</span>
-                  )}
-                  {days !== null && days <= 30 && (
-                    <span className="bg-destructive/10 text-destructive rounded-full px-2 py-0.5 text-xs font-medium">
-                      {days <= 0
-                        ? 'Past the 1-year limit'
-                        : `Deletes on ${date(c.delete_after ?? '')}`}
-                    </span>
-                  )}
-                  <CandidateStatusBadge status={c.status} />
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      )}
+        {candidates.isPending ? (
+          <Skeleton className="h-96 w-full rounded-xl" />
+        ) : candidates.isError ? (
+          <ErrorState error={candidates.error} />
+        ) : (
+          <>
+            <DataTable
+              label="Candidates"
+              rows={candidates.data.items}
+              columns={columns}
+              rowKey={(c) => c.id}
+              rowHref={(c) => `/candidates/${c.id}`}
+              empty={
+                chips.length > 0
+                  ? { title: 'No candidates match', body: 'Clear the search or the status filter.' }
+                  : {
+                      title: 'No candidates yet',
+                      body: 'Upload a resume from a job site to start the candidate pool.',
+                    }
+              }
+            />
+            {candidates.data.total > 0 && (
+              <Pagination
+                total={candidates.data.total}
+                page={page}
+                pageSize={size}
+                noun="candidates"
+                onPage={(p) => set({ page: String(p) })}
+                onPageSize={(n) => set({ size: String(n) })}
+              />
+            )}
+          </>
+        )}
+      </section>
     </div>
   )
 }

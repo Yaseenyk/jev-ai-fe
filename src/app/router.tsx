@@ -5,11 +5,10 @@ import { EmptyState } from '@/components/QueryStates'
 import AdminPage from '@/features/admin/AdminPage'
 import { CHANGE_PASSWORD_PATH, RequireAuth, useAuth } from '@/features/auth/AuthProvider'
 import ChangePasswordPage from '@/features/auth/ChangePasswordPage'
-import ClientsPage from '@/features/clients/ClientsPage'
 import CandidatePage from '@/features/hr/CandidatePage'
 import CandidatesPage from '@/features/hr/CandidatesPage'
 import EmployeePage from '@/features/hr/EmployeePage'
-import EmployeesPage from '@/features/hr/EmployeesPage'
+import CompanyPage from '@/features/hr/CompanyPage'
 import HiringRequestPage from '@/features/hr/HiringRequestPage'
 import HiringRequestsPage from '@/features/hr/HiringRequestsPage'
 import HrHomePage from '@/features/hr/HrHomePage'
@@ -52,7 +51,8 @@ export const routes = [
       { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },
       { path: 'admin', element: <AdminPage /> },
-      { path: 'clients', element: <ClientsPage /> },
+      { path: 'company', element: <CompanyPage /> },
+      { path: 'clients', element: <Navigate to="/company?tab=clients" replace /> },
       { path: 'hr', element: <HrHomePage /> },
       { path: 'hiring-requests', element: <HiringRequestsPage /> },
       { path: 'hiring-requests/:requestId', element: <HiringRequestPage /> },
@@ -60,7 +60,7 @@ export const routes = [
       { path: 'candidates/new', element: <UploadResumePage /> },
       { path: 'candidates/:candidateId', element: <CandidatePage /> },
       { path: 'tasks/:taskId/candidates', element: <TaskCandidatesPage /> },
-      { path: 'employees', element: <EmployeesPage /> },
+      { path: 'employees', element: <Navigate to="/company" replace /> },
       { path: 'employees/:employeeId', element: <EmployeePage /> },
       { path: 'import', element: <ImportPage /> },
       {

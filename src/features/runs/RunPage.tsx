@@ -1,13 +1,14 @@
-import { ArrowLeft, Loader2, Pencil } from 'lucide-react'
-import { useState } from 'react'
+import { Loader2, Pencil } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 
 import { ApiError } from '@/api/client'
 import type { Band, DecisionDefinition, MatchRun, ShortlistItem, Thresholds } from '@/api/types'
+import { Segmented } from '@/components/FilterBar'
+import { PageHeader } from '@/components/PageHeader'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
+import { useUrlState } from '@/components/useUrlState'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCanEdit } from '@/features/auth/AuthProvider'
 import { Funnel } from '@/features/runs/Funnel'
@@ -18,13 +19,32 @@ import { NoInternalFit } from '@/features/hr/NoInternalFit'
 import { ExcludedPanel, ReasonCounts } from '@/features/shortlist/ExcludedPanel'
 import { ShortlistItemCard } from '@/features/shortlist/ShortlistItemCard'
 import { useExcluded, useShortlist, useSubmitFeedback } from '@/features/shortlist/api'
+import { useTask } from '@/features/tasks/api'
 import { dateTime, FILTER_REASON_FIXES, FILTER_REASON_LABELS, humanize } from '@/lib/format'
 
 const OPEN_BY_DEFAULT = 1
 
+const BANDS: { band: Band; title: string; hint: string }[] = [
+  { band: 'shortlist', title: 'Shortlist', hint: 'High confidence and no warnings.' },
+  {
+    band: 'review',
+    title: 'Review',
+    hint: 'Worth a look: medium confidence, or a warning stopped it from being shortlisted.',
+  },
+  { band: 'hidden', title: 'Low confidence', hint: 'Shown only on request.' },
+]
+
+const DECISIONS = [
+  { value: '', label: 'Any decision' },
+  { value: 'todo', label: 'Not decided' },
+  { value: 'accept', label: 'Accepted' },
+  { value: 'reject', label: 'Rejected' },
+]
+
 export default function RunPage() {
   const { runId = '' } = useParams()
   const run = useMatchRun(runId)
+  const task = useTask(run.data?.task_id ?? '', run.isSuccess)
 
   if (run.isPending) return <Skeleton className="h-48 w-full" />
   if (run.isError && run.error instanceof ApiError && run.error.status === 404) {
@@ -43,17 +63,21 @@ export default function RunPage() {
   if (run.isError) return <ErrorState error={run.error} onRetry={() => void run.refetch()} />
 
   return (
-    <div className="space-y-5">
-      <Link
-        to={`/tasks/${run.data.task_id}`}
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> Back to task
-      </Link>
-      <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-semibold">Matching results</h1>
-        <RunStatusBadge status={run.data.status} />
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        back={{ to: `/tasks/${run.data.task_id}`, label: 'Back to task' }}
+        title="Matching results"
+        status={<RunStatusBadge status={run.data.status} />}
+        meta={
+          task.data && (
+            <>
+              <span className="font-mono">{task.data.code}</span> · {task.data.title}
+              {run.data.finished_at && ` · Finished ${dateTime(run.data.finished_at)}`}
+            </>
+          )
+        }
+        description="People recommended for this task, best fit first. Accept the ones you want to consider and reject the rest with a reason. Nobody is assigned automatically."
+      />
 
       {isActive(run.data) ? (
         <RunProgress run={run.data} />
@@ -74,20 +98,18 @@ export default function RunPage() {
 
 function RunProgress({ run }: { run: MatchRun }) {
   return (
-    <Card>
-      <CardContent className="flex items-center gap-3 py-6">
-        <Loader2 className="text-primary size-5 animate-spin" aria-hidden />
-        <div>
-          <p className="font-medium">
-            {run.status === 'queued' ? 'Waiting to start…' : 'Matching in progress…'}
-          </p>
-          <p className="text-muted-foreground text-sm">
-            Checking availability and constraints, then scoring each remaining person. This page
-            updates by itself.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="bg-surface flex items-center gap-3 rounded-xl border px-5 py-6">
+      <Loader2 className="text-primary size-5 animate-spin" aria-hidden />
+      <div>
+        <p className="font-medium">
+          {run.status === 'queued' ? 'Waiting to start…' : 'Matching in progress…'}
+        </p>
+        <p className="text-muted-foreground text-sm">
+          Checking availability and constraints, then scoring each remaining person. This page
+          updates by itself.
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -96,21 +118,28 @@ function CompletedRun({ run }: { run: MatchRun }) {
   const items = useShortlist(run.id, true)
   const excluded = useExcluded(run.id, true)
   const feedback = useSubmitFeedback(run.id)
-  const [showHidden, setShowHidden] = useState(false)
+  const [f, set] = useUrlState({ band: 'recommended', decision: '' })
 
   if (items.isPending || definitions.isPending) return <Skeleton className="h-64 w-full" />
   if (items.isError) return <ErrorState error={items.error} onRetry={() => void items.refetch()} />
   if (definitions.isError) return <ErrorState error={definitions.error} />
 
   const byBand = (b: Band) => items.data.filter((i) => i.band === b)
-  const counts = {
+  const counts: Record<Band, ShortlistItem[]> = {
     shortlist: byBand('shortlist'),
     review: byBand('review'),
     hidden: byBand('hidden'),
   }
+  const recommended = [...counts.shortlist, ...counts.review]
+  const decidedCount = recommended.filter((i) => i.feedback).length
+  const shownBands = BANDS.filter((b) =>
+    f.band === 'recommended' ? b.band !== 'hidden' : b.band === f.band,
+  )
+  const matchesDecision = (i: ShortlistItem) =>
+    !f.decision || (f.decision === 'todo' ? !i.feedback : i.feedback?.action === f.decision)
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <Funnel
         run={run}
         excludedTotal={excluded.data?.total ?? null}
@@ -120,6 +149,14 @@ function CompletedRun({ run }: { run: MatchRun }) {
           hidden: counts.hidden.length,
         }}
       />
+
+      <OutcomeNotice
+        run={run}
+        excludedTotal={excluded.data?.total ?? null}
+        ranked={items.data.length}
+      />
+
+      {recommended.length === 0 && <NoInternalFit taskId={run.task_id} />}
 
       {(items.data.length > 0 || (excluded.data?.total ?? 0) > 0) && (
         <ResultsQA
@@ -133,54 +170,47 @@ function CompletedRun({ run }: { run: MatchRun }) {
         />
       )}
 
-      <OutcomeNotice
-        run={run}
-        excludedTotal={excluded.data?.total ?? null}
-        ranked={items.data.length}
-      />
-
-      {counts.shortlist.length + counts.review.length === 0 && (
-        <NoInternalFit taskId={run.task_id} />
-      )}
-
       {feedback.isError && <ErrorState error={feedback.error} />}
 
       {items.data.length > 0 && (
-        <>
-          <BandSection
-            title="Shortlist"
-            hint="High confidence and no warnings."
-            items={counts.shortlist}
-            definitions={definitions.data}
-            thresholds={run.thresholds}
-            feedback={feedback}
-          />
-          <BandSection
-            title="Review"
-            hint="Worth a look: medium confidence, or a warning stopped it from being shortlisted."
-            items={counts.review}
-            definitions={definitions.data}
-            thresholds={run.thresholds}
-            feedback={feedback}
-          />
-          {counts.hidden.length > 0 && (
-            <div className="space-y-2">
-              <Button variant="outline" size="sm" onClick={() => setShowHidden((s) => !s)}>
-                {showHidden ? 'Hide' : 'Show'} {counts.hidden.length} low-confidence people
-              </Button>
-              {showHidden && (
-                <BandSection
-                  title="Hidden"
-                  hint="Low confidence. Shown only on request."
-                  items={counts.hidden}
-                  definitions={definitions.data}
-                  thresholds={run.thresholds}
-                  feedback={feedback}
-                />
-              )}
-            </div>
-          )}
-        </>
+        <section aria-label="Recommended people" className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Segmented
+              label="Show people"
+              value={f.band}
+              onChange={(band) => set({ band })}
+              options={[
+                { value: 'recommended', label: 'Recommended', count: recommended.length },
+                { value: 'shortlist', label: 'Shortlist', count: counts.shortlist.length },
+                { value: 'review', label: 'Review', count: counts.review.length },
+                { value: 'hidden', label: 'Low confidence', count: counts.hidden.length },
+              ]}
+            />
+            <Segmented
+              label="Decision"
+              value={f.decision}
+              onChange={(decision) => set({ decision })}
+              options={DECISIONS}
+            />
+            {recommended.length > 0 && (
+              <p className="text-muted-foreground ml-auto text-sm tabular-nums">
+                Decided {decidedCount} of {recommended.length} recommended
+              </p>
+            )}
+          </div>
+          {shownBands.map((b) => (
+            <BandSection
+              key={b.band}
+              title={b.title}
+              hint={b.hint}
+              items={counts[b.band].filter(matchesDecision)}
+              filtered={f.decision !== ''}
+              definitions={definitions.data}
+              thresholds={run.thresholds}
+              feedback={feedback}
+            />
+          ))}
+        </section>
       )}
 
       {excluded.isSuccess && excluded.data.total > 0 && (
@@ -204,6 +234,7 @@ function BandSection({
   title,
   hint,
   items,
+  filtered,
   definitions,
   thresholds,
   feedback,
@@ -211,25 +242,30 @@ function BandSection({
   title: string
   hint: string
   items: ShortlistItem[]
+  filtered: boolean
   definitions: DecisionDefinition[]
   thresholds: Thresholds | null | undefined
   feedback: ReturnType<typeof useSubmitFeedback>
 }) {
   return (
-    <section className="space-y-2">
-      <div>
-        <h2 className="text-lg font-semibold">
+    <section aria-label={title} className="space-y-2">
+      <div className="flex flex-wrap items-baseline gap-x-2">
+        <h2 className="text-base font-semibold">
           {title}{' '}
-          <span className="text-muted-foreground text-sm font-normal">({items.length})</span>
+          <span className="text-muted-foreground text-sm font-normal tabular-nums">
+            ({items.length})
+          </span>
         </h2>
         <p className="text-muted-foreground text-sm">{hint}</p>
       </div>
       {items.length === 0 ? (
         <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-3 text-sm">
-          Nobody in {title.toLowerCase()} for this run.
+          {filtered
+            ? `Nobody in ${title.toLowerCase()} with this decision.`
+            : `Nobody in ${title.toLowerCase()} for this run.`}
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {items.map((item) => (
             <ShortlistItemCard
               key={item.id}

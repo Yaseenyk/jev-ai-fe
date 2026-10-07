@@ -147,7 +147,7 @@ test('HR uploads a resume for a request and sees at once whether it fits, ready 
     new File(['resume'], 'cv-0.pdf', { type: 'application/pdf' }),
   )
   await user.click(screen.getByRole('button', { name: /Read the resume/ }))
-  const name = await screen.findByLabelText('Full name')
+  const name = await screen.findByLabelText(/^Full name/)
   await user.clear(name)
   await user.type(name, 'Asha Test')
   await user.click(screen.getByRole('checkbox', { name: /candidate agreed/ }))

@@ -41,11 +41,11 @@ export function ExcludedPanel({
   )
 
   return (
-    <Collapsible className="rounded-xl border">
+    <Collapsible className="bg-surface rounded-xl border">
       <CollapsibleTrigger asChild>
         <button className="hover:bg-muted/50 flex w-full items-center justify-between px-4 py-3 text-left">
           <span>
-            <span className="font-medium">Why not others?</span>{' '}
+            <span className="text-sm font-semibold">Why not others?</span>{' '}
             <span className="text-muted-foreground text-sm">
               {total} people were excluded by the rules before any AI scoring
             </span>

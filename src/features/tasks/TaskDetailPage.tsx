@@ -1,15 +1,16 @@
-import { ArrowLeft, ChevronRight, Loader2, Pencil, Play, RotateCcw } from 'lucide-react'
+import { ChevronRight, Loader2, Pencil, Play, RotateCcw } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 
 import type { MatchRun, Task } from '@/api/types'
+import { PageHeader } from '@/components/PageHeader'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
-import { PriorityBadge } from '@/features/tasks/PriorityBadge'
+import { PriorityBadge, TaskStatusBadge } from '@/features/tasks/PriorityBadge'
+import { StartRunway } from '@/features/tasks/StartRunway'
 import { useCanEdit } from '@/features/auth/AuthProvider'
 import { type CloseAs, CloseTaskDialog } from '@/features/tasks/CloseTaskDialog'
 import { useChangeTaskStatus, useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
@@ -25,16 +26,39 @@ export default function TaskDetailPage() {
   return <TaskDetail task={task.data} />
 }
 
+function Panel({
+  title,
+  action,
+  children,
+}: {
+  title: string
+  action?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <section aria-label={title} className="bg-surface rounded-xl border">
+      <div className="flex items-center justify-between gap-3 border-b px-5 py-3">
+        <h2 className="text-sm font-semibold">{title}</h2>
+        {action}
+      </div>
+      <div className="px-5 py-4">{children}</div>
+    </section>
+  )
+}
+
 function TaskDetail({ task }: { task: Task }) {
   const navigate = useNavigate()
   const runs = useTaskRuns(task.id)
   const start = useStartRun(task.id)
   const canEdit = useCanEdit()
   const [closeAs, setCloseAs] = useState<CloseAs | null>(null)
+  const [today] = useState(() => new Date())
   const reopen = useChangeTaskStatus(task.id)
   const closed = task.status === 'filled' || task.status === 'cancelled'
 
-  const facts: [string, string][] = [
+  const details: [string, ReactNode][] = [
+    ['Priority', <PriorityBadge key="p" priority={task.priority} short />],
+    ['Client', task.client_code],
     ['Domain', domainLabel(task.domain)],
     ['Required level', levelLabel(task.required_level)],
     ['Minimum experience', `${task.min_years_experience} years`],
@@ -55,28 +79,47 @@ function TaskDetail({ task }: { task: Task }) {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/tasks"
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> All tasks
-      </Link>
-
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground font-mono text-sm">{task.code}</span>
+      <PageHeader
+        back={{ to: '/tasks', label: 'All tasks' }}
+        title={task.title}
+        status={<TaskStatusBadge status={task.status} />}
+        meta={
+          <span className="inline-flex items-center gap-2">
+            <span className="font-mono">{task.code}</span>
+            <span aria-hidden>·</span>
             <PriorityBadge priority={task.priority} />
-          </div>
-          <h1 className="text-2xl font-semibold">{task.title}</h1>
-          <p className="text-muted-foreground max-w-2xl text-sm">{task.description}</p>
-        </div>
-        {canEdit && !closed && (
-          <div className="flex flex-col items-end gap-1">
-            <div className="flex gap-2">
+          </span>
+        }
+        description={
+          closed
+            ? 'This task is closed. Its requirements and past matching runs are kept for reference.'
+            : 'Run matching to get people recommended for this task. The system only recommends; you decide.'
+        }
+        actions={
+          canEdit &&
+          (closed ? (
+            <Button
+              variant="outline"
+              disabled={reopen.isPending}
+              onClick={() => reopen.mutate({ status: 'open', note: null })}
+            >
+              <RotateCcw aria-hidden /> Reopen task
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                onClick={() => setCloseAs('cancelled')}
+              >
+                Cancel task
+              </Button>
+              <Button variant="outline" onClick={() => setCloseAs('filled')}>
+                Mark as filled
+              </Button>
               <Button variant="outline" asChild>
                 <Link to={`/tasks/${task.id}/edit`}>
-                  <Pencil /> Edit task
+                  <Pencil aria-hidden /> Edit task
                 </Link>
               </Button>
               <Button
@@ -85,140 +128,149 @@ function TaskDetail({ task }: { task: Task }) {
                 }
                 disabled={start.isPending}
               >
-                {start.isPending ? <Loader2 className="animate-spin" /> : <Play />}
+                {start.isPending ? (
+                  <Loader2 className="animate-spin" aria-hidden />
+                ) : (
+                  <Play aria-hidden />
+                )}
                 Run matching
               </Button>
-            </div>
-            <div className="flex items-center gap-3 text-xs">
-              <span className="text-muted-foreground">Recommends people; you decide.</span>
-              <button
-                type="button"
-                className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
-                onClick={() => setCloseAs('filled')}
-              >
-                Mark as filled
-              </button>
-              <button
-                type="button"
-                className="text-destructive underline-offset-4 hover:underline"
-                onClick={() => setCloseAs('cancelled')}
-              >
-                Cancel task
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+            </>
+          ))
+        }
+      />
       {start.isError && <ErrorState error={start.error} />}
       {closed && (
         <div
           role="status"
           className={cn(
-            'flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3',
+            'rounded-xl border px-4 py-3 text-sm',
             task.status === 'filled' ? 'bg-band-shortlist' : 'bg-muted',
           )}
         >
-          <p className="text-sm">
-            <span className="font-semibold">
-              {task.status === 'filled' ? 'Filled' : 'Cancelled'}.
-            </span>{' '}
-            This task is closed: it is off the open board and cannot be matched.
-          </p>
-          {canEdit && (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={reopen.isPending}
-              onClick={() => reopen.mutate({ status: 'open', note: null })}
-            >
-              <RotateCcw /> Reopen task
-            </Button>
-          )}
+          <span className="font-semibold">
+            {task.status === 'filled' ? 'Filled' : 'Cancelled'}.
+          </span>{' '}
+          This task is closed: it is off the open board and cannot be matched.
+          {canEdit && ' Reopen it to match again.'}
         </div>
       )}
       {reopen.isError && <ErrorState error={reopen.error} />}
       <CloseTaskDialog taskId={task.id} as={closeAs} onOpenChange={(o) => !o && setCloseAs(null)} />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle>Skills</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {[true, false].map((must) => {
-              const reqs = task.requirements.filter((r) => r.must_have === must)
-              return (
-                <div key={String(must)} className="space-y-1.5">
-                  <p className="text-muted-foreground text-xs font-medium uppercase">
-                    {must ? 'Must have' : 'Nice to have'}
-                  </p>
-                  {reqs.length === 0 ? (
-                    <p className="text-muted-foreground text-sm">None</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {reqs.map((r) => (
-                        <Badge key={r.skill.id} variant={must ? 'default' : 'outline'}>
-                          {r.skill.name} · {r.min_proficiency}/5+
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </CardContent>
-        </Card>
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-              {facts.map(([k, v]) => (
-                <div key={k}>
-                  <dt className="text-muted-foreground text-xs">{k}</dt>
-                  <dd className="font-medium">{v}</dd>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="min-w-0 space-y-6">
+          <Panel title="Description">
+            <p className="text-sm whitespace-pre-wrap">{task.description}</p>
+          </Panel>
+
+          <Panel title="Skills">
+            <div className="space-y-4">
+              {[true, false].map((must) => {
+                const reqs = task.requirements.filter((r) => r.must_have === must)
+                return (
+                  <div key={String(must)} className="space-y-2">
+                    <p className="text-muted-foreground text-xs font-medium">
+                      {must ? 'Must have' : 'Nice to have'}
+                    </p>
+                    {reqs.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">None</p>
+                    ) : (
+                      <ul className="flex flex-wrap gap-1.5">
+                        {reqs.map((r) => (
+                          <li
+                            key={r.skill.id}
+                            className={cn(
+                              'rounded-md border px-2 py-1 text-xs',
+                              must ? 'bg-primary/5 border-primary/20' : 'bg-surface',
+                            )}
+                          >
+                            <span className="font-medium">{r.skill.name}</span>
+                            <span className="text-muted-foreground">
+                              {' '}
+                              · level {r.min_proficiency} of 5 or higher
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </Panel>
+
+          <section aria-label="Matching runs" className="bg-surface rounded-xl border">
+            <div className="border-b px-5 py-3">
+              <h2 className="text-sm font-semibold">Matching runs</h2>
+              <p className="text-muted-foreground text-xs">
+                Each run ranks the people who fit this task. Open one to review and decide.
+              </p>
+            </div>
+            {runs.isPending ? (
+              <Skeleton className="m-5 h-16" />
+            ) : runs.isError ? (
+              <div className="p-5">
+                <ErrorState error={runs.error} onRetry={() => void runs.refetch()} />
+              </div>
+            ) : runs.data.items.length === 0 ? (
+              <div className="p-5">
+                <EmptyState title="No runs yet">
+                  {closed
+                    ? 'This task was closed before matching was run.'
+                    : 'Click “Run matching” to get people recommended for this task.'}
+                </EmptyState>
+              </div>
+            ) : (
+              <ul className="divide-y">
+                {runs.data.items.map((r, i) => (
+                  <RunRow key={r.id} run={r} latest={i === 0} />
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+
+        <aside aria-label="Details" className="bg-surface rounded-xl border lg:sticky lg:top-6">
+          <h2 className="border-b px-5 py-3 text-sm font-semibold">Details</h2>
+          <div className="space-y-4 px-5 py-4">
+            {!closed && (
+              <StartRunway
+                startDate={task.start_date}
+                durationWeeks={task.duration_weeks}
+                today={today}
+              />
+            )}
+            <dl className="space-y-2.5 text-sm">
+              {details.map(([k, v]) => (
+                <div key={k} className="flex items-baseline justify-between gap-3">
+                  <dt className="text-muted-foreground shrink-0 text-xs">{k}</dt>
+                  <dd className="text-right font-medium">{v}</dd>
                 </div>
               ))}
             </dl>
-          </CardContent>
-        </Card>
+          </div>
+        </aside>
       </div>
-
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Matching runs</h2>
-        {runs.isPending ? (
-          <Skeleton className="h-16 w-full" />
-        ) : runs.isError ? (
-          <ErrorState error={runs.error} onRetry={() => void runs.refetch()} />
-        ) : runs.data.items.length === 0 ? (
-          <EmptyState title="No runs yet">
-            Click “Run matching” to rank people for this task.
-          </EmptyState>
-        ) : (
-          <ul className="divide-y rounded-xl border">
-            {runs.data.items.map((r) => (
-              <RunRow key={r.id} run={r} />
-            ))}
-          </ul>
-        )}
-      </section>
     </div>
   )
 }
 
-function RunRow({ run }: { run: MatchRun }) {
+function RunRow({ run, latest }: { run: MatchRun; latest: boolean }) {
   return (
     <li>
       <Link
         to={`/runs/${run.id}`}
-        className="hover:bg-muted/50 flex items-center gap-4 px-4 py-3 text-sm"
+        className="hover:bg-muted/50 flex items-center gap-4 px-5 py-3 text-sm"
       >
         <RunStatusBadge status={run.status} />
         <span className="flex-1">
           {run.status === 'completed'
             ? `${run.retrieved_count} people ranked out of ${run.candidate_count}`
-            : 'In progress'}
+            : run.status === 'failed'
+              ? 'Run failed'
+              : 'In progress'}
+          {latest && <span className="text-muted-foreground ml-2 text-xs">Latest</span>}
         </span>
         <span className="text-muted-foreground text-xs">
           {run.finished_at
@@ -227,7 +279,9 @@ function RunRow({ run }: { run: MatchRun }) {
               ? dateTime(run.started_at)
               : ''}
         </span>
-        <ChevronRight className="text-muted-foreground size-4" aria-hidden />
+        <span className="text-primary inline-flex items-center gap-0.5 text-xs font-medium">
+          Open results <ChevronRight className="size-3.5" aria-hidden />
+        </span>
       </Link>
     </li>
   )

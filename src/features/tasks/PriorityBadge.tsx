@@ -1,4 +1,5 @@
-import type { TaskPriority } from '@/api/types'
+import type { TaskPriority, TaskStatus } from '@/api/types'
+import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import { cn } from '@/lib/utils'
 
 const DOT: Record<TaskPriority, string> = {
@@ -33,7 +34,7 @@ export function PriorityDot({
 }
 
 /** Priority as a coloured dot plus the word, so colour is never the only signal. */
-export function PriorityBadge({ priority }: { priority: TaskPriority }) {
+export function PriorityBadge({ priority, short }: { priority: TaskPriority; short?: boolean }) {
   return (
     <span
       className={cn(
@@ -42,9 +43,23 @@ export function PriorityBadge({ priority }: { priority: TaskPriority }) {
       )}
     >
       <PriorityDot priority={priority} />
-      {LABEL[priority]} priority
+      {LABEL[priority]}
+      {!short && ' priority'}
     </span>
   )
 }
 
 export const priorityLabel = (p: TaskPriority) => LABEL[p]
+
+const STATUS: Record<TaskStatus, [Tone, string]> = {
+  open: ['info', 'Open'],
+  matching: ['info', 'Matching'],
+  shortlisted: ['attention', 'Shortlisted'],
+  filled: ['ready', 'Filled'],
+  cancelled: ['neutral', 'Cancelled'],
+}
+
+export function TaskStatusBadge({ status }: { status: TaskStatus }) {
+  const [tone, label] = STATUS[status]
+  return <StatusBadge tone={tone}>{label}</StatusBadge>
+}

@@ -70,7 +70,7 @@ test('an admin sees the models, is stopped from switching to a weaker one, and c
   renderRoute('/admin')
   await user.click(await screen.findByRole('tab', { name: 'Models' }))
 
-  const list = await screen.findByRole('list', { name: 'Models' })
+  const list = await screen.findByRole('table', { name: 'Models' })
   expect(within(list).getByText('87.9%')).toBeInTheDocument()
   expect(within(list).getAllByText('simple ranking 86.1%')).toHaveLength(2)
 
@@ -93,7 +93,7 @@ test('an admin adds a person, sees the temporary password once, and manages acce
   const user = userEvent.setup()
   renderRoute('/admin')
   await user.click(await screen.findByRole('tab', { name: 'Users' }))
-  const people = await screen.findByRole('list', { name: 'People' })
+  const people = await screen.findByRole('table', { name: 'People' })
   expect(within(people).getByText('viewer@srtm.local')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: /Add person/ }))
@@ -113,10 +113,16 @@ test('an admin adds a person, sees the temporary password once, and manages acce
   expect(await screen.findByText(/already has an account/)).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-  const viewerRow = within(people).getByText('viewer@srtm.local').closest('li') as HTMLElement
+  const viewerRow = within(people).getByText('viewer@srtm.local').closest('tr') as HTMLElement
   await user.click(within(viewerRow).getByRole('button', { name: 'Deactivate' }))
-  expect(await within(viewerRow).findByText('deactivated')).toBeInTheDocument()
+  await user.click(
+    within(await screen.findByRole('dialog')).getByRole('button', { name: 'Deactivate' }),
+  )
+  expect(await within(viewerRow).findByText('Deactivated')).toBeInTheDocument()
   await user.click(within(viewerRow).getByRole('button', { name: /Reset password/ }))
+  await user.click(
+    within(await screen.findByRole('dialog')).getByRole('button', { name: 'Reset password' }),
+  )
   expect(await screen.findByText(/Temporary password for Viewer/)).toBeInTheDocument()
 })
 
@@ -172,22 +178,22 @@ test('HR adds a client and deactivates it; the Clients page is for admins and HR
   const user = userEvent.setup()
   renderRoute('/clients')
   expect(await screen.findByRole('heading', { name: 'Clients' })).toBeInTheDocument()
-  expect(screen.getAllByRole('link', { name: /Clients/ }).length).toBeGreaterThan(0)
+  expect(screen.getAllByRole('link', { name: /Company/ }).length).toBeGreaterThan(0)
   expect(screen.queryByRole('link', { name: /New task/ })).not.toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: /Add client/ }))
-  await user.type(await screen.findByLabelText('Code'), 'cl-newco')
-  await user.type(screen.getByLabelText('Name'), 'NewCo Insurance')
+  await user.type(await screen.findByLabelText(/^Code/), 'cl-newco')
+  await user.type(screen.getByLabelText(/^Name/), 'NewCo Insurance')
   await user.type(screen.getByLabelText('Timezone'), 'Asia/Kolkata')
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Add client' }))
-  const list = await screen.findByRole('list', { name: 'Clients' })
-  const row = (await within(list).findByText(/NewCo Insurance/)).closest('li') as HTMLElement
+  const list = await screen.findByRole('table', { name: 'Clients' })
+  const row = (await within(list).findByText(/NewCo Insurance/)).closest('tr') as HTMLElement
   expect(within(row).getByText(/CL-NEWCO/)).toBeInTheDocument() // code upper-cased
 
   await user.click(within(row).getByRole('button', { name: /Edit/ }))
   await user.click(await screen.findByLabelText(/Active/))
   await user.click(screen.getByRole('button', { name: 'Save changes' }))
-  expect(await within(row).findByText('inactive')).toBeInTheDocument()
+  expect(await within(row).findByText('Inactive')).toBeInTheDocument()
 })
 
 test('a resource manager is sent away from the Clients page', async () => {

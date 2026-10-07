@@ -165,5 +165,5 @@ test('editing a task reopens the chat with every answer filled in, and saves cha
   await user.click(await screen.findByRole('button', { name: 'Save changes' }))
 
   await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/tasks\/[^/]+$/))
-  expect(await screen.findByText(/Critical/)).toBeInTheDocument()
+  expect(await screen.findByText('Critical priority')).toBeInTheDocument()
 })

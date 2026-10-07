@@ -1,63 +1,67 @@
-import { ChevronRight, Plus, Search, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Plus } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
 
 import type { Task, TaskPriority } from '@/api/types'
-import { EmptyState, ErrorState } from '@/components/QueryStates'
+import { type Column, DataTable, Pagination } from '@/components/DataTable'
+import { FilterBar, FilterSelect, Segmented, SortSelect } from '@/components/FilterBar'
+import { PageHeader } from '@/components/PageHeader'
+import { ErrorState } from '@/components/QueryStates'
+import { useUrlState } from '@/components/useUrlState'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PRIORITY_ORDER, PriorityDot, priorityLabel } from '@/features/tasks/PriorityBadge'
-import { StartRunway, daysUntil } from '@/features/tasks/StartRunway'
 import { useCanEdit } from '@/features/auth/AuthProvider'
+import {
+  PRIORITY_ORDER,
+  PriorityBadge,
+  TaskStatusBadge,
+  priorityLabel,
+} from '@/features/tasks/PriorityBadge'
+import { daysUntil, startsLabel } from '@/features/tasks/StartRunway'
 import { type TaskView, useTasks } from '@/features/tasks/api'
-import { domainLabel, levelLabel } from '@/lib/format'
+import { date, domainLabel, levelLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const ANY = 'any'
 const NO_FILTERS = { q: '', priority: '', domain: '' }
 
-interface Group {
-  title: string
-  tasks: Task[]
+const SORTS = [
+  { value: 'start', label: 'Soonest start' },
+  { value: 'priority', label: 'Highest priority' },
+  { value: 'title', label: 'Title (A–Z)' },
+  { value: 'code', label: 'Task code' },
+]
+
+const DEFAULTS = {
+  view: 'open',
+  q: '',
+  priority: '',
+  domain: '',
+  client: '',
+  sort: 'start',
+  page: '1',
+  size: '25',
 }
 
-/** Staffing is about timing, so tasks are grouped by how soon they start, most urgent first. */
-function groupByStart(tasks: Task[], today: Date): Group[] {
-  const rank = (t: Task) => PRIORITY_ORDER.indexOf(t.priority)
-  const sorted = [...tasks].sort(
-    (a, b) => a.start_date.localeCompare(b.start_date) || rank(a) - rank(b),
-  )
-  const groups: Group[] = [
-    { title: 'Starting this week', tasks: [] },
-    { title: 'Starting in the next 4 weeks', tasks: [] },
-    { title: 'Starting later', tasks: [] },
-  ]
-  for (const t of sorted) {
-    const d = daysUntil(t.start_date, today)
-    const group = d <= 7 ? groups[0] : d <= 28 ? groups[1] : groups[2]
-    group?.tasks.push(t)
-  }
-  return groups.filter((g) => g.tasks.length > 0)
+const rank = (t: Task) => PRIORITY_ORDER.indexOf(t.priority)
+
+const byStart = (a: Task, b: Task) => a.start_date.localeCompare(b.start_date) || rank(a) - rank(b)
+
+const COMPARE: Record<string, (a: Task, b: Task) => number> = {
+  start: byStart,
+  priority: (a, b) => rank(a) - rank(b) || a.start_date.localeCompare(b.start_date),
+  title: (a, b) => a.title.localeCompare(b.title),
+  code: (a, b) => a.code.localeCompare(b.code),
 }
 
 export default function TaskListPage() {
-  // All tasks are loaded once and filtered here, so filters respond instantly.
-  const [view, setView] = useState<TaskView>('open')
+  const [f, set] = useUrlState(DEFAULTS)
+  const view: TaskView = f.view === 'closed' ? 'closed' : 'open'
+  // All tasks of the view are loaded once and filtered here, so filters respond instantly.
   const tasks = useTasks(NO_FILTERS, view)
   const canEdit = useCanEdit()
-  const [q, setQ] = useState('')
-  const [priority, setPriority] = useState<TaskPriority | null>(null)
-  const [domain, setDomain] = useState<string | null>(null)
   const [today] = useState(() => new Date())
-  const search = useRef<HTMLInputElement>(null)
+  const page = Math.max(1, Number(f.page) || 1)
+  const size = Number(f.size) || 25
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -66,7 +70,7 @@ export default function TaskListPage() {
         e.target.closest('input, textarea, [role=combobox]') !== null
       if (e.key === '/' && !typing) {
         e.preventDefault()
-        search.current?.focus()
+        document.querySelector<HTMLInputElement>('input[aria-label="Search tasks"]')?.focus()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -76,293 +80,220 @@ export default function TaskListPage() {
   }, [])
 
   const all = useMemo(() => tasks.data?.items ?? [], [tasks.data])
-  const matchesText = (t: Task) =>
-    !q ||
-    `${t.code} ${t.title} ${t.requirements.map((r) => r.skill.name).join(' ')}`
-      .toLowerCase()
-      .includes(q.toLowerCase())
-  const base = all.filter((t) => matchesText(t) && (!domain || t.domain === domain))
-  const visible = base.filter((t) => !priority || t.priority === priority)
   const domains = [...new Set(all.map((t) => t.domain))].sort()
-  const filtered = q !== '' || priority !== null || domain !== null
-  const clear = () => {
-    setQ('')
-    setPriority(null)
-    setDomain(null)
-  }
+  const clients = [...new Set(all.map((t) => t.client_code))].sort()
+  const q = f.q.toLowerCase()
+  const visible = all
+    .filter(
+      (t) =>
+        (!q ||
+          `${t.code} ${t.title} ${t.requirements.map((r) => r.skill.name).join(' ')}`
+            .toLowerCase()
+            .includes(q)) &&
+        (!f.priority || t.priority === f.priority) &&
+        (!f.domain || t.domain === f.domain) &&
+        (!f.client || t.client_code === f.client),
+    )
+    .sort(COMPARE[f.sort] ?? byStart)
+  const rows = visible.slice((page - 1) * size, page * size)
 
-  return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-[28px] leading-tight font-semibold sm:text-[32px]">Tasks</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {tasks.isSuccess
-              ? `${all.length} ${view}, soonest start first`
-              : `Loading ${view} tasks`}
-          </p>
-        </div>
-        <div className="bg-muted ml-auto flex rounded-xl p-1" role="group" aria-label="Show tasks">
-          {(['open', 'closed'] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              aria-pressed={view === v}
-              onClick={() => setView(v)}
-              className={cn(
-                'h-8 rounded-lg px-3 text-sm font-medium capitalize',
-                view === v ? 'bg-surface shadow-sm' : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
-        {canEdit && (
-          <Button asChild size="lg" className="hidden h-10 rounded-xl px-4 sm:inline-flex">
-            <Link to="/tasks/new">
-              <Plus /> New task
-            </Link>
-          </Button>
-        )}
-      </header>
+  const active: { label: string; key: keyof typeof DEFAULTS }[] = [
+    ...(f.priority
+      ? [
+          {
+            label: `Priority: ${priorityLabel(f.priority as TaskPriority)}`,
+            key: 'priority' as const,
+          },
+        ]
+      : []),
+    ...(f.domain ? [{ label: `Domain: ${domainLabel(f.domain)}`, key: 'domain' as const }] : []),
+    ...(f.client ? [{ label: `Client: ${f.client}`, key: 'client' as const }] : []),
+    ...(f.q ? [{ label: `Search: “${f.q}”`, key: 'q' as const }] : []),
+  ]
+  const chips = active.map((c) => ({ label: c.label, onRemove: () => set({ [c.key]: '' }) }))
+  const clear = () => set({ q: '', priority: '', domain: '', client: '' })
 
-      <div className="space-y-3">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search
-              className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
-              aria-hidden
-            />
-            <Input
-              ref={search}
-              aria-label="Search tasks"
-              placeholder="Search tasks or skills"
-              className="bg-surface h-11 rounded-xl pr-10 pl-9 text-[15px]"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            {q ? (
-              <button
-                type="button"
-                aria-label="Clear search"
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-md"
-                onClick={() => setQ('')}
-              >
-                <X className="size-4" />
-              </button>
-            ) : (
-              <kbd className="text-muted-foreground bg-muted pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded px-1.5 text-xs sm:block">
-                /
-              </kbd>
-            )}
-          </div>
-          <DomainSelect
-            domains={domains}
-            value={domain}
-            onChange={setDomain}
-            className="bg-surface hidden h-11! w-44 rounded-xl sm:flex"
-          />
-        </div>
-
-        <div
-          className="-mx-4 flex items-center gap-2 overflow-x-auto [mask-image:linear-gradient(to_right,black_85%,transparent)] px-4 pb-1 sm:mx-0 sm:[mask-image:none] sm:px-0"
-          role="group"
-          aria-label="Filter by priority"
-        >
-          <DomainSelect
-            domains={domains}
-            value={domain}
-            onChange={setDomain}
-            className="bg-surface h-9! w-auto shrink-0 gap-1.5 rounded-full px-3.5 text-sm font-medium sm:hidden"
-          />
-          <FilterPill
-            active={priority === null}
-            onClick={() => setPriority(null)}
-            count={base.length}
+  const columns: Column<Task>[] = [
+    {
+      key: 'title',
+      header: 'Task',
+      sortKey: 'title',
+      cell: (t) => (
+        <div className="min-w-0">
+          <Link
+            to={`/tasks/${t.id}`}
+            aria-label={`${t.title}, ${t.code}`}
+            className="font-medium hover:underline"
+            onClick={(e) => e.stopPropagation()}
           >
-            All
-          </FilterPill>
-          {PRIORITY_ORDER.map((p) => (
-            <FilterPill
-              key={p}
-              active={priority === p}
-              onClick={() => setPriority(priority === p ? null : p)}
-              count={base.filter((t) => t.priority === p).length}
-            >
-              <PriorityDot priority={p} />
-              {priorityLabel(p)}
-            </FilterPill>
-          ))}
-          {filtered && (
-            <button
-              type="button"
-              onClick={clear}
-              className="text-muted-foreground hover:text-foreground ml-auto h-9 shrink-0 px-2 text-sm underline-offset-4 hover:underline"
-            >
-              Clear filters
-            </button>
-          )}
+            {t.title}
+          </Link>
+          <div className="text-muted-foreground text-xs">
+            {t.code} · {domainLabel(t.domain)} · {levelLabel(t.required_level)}
+          </div>
         </div>
-      </div>
-
-      {tasks.isPending ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton key={i} className="h-24 w-full rounded-2xl" />
-          ))}
-        </div>
-      ) : tasks.isError ? (
-        <ErrorState error={tasks.error} onRetry={() => void tasks.refetch()} />
-      ) : visible.length === 0 ? (
-        <EmptyState title="No tasks match these filters">
-          <Button variant="outline" className="mt-2" onClick={clear}>
-            Clear filters
-          </Button>
-        </EmptyState>
-      ) : (
-        <div className="space-y-8">
-          {groupByStart(visible, today).map((g) => (
-            <section key={g.title} aria-label={g.title} className="space-y-3">
-              <h2 className="flex items-baseline gap-2 text-base font-semibold">
-                {g.title}
-                <span className="text-muted-foreground font-sans text-sm font-normal tabular-nums">
-                  {g.tasks.length}
-                </span>
-              </h2>
-              <ul className="bg-surface divide-y overflow-hidden rounded-2xl border">
-                {g.tasks.map((t) => (
-                  <TaskRow key={t.id} task={t} today={today} />
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function DomainSelect({
-  domains,
-  value,
-  onChange,
-  className,
-}: {
-  domains: string[]
-  value: string | null
-  onChange: (domain: string | null) => void
-  className: string
-}) {
-  return (
-    <Select value={value ?? ANY} onValueChange={(v) => onChange(v === ANY ? null : v)}>
-      <SelectTrigger aria-label="Filter by domain" className={className}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ANY}>All domains</SelectItem>
-        {domains.map((d) => (
-          <SelectItem key={d} value={d}>
-            {domainLabel(d)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
-
-function FilterPill({
-  active,
-  onClick,
-  count,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  count: number
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        'flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors',
-        'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-        active
-          ? 'bg-foreground text-background border-foreground'
-          : 'bg-surface text-foreground hover:bg-muted',
-      )}
-    >
-      {children}
-      <span className={cn('tabular-nums', active ? 'text-background/70' : 'text-muted-foreground')}>
-        {count}
-      </span>
-    </button>
-  )
-}
-
-function TaskRow({ task, today }: { task: Task; today: Date }) {
-  const mustHave = task.requirements.filter((r) => r.must_have)
-  return (
-    <li>
-      <Link
-        to={`/tasks/${task.id}`}
-        aria-label={`${task.title}, ${task.code}`}
-        className="group hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:ring-ring grid gap-4 px-4 py-4 transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset sm:px-5 md:grid-cols-[1fr_13rem_auto] md:items-center md:gap-6"
-      >
-        <div className="min-w-0 space-y-2">
-          <div className="flex items-center gap-2">
-            <PriorityDot priority={task.priority} />
-            <span
-              className={cn(
-                'text-xs font-medium',
-                task.priority === 'critical' ? 'text-priority-critical' : 'text-muted-foreground',
-              )}
-            >
-              {priorityLabel(task.priority)}
-            </span>
-            <span className="text-muted-foreground text-xs">{task.code}</span>
-            {(task.status === 'filled' || task.status === 'cancelled') && (
-              <span
-                className={cn(
-                  'rounded-full px-2 py-0.5 text-xs font-medium',
-                  task.status === 'filled'
-                    ? 'bg-band-shortlist text-band-shortlist-foreground'
-                    : 'bg-muted text-muted-foreground',
-                )}
-              >
-                {task.status === 'filled' ? 'Filled' : 'Cancelled'}
+      ),
+    },
+    {
+      key: 'priority',
+      header: 'Priority',
+      sortKey: 'priority',
+      cell: (t) => <PriorityBadge priority={t.priority} short />,
+    },
+    { key: 'client', header: 'Client', cell: (t) => t.client_code },
+    {
+      key: 'skills',
+      header: 'Must-have skills',
+      cell: (t) => {
+        const must = t.requirements.filter((r) => r.must_have)
+        return (
+          <div className="flex max-w-64 flex-wrap gap-1">
+            {must.slice(0, 3).map((r) => (
+              <span key={r.skill.id} className="bg-muted rounded-md px-1.5 py-0.5 text-xs">
+                {r.skill.name}
+              </span>
+            ))}
+            {must.length > 3 && (
+              <span className="text-muted-foreground px-1 py-0.5 text-xs">
+                +{must.length - 3} more
               </span>
             )}
           </div>
-          <p className="font-heading text-[17px] leading-snug font-semibold">{task.title}</p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
-            <span className="text-muted-foreground">{domainLabel(task.domain)}</span>
-            <span className="text-muted-foreground">{levelLabel(task.required_level)}</span>
-            <span className="flex flex-wrap gap-1.5">
-              {mustHave.map((r) => (
-                <span
-                  key={r.skill.id}
-                  className="bg-muted text-foreground rounded-md px-2 py-0.5 text-xs font-medium"
-                >
-                  {r.skill.name}
-                </span>
-              ))}
-            </span>
+        )
+      },
+    },
+    {
+      key: 'start',
+      header: 'Start',
+      sortKey: 'start',
+      cell: (t) => {
+        const days = daysUntil(t.start_date, today)
+        return (
+          <div className="whitespace-nowrap">
+            <div>{date(t.start_date)}</div>
+            <div
+              className={cn(
+                'text-xs',
+                view === 'open' && days <= 7
+                  ? 'text-band-review-foreground font-medium'
+                  : 'text-muted-foreground',
+              )}
+            >
+              {view === 'open' ? startsLabel(days) : `for ${t.duration_weeks} weeks`}
+            </div>
           </div>
-        </div>
-        <StartRunway
-          startDate={task.start_date}
-          durationWeeks={task.duration_weeks}
-          today={today}
+        )
+      },
+    },
+    { key: 'status', header: 'Status', cell: (t) => <TaskStatusBadge status={t.status} /> },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Tasks"
+        description="Roles that need people. Open a task to run matching and review the people it recommends."
+        actions={
+          canEdit && (
+            <Button asChild>
+              <Link to="/tasks/new">
+                <Plus aria-hidden /> New task
+              </Link>
+            </Button>
+          )
+        }
+      />
+
+      <section aria-label="Task list" className="space-y-3">
+        <Segmented
+          label="Show tasks"
+          value={view}
+          onChange={(v) => set({ view: v })}
+          options={[
+            { value: 'open', label: 'Open' },
+            { value: 'closed', label: 'Closed' },
+          ]}
         />
-        <ChevronRight
-          className="text-muted-foreground group-hover:text-foreground hidden size-5 transition-transform group-hover:translate-x-0.5 md:block"
-          aria-hidden
+        <FilterBar
+          search={{
+            value: f.q,
+            onChange: (v) => set({ q: v }),
+            placeholder: 'Search tasks or skills',
+            label: 'Search tasks',
+          }}
+          filters={
+            <>
+              <FilterSelect
+                label="Priority"
+                value={f.priority}
+                onChange={(v) => set({ priority: v })}
+                allLabel="All priorities"
+                options={PRIORITY_ORDER.map((p) => ({ value: p, label: priorityLabel(p) }))}
+              />
+              <FilterSelect
+                label="Domain"
+                value={f.domain}
+                onChange={(v) => set({ domain: v })}
+                allLabel="All domains"
+                options={domains.map((d) => ({ value: d, label: domainLabel(d) }))}
+              />
+              <FilterSelect
+                label="Client"
+                value={f.client}
+                onChange={(v) => set({ client: v })}
+                allLabel="All clients"
+                options={clients.map((c) => ({ value: c, label: c }))}
+              />
+            </>
+          }
+          sort={<SortSelect value={f.sort} onChange={(v) => set({ sort: v })} options={SORTS} />}
+          chips={chips}
+          onClear={clear}
         />
-      </Link>
-    </li>
+
+        {tasks.isPending ? (
+          <Skeleton className="h-96 w-full rounded-xl" />
+        ) : tasks.isError ? (
+          <ErrorState error={tasks.error} onRetry={() => void tasks.refetch()} />
+        ) : (
+          <>
+            <DataTable
+              label="Tasks"
+              rows={rows}
+              columns={columns}
+              rowKey={(t) => t.id}
+              rowHref={(t) => `/tasks/${t.id}`}
+              sort={f.sort}
+              onSort={(v) => set({ sort: v })}
+              empty={
+                active.length > 0
+                  ? { title: 'No tasks match these filters', body: 'Clear the search or filters.' }
+                  : view === 'open'
+                    ? {
+                        title: 'No open tasks',
+                        body: canEdit
+                          ? 'Create a task to start finding people for it.'
+                          : 'Tasks appear here when a manager creates them.',
+                      }
+                    : {
+                        title: 'No closed tasks yet',
+                        body: 'Tasks you mark as filled or cancel appear here.',
+                      }
+              }
+            />
+            {visible.length > 0 && (
+              <Pagination
+                total={visible.length}
+                page={page}
+                pageSize={size}
+                noun="tasks"
+                onPage={(p) => set({ page: String(p) })}
+                onPageSize={(n) => set({ size: String(n) })}
+              />
+            )}
+          </>
+        )}
+      </section>
+    </div>
   )
 }

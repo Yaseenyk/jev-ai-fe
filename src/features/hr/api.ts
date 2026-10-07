@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiFetch } from '@/api/client'
 import type { Page } from '@/api/types'
@@ -10,10 +10,13 @@ import type {
   CandidateMatch,
   CandidateStatus,
   CandidateSummary,
+  DataHealth,
   EmployeeCreate,
   EmployeeDetail,
+  EmployeeProjectCreate,
   EmployeeSkill,
   EmployeeSummary,
+  HealthFilter,
   EmployeeUpdate,
   Extraction,
   HiringRequestDetail,
@@ -21,6 +24,7 @@ import type {
   HrSummary,
   ImportKind,
   ImportPreview,
+  ProjectOption,
   TaskMatch,
   Verdict,
 } from '@/features/hr/types'
@@ -37,10 +41,45 @@ export const useHrSummary = () =>
   useQuery({ queryKey: ['hr', 'summary'], queryFn: () => apiFetch<HrSummary>('/hr/summary') })
 
 // --- Employees -------------------------------------------------------------------------------
-export const useEmployees = (filters: { q?: string; level?: string; location?: string }) =>
+export const useDataHealth = () =>
+  useQuery({
+    queryKey: ['employees', 'health'],
+    queryFn: () => apiFetch<DataHealth>('/employees/health'),
+  })
+
+export const useProjects = () =>
+  useQuery({ queryKey: ['projects'], queryFn: () => apiFetch<ProjectOption[]>('/projects') })
+
+export const useAddProject = (id: string) =>
+  useEmployeeMutation((input: EmployeeProjectCreate) =>
+    apiFetch<EmployeeDetail>(`/employees/${id}/projects`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    }),
+  )
+
+export const useRemoveProject = (id: string) =>
+  useEmployeeMutation((entryId: string) =>
+    apiFetch<EmployeeDetail>(`/employees/${id}/projects/${entryId}`, { method: 'DELETE' }),
+  )
+
+export const useConfirmReviewed = (id: string) =>
+  useEmployeeMutation(() => apiFetch<EmployeeDetail>(`/employees/${id}/review`, { method: 'POST' }))
+
+export const useEmployees = (filters: {
+  q?: string
+  level?: string
+  location?: string
+  health?: HealthFilter
+  practice?: string
+  sort?: string
+  limit?: string
+  offset?: string
+}) =>
   useQuery({
     queryKey: ['employees', filters],
     queryFn: () => apiFetch<Page<EmployeeSummary>>(`/employees${qs(filters)}`),
+    placeholderData: keepPreviousData,
   })
 
 export const useEmployee = (id: string) =>
@@ -110,7 +149,12 @@ export const useCommitImport = () =>
   })
 
 // --- Candidates -------------------------------------------------------------------------------
-export const useCandidates = (filters: { status?: string; q?: string }) =>
+export const useCandidates = (filters: {
+  status?: string
+  q?: string
+  limit?: string
+  offset?: string
+}) =>
   useQuery({
     queryKey: ['candidates', filters],
     queryFn: () => apiFetch<Page<CandidateSummary>>(`/candidates${qs(filters)}`),

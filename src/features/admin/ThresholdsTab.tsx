@@ -4,6 +4,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 import { ErrorState } from '@/components/QueryStates'
+import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -25,7 +26,7 @@ type Values = z.infer<typeof schema>
 
 export function ThresholdsTab() {
   const thresholds = useThresholds()
-  if (thresholds.isPending) return <Skeleton className="h-80 w-full rounded-2xl" />
+  if (thresholds.isPending) return <Skeleton className="h-80 w-full rounded-xl" />
   if (thresholds.isError) return <ErrorState error={thresholds.error} />
   const active = thresholds.data.active
   return (
@@ -36,19 +37,19 @@ export function ThresholdsTab() {
         review={Math.round(active.review_min * 100)}
         label={active.label}
       />
-      <section className="bg-surface rounded-2xl border p-4" aria-label="Change history">
-        <p className="flex items-center gap-2 text-sm font-semibold">
+      <section className="bg-surface rounded-xl border p-4" aria-label="Change history">
+        <h2 className="flex items-center gap-2 text-sm font-semibold">
           <History className="text-muted-foreground size-4" aria-hidden /> Change history
-        </p>
+        </h2>
         <ol className="mt-3 space-y-3">
           {thresholds.data.history.map((v) => (
             <li key={v.version} className="border-l-2 pl-3 text-sm">
               <p className="font-medium">
                 Version {v.version}
                 {v.active && (
-                  <span className="bg-band-shortlist text-band-shortlist-foreground ml-2 rounded-full px-2 py-0.5 text-xs">
-                    active
-                  </span>
+                  <StatusBadge tone="ready" className="ml-2">
+                    In use
+                  </StatusBadge>
                 )}
               </p>
               <p className="tabular-nums">
@@ -90,7 +91,7 @@ function ThresholdsForm({
   return (
     <form
       noValidate
-      className="bg-surface space-y-5 rounded-2xl border p-5"
+      className="bg-surface space-y-5 rounded-xl border p-5"
       onSubmit={(e) =>
         void form.handleSubmit((v) =>
           update.mutate({
@@ -101,10 +102,16 @@ function ThresholdsForm({
         )(e)
       }
     >
-      <div>
-        <p className="text-sm font-semibold">Band cut-offs for overall fit</p>
+      <div className="space-y-1">
+        <h2 className="text-sm font-semibold">Band cut-offs for overall fit</h2>
         <p className="text-muted-foreground text-sm">
-          Active: {label}. A change becomes a new version and applies to the next run; past runs
+          The model gives each person a chance of being a good fit. These cut-offs decide where they
+          appear for the manager: <strong className="font-medium">Shortlist</strong> (shown first),{' '}
+          <strong className="font-medium">Review</strong> (worth a look) or{' '}
+          <strong className="font-medium">Hidden</strong>. Raising them shows fewer, surer people.
+        </p>
+        <p className="text-muted-foreground text-sm">
+          In use now: {label}. A change becomes a new version and applies to the next run; past runs
           keep the cut-offs they used.
         </p>
       </div>
@@ -152,7 +159,7 @@ function ThresholdsForm({
           <Check className="size-4" aria-hidden /> Saved as a new version. The next run uses it.
         </p>
       )}
-      <Button type="submit" disabled={update.isPending || !isDirty} className="rounded-xl">
+      <Button type="submit" disabled={update.isPending || !isDirty} className="rounded-lg">
         {update.isPending && <Loader2 className="animate-spin" />} Save new version
       </Button>
     </form>

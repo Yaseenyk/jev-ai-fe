@@ -458,7 +458,12 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List Employees */
+        /**
+         * List Employees
+         * @description `health`: ready (complete and reviewed recently), missing (information missing) or due
+         *     (not reviewed by HR within PROFILE_REVIEW_DAYS). `sort`: code, name, reviewed (oldest
+         *     review first, never-reviewed first) or available (soonest free first).
+         */
         get: operations["list_employees_api_v1_employees_get"];
         put?: never;
         /**
@@ -466,6 +471,26 @@ export interface paths {
          * @description Add one employee. 409 `employee_exists`. Audited.
          */
         post: operations["create_employee_api_v1_employees_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Employee Data Health
+         * @description Counts for HR's Company screen: ready, missing information, due for review.
+         */
+        get: operations["employee_data_health_api_v1_employees_health_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -522,6 +547,63 @@ export interface paths {
         post?: never;
         /** Remove Leave */
         delete: operations["remove_leave_api_v1_employees__employee_id__leaves__leave_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Project
+         * @description Add a past or current project to the employee's history. Audited.
+         */
+        post: operations["add_project_api_v1_employees__employee_id__projects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/projects/{entry_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Project */
+        delete: operations["remove_project_api_v1_employees__employee_id__projects__entry_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Reviewed
+         * @description HR confirms the profile is up to date today (editing it does the same). Audited.
+         */
+        post: operations["confirm_reviewed_api_v1_employees__employee_id__review_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -865,6 +947,26 @@ export interface paths {
         put?: never;
         /** Read One */
         post: operations["read_one_api_v1_notifications__notification_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Projects
+         * @description Company projects, for adding one to an employee's history.
+         */
+        get: operations["list_projects_api_v1_projects_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1402,6 +1504,21 @@ export interface components {
          * @enum {string}
          */
         CostBand: "A" | "B" | "C" | "D" | "E";
+        /** DataHealth */
+        DataHealth: {
+            /** Due */
+            due: number;
+            /** Min Skills */
+            min_skills: number;
+            /** Missing */
+            missing: number;
+            /** Ready */
+            ready: number;
+            /** Review After Days */
+            review_after_days: number;
+            /** Total */
+            total: number;
+        };
         /** DecisionOptionRead */
         DecisionOptionRead: {
             /** Description */
@@ -1505,9 +1622,19 @@ export interface components {
             leaves: components["schemas"]["LeaveRead"][];
             level: components["schemas"]["Level"];
             location: components["schemas"]["Location"];
+            /** Missing */
+            missing: ("few_skills" | "no_projects")[];
+            /** Needs Review */
+            needs_review: boolean;
             practice: components["schemas"]["Practice"];
+            /** Project Count */
+            project_count: number;
             /** Projects */
             projects: components["schemas"]["EmployeeProjectRead"][];
+            /** Reviewed At */
+            reviewed_at: string | null;
+            /** Reviewed By */
+            reviewed_by: string | null;
             /** Skill Count */
             skill_count: number;
             /** Skills */
@@ -1520,6 +1647,24 @@ export interface components {
             /** Years Experience */
             years_experience: number;
         };
+        /** EmployeeProjectCreate */
+        EmployeeProjectCreate: {
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            outcome: components["schemas"]["AssignmentOutcome"];
+            /** Project Id */
+            project_id: string;
+            /** Role Title */
+            role_title: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+        };
         /** EmployeeProjectRead */
         EmployeeProjectRead: {
             domain: components["schemas"]["Domain"];
@@ -1528,6 +1673,8 @@ export interface components {
              * Format: date
              */
             end_date: string;
+            /** Id */
+            id: string;
             outcome: components["schemas"]["AssignmentOutcome"];
             /** Project Name */
             project_name: string;
@@ -1609,6 +1756,14 @@ export interface components {
             id: string;
             level: components["schemas"]["Level"];
             location: components["schemas"]["Location"];
+            /** Missing */
+            missing: ("few_skills" | "no_projects")[];
+            /** Needs Review */
+            needs_review: boolean;
+            /** Project Count */
+            project_count: number;
+            /** Reviewed At */
+            reviewed_at: string | null;
             /** Skill Count */
             skill_count: number;
         };
@@ -2357,6 +2512,21 @@ export interface components {
             skill_name: string;
             /** Years */
             years: number;
+        };
+        /**
+         * ProjectOption
+         * @description A company project HR can attach to an employee's history.
+         */
+        ProjectOption: {
+            /** Client Code */
+            client_code: string;
+            /** Code */
+            code: string;
+            domain: components["schemas"]["Domain"];
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
         };
         /**
          * RejectReason
@@ -3609,6 +3779,9 @@ export interface operations {
                 level?: components["schemas"]["Level"] | null;
                 location?: components["schemas"]["Location"] | null;
                 available_by?: string | null;
+                health?: ("ready" | "missing" | "due") | null;
+                practice?: components["schemas"]["Practice"] | null;
+                sort?: "code" | "name" | "reviewed" | "available";
                 limit?: number;
                 offset?: number;
             };
@@ -3667,6 +3840,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    employee_data_health_api_v1_employees_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataHealth"];
                 };
             };
         };
@@ -3790,6 +3983,104 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_project_api_v1_employees__employee_id__projects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmployeeProjectCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_project_api_v1_employees__employee_id__projects__entry_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+                entry_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_reviewed_api_v1_employees__employee_id__review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeDetail"];
+                };
             };
             /** @description Validation Error */
             422: {
@@ -4379,6 +4670,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_projects_api_v1_projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectOption"][];
                 };
             };
         };

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { ApiError, apiFetch } from '@/api/client'
 import { getAccessToken } from '@/features/auth/session'
@@ -21,11 +21,14 @@ import type {
   ThresholdsUpdate,
 } from '@/api/types'
 
-export function useAllRuns(status: RunStatus | '') {
+export function useAllRuns(status: RunStatus | '', limit = 100, offset = 0) {
   return useQuery({
-    queryKey: ['admin', 'runs', status],
+    queryKey: ['admin', 'runs', status, limit, offset],
     queryFn: () =>
-      apiFetch<Page<AdminRun>>(`/match-runs?limit=100${status ? `&status=${status}` : ''}`),
+      apiFetch<Page<AdminRun>>(
+        `/match-runs?limit=${limit}&offset=${offset}${status ? `&status=${status}` : ''}`,
+      ),
+    placeholderData: keepPreviousData,
   })
 }
 

@@ -3,7 +3,7 @@ import { useState } from 'react'
 
 import type { DecisionDefinition, FeedbackInput, ShortlistItem, Thresholds } from '@/api/types'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { BandBadge } from '@/features/shortlist/BandBadge'
 import { DecisionTrail } from '@/features/shortlist/DecisionTrail'
@@ -18,6 +18,25 @@ import {
   locationLabel,
   percent,
 } from '@/lib/format'
+import { cn } from '@/lib/utils'
+
+/** The few code-computed facts a manager scans first; the full list is in the details. */
+function keyFacts(item: ShortlistItem): [string, string][] {
+  const f = item.features
+  return [
+    ['Must-have skills', percent(f.must_have_coverage)],
+    [
+      'Level',
+      f.level_gap === 0
+        ? 'Right level'
+        : f.level_gap > 0
+          ? `${f.level_gap} above`
+          : `${-f.level_gap} below`,
+    ],
+    ['Free at start', `${f.available_capacity_pct}%`],
+    ['Domain projects', String(f.domain_project_count)],
+  ]
+}
 
 export function ShortlistItemCard({
   item,
@@ -38,42 +57,62 @@ export function ShortlistItemCard({
   const [rejecting, setRejecting] = useState(false)
   const canEdit = useCanEdit()
   const e = item.employee
+  const decided = item.feedback?.action
 
   return (
-    <Card className="py-0">
+    <Card
+      className={cn(
+        'gap-0 py-0',
+        decided === 'accept' && 'ring-band-shortlist-foreground/40',
+        decided === 'reject' && 'opacity-80',
+      )}
+    >
       <Collapsible open={open} onOpenChange={setOpen}>
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-          <span className="text-muted-foreground w-8 text-sm tabular-nums">#{item.rank}</span>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
+          <span
+            className="bg-muted text-muted-foreground grid size-8 shrink-0 place-items-center rounded-full text-xs font-semibold tabular-nums"
+            aria-label={`Rank ${item.rank}`}
+          >
+            {item.rank}
+          </span>
           <div className="min-w-48 flex-1">
             <p className="font-medium">{e.full_name}</p>
             <p className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs">
               <span>{e.designation}</span>
+              <span aria-hidden>·</span>
               <span>{levelLabel(e.level)}</span>
+              <span aria-hidden>·</span>
               <span className="inline-flex items-center gap-0.5">
                 <MapPin className="size-3" aria-hidden />
                 {locationLabel(e.location)}
               </span>
+              <span aria-hidden>·</span>
               <span className="font-mono">{e.employee_code}</span>
             </p>
           </div>
-          <BandBadge band={item.band} />
-          <div className="w-24 text-right">
-            <p className="text-lg leading-none font-semibold tabular-nums">
-              {percent(item.rank_score)}
-            </p>
-            <p className="text-muted-foreground text-[11px]">overall fit</p>
-          </div>
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={open ? 'Hide details' : 'Show details'}
-            >
-              <ChevronDown
-                className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+          <dl className="hidden gap-5 text-xs md:flex" aria-label="Key facts">
+            {keyFacts(item).map(([k, v]) => (
+              <div key={k}>
+                <dt className="text-muted-foreground">{k}</dt>
+                <dd className="font-medium tabular-nums">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="flex w-32 shrink-0 flex-col items-end gap-1">
+            <div className="flex items-center gap-2">
+              <BandBadge band={item.band} />
+              <span className="text-lg leading-none font-semibold tabular-nums">
+                {percent(item.rank_score)}
+              </span>
+            </div>
+            <span className="bg-muted block h-1 w-full overflow-hidden rounded-full" aria-hidden>
+              <span
+                className="bg-primary block h-full"
+                style={{ width: percent(item.rank_score) }}
               />
-            </Button>
-          </CollapsibleTrigger>
+            </span>
+            <span className="text-muted-foreground text-[11px]">overall fit</span>
+          </div>
         </div>
 
         {item.flags.length > 0 && (
@@ -89,16 +128,19 @@ export function ShortlistItemCard({
           </div>
         )}
 
-        <CollapsibleContent>
-          <CardContent className="space-y-4 border-t px-4 py-4">
-            <DecisionTrail item={item} definitions={definitions} thresholds={thresholds} />
-            <ExplanationBlock explanation={item.explanation} status={item.explanation_status} />
-          </CardContent>
-        </CollapsibleContent>
-
-        <div className="flex flex-wrap items-center gap-2 border-t px-4 py-2.5">
+        <div className="bg-muted/30 flex flex-wrap items-center gap-2 border-t px-4 py-2">
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="-ml-2">
+              <ChevronDown
+                className={cn('transition-transform', open && 'rotate-180')}
+                aria-hidden
+              />
+              {open ? 'Hide details' : 'Show details'}
+            </Button>
+          </CollapsibleTrigger>
+          <div className="flex-1" />
           {item.feedback ? (
-            <p className="flex-1 text-sm">
+            <p className="text-sm">
               {item.feedback.action === 'accept' ? (
                 <span className="text-band-shortlist-foreground inline-flex items-center gap-1 font-medium">
                   <Check className="size-4" aria-hidden /> Accepted as candidate
@@ -112,31 +154,36 @@ export function ShortlistItemCard({
               )}
             </p>
           ) : (
-            <p className="text-muted-foreground flex-1 text-xs">
-              Your decision is recorded; nobody is assigned automatically.
-            </p>
+            <p className="text-muted-foreground hidden text-xs sm:block">Not decided yet</p>
           )}
           {canEdit && (
             <>
-              <Button
-                size="sm"
-                variant={item.feedback?.action === 'accept' ? 'secondary' : 'default'}
-                disabled={saving || item.feedback?.action === 'accept'}
-                onClick={() => onFeedback({ action: 'accept' })}
-              >
-                <Check /> Accept as candidate
-              </Button>
               <Button
                 size="sm"
                 variant="outline"
                 disabled={saving}
                 onClick={() => setRejecting(true)}
               >
-                <X /> Reject
+                <X aria-hidden /> Reject
+              </Button>
+              <Button
+                size="sm"
+                variant={decided === 'accept' ? 'secondary' : 'default'}
+                disabled={saving || decided === 'accept'}
+                onClick={() => onFeedback({ action: 'accept' })}
+              >
+                <Check aria-hidden /> Accept as candidate
               </Button>
             </>
           )}
         </div>
+
+        <CollapsibleContent>
+          <div className="space-y-4 border-t px-4 py-4">
+            <DecisionTrail item={item} definitions={definitions} thresholds={thresholds} />
+            <ExplanationBlock explanation={item.explanation} status={item.explanation_status} />
+          </div>
+        </CollapsibleContent>
       </Collapsible>
 
       <RejectDialog

@@ -15,7 +15,7 @@ const BAND_NAMES: Record<string, string> = {
 
 export function HealthTab() {
   const health = useModelHealth()
-  if (health.isPending) return <Skeleton className="h-80 w-full rounded-2xl" />
+  if (health.isPending) return <Skeleton className="h-80 w-full rounded-xl" />
   if (health.isError) return <ErrorState error={health.error} />
   const h = health.data
 
@@ -31,9 +31,9 @@ export function HealthTab() {
   return (
     <div className="space-y-6">
       <p className="text-muted-foreground max-w-3xl text-sm">
-        How often managers agree with the model. It &quot;leans yes&quot; when its score is 50% or
-        more. Rejections for availability, client preference or other plans say nothing about the
-        model, so they are left out.
+        How often managers agree with the model when they accept or reject a suggested person. It
+        &quot;leans yes&quot; when its score is 50% or more. Rejections for availability, client
+        preference or other plans say nothing about the model, so they are left out.
       </p>
       {h.overall.rate === null && (
         <Alert>
@@ -63,8 +63,8 @@ export function HealthTab() {
         />
       </dl>
 
-      <section className="bg-surface rounded-2xl border p-4" aria-label="Week by week">
-        <p className="text-sm font-semibold">Week by week</p>
+      <section className="bg-surface rounded-xl border p-4" aria-label="Week by week">
+        <h2 className="text-sm font-semibold">Week by week</h2>
         <ol className="mt-3 space-y-2">
           {h.weeks.map((w) => (
             <li key={w.week} className="grid grid-cols-[7rem_1fr_6rem] items-center gap-3 text-sm">
@@ -79,8 +79,8 @@ export function HealthTab() {
       </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="bg-surface rounded-2xl border p-4" aria-label="By band">
-          <p className="text-sm font-semibold">What managers did, by band</p>
+        <section className="bg-surface rounded-xl border p-4" aria-label="By band">
+          <h2 className="text-sm font-semibold">What managers did, by band</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {h.by_band.map((b) => (
               <li key={b.band} className="flex justify-between gap-3">
@@ -92,8 +92,8 @@ export function HealthTab() {
             ))}
           </ul>
         </section>
-        <section className="bg-surface rounded-2xl border p-4" aria-label="By model">
-          <p className="text-sm font-semibold">By model version</p>
+        <section className="bg-surface rounded-xl border p-4" aria-label="By model">
+          <h2 className="text-sm font-semibold">By model version</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {h.models.map((m) => (
               <li key={m.model} className="flex justify-between gap-3">
@@ -117,7 +117,7 @@ function rate(value: number | null): string {
 
 function Headline({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="bg-surface rounded-2xl border p-4">
+    <div className="bg-surface rounded-xl border p-4">
       <dt className="text-muted-foreground text-sm">{label}</dt>
       <dd className="mt-1 text-3xl font-semibold tabular-nums">{value}</dd>
       <dd className="text-muted-foreground text-xs">{hint}</dd>

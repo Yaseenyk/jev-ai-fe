@@ -1,14 +1,15 @@
-import { ArrowLeft, FileText, Loader2, ScanText, ShieldCheck, Upload, X } from 'lucide-react'
+import { FileText, Loader2, ScanText, ShieldCheck, Upload, X } from 'lucide-react'
 import { useState } from 'react'
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Navigate, useNavigate, useSearchParams } from 'react-router'
 
 import { ApiError } from '@/api/client'
 import type { Level } from '@/api/types'
+import { Field } from '@/components/FormSheet'
+import { PageHeader } from '@/components/PageHeader'
 import { ErrorState } from '@/components/QueryStates'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ import { useCreateCandidate, useExtractResume, useHiringRequest } from '@/featur
 import type { CandidateProfile, Extraction } from '@/features/hr/types'
 import { Panel, SkillChip } from '@/features/hr/ui'
 import { LEVEL_TITLES, locationLabel } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 const isScan = (error: Error) =>
   error instanceof ApiError && error.problem?.code === 'scanned_needs_consent'
@@ -40,33 +42,30 @@ export default function UploadResumePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <Link
-        to={requestId ? `/hiring-requests/${requestId}` : '/candidates'}
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-      >
-        <ArrowLeft className="size-4" aria-hidden />{' '}
-        {requestId ? 'Back to the request' : 'All candidates'}
-      </Link>
-      <header>
-        <h1 className="text-2xl font-semibold">Upload a resume</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          The text is read in our own code. Personal details (name, email, phone, address, links,
-          date of birth) are removed before ChatGPT sees anything; it only turns the professional
-          part into fields you check here.
-        </p>
-      </header>
+      <PageHeader
+        back={
+          requestId
+            ? { to: `/hiring-requests/${requestId}`, label: 'Back to the request' }
+            : { to: '/candidates', label: 'All candidates' }
+        }
+        title="Upload a resume"
+        description="Our own code reads the file and removes personal details (name, email, phone, address, links, date of birth) before ChatGPT sees anything. ChatGPT only turns the professional part into fields you check here."
+      />
       {requestId && <RequestBanner id={requestId} />}
+      <Steps current={extract.data ? 2 : 1} />
 
       {!extract.data ? (
-        <Panel title="1. Choose the resume">
+        <Panel title="Choose the resume">
           <label
             htmlFor="resume"
-            className="hover:bg-accent/40 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-8 text-center"
+            className="hover:bg-accent/40 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 text-center"
           >
             <FileText className="text-muted-foreground size-8" aria-hidden />
-            <span className="font-medium">{file ? file.name : 'PDF or Word file'}</span>
+            <span className="font-medium">
+              {file ? file.name : 'Click to choose a PDF or Word file'}
+            </span>
             <span className="text-muted-foreground text-xs">
-              Downloaded from Naukri, LinkedIn or email
+              Downloaded from Naukri, LinkedIn or email. Up to 5 MB.
             </span>
           </label>
           <input
@@ -77,11 +76,10 @@ export default function UploadResumePage() {
             aria-label="Resume file"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
-          <div className="mt-3 flex flex-wrap items-end gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="source">Where it came from</Label>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field id="source" label="Where it came from" help="Recorded with the candidate.">
               <Select value={source} onValueChange={setSource}>
-                <SelectTrigger id="source" className="w-44">
+                <SelectTrigger id="source">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -92,22 +90,11 @@ export default function UploadResumePage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <Button
-              disabled={!file || extract.isPending}
-              onClick={() => file && extract.mutate({ file })}
-            >
-              {extract.isPending ? (
-                <Loader2 className="animate-spin" aria-hidden />
-              ) : (
-                <Upload aria-hidden />
-              )}
-              Read the resume
-            </Button>
+            </Field>
           </div>
           {extract.isError &&
             (isScan(extract.error) ? (
-              <Alert className="mt-3">
+              <Alert className="mt-4">
                 <ScanText />
                 <AlertTitle>This is a scanned file</AlertTitle>
                 <AlertDescription>
@@ -127,8 +114,23 @@ export default function UploadResumePage() {
                 </AlertDescription>
               </Alert>
             ) : (
-              <ErrorState error={extract.error} />
+              <div className="mt-4">
+                <ErrorState error={extract.error} />
+              </div>
             ))}
+          <div className="mt-4 flex justify-end border-t pt-4">
+            <Button
+              disabled={!file || extract.isPending}
+              onClick={() => file && extract.mutate({ file })}
+            >
+              {extract.isPending ? (
+                <Loader2 className="animate-spin" aria-hidden />
+              ) : (
+                <Upload aria-hidden />
+              )}
+              Read the resume
+            </Button>
+          </div>
         </Panel>
       ) : (
         <ReviewForm
@@ -142,6 +144,39 @@ export default function UploadResumePage() {
         />
       )}
     </div>
+  )
+}
+
+function Steps({ current }: { current: 1 | 2 }) {
+  const steps = ['Choose the resume', 'Check the details and save']
+  return (
+    <ol className="flex flex-wrap items-center gap-2 text-sm" aria-label="Steps">
+      {steps.map((label, i) => {
+        const n = i + 1
+        return (
+          <li key={label} className="flex items-center gap-2">
+            {i > 0 && <span className="bg-border h-px w-8" aria-hidden />}
+            <span
+              className={cn(
+                'flex size-6 items-center justify-center rounded-full border text-xs tabular-nums',
+                n === current
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'text-muted-foreground',
+              )}
+              aria-hidden
+            >
+              {n}
+            </span>
+            <span
+              className={cn(n === current ? 'font-medium' : 'text-muted-foreground')}
+              aria-current={n === current ? 'step' : undefined}
+            >
+              {label}
+            </span>
+          </li>
+        )
+      })}
+    </ol>
   )
 }
 
@@ -178,6 +213,11 @@ function ReviewForm({
   const [consent, setConsent] = useState(false)
   const set = <K extends keyof CandidateProfile>(key: K, value: CandidateProfile[K]) =>
     setProfile((p) => ({ ...p, [key]: value }))
+  const missing = !contact.full_name.trim()
+    ? 'Enter the full name to save.'
+    : !consent
+      ? 'Confirm the candidate’s consent to save.'
+      : null
 
   const save = () =>
     create.mutate(
@@ -217,35 +257,47 @@ function ReviewForm({
         </AlertDescription>
       </Alert>
 
-      <Panel title="2. Contact details (kept for HR only, never sent to ChatGPT)">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {(['full_name', 'email', 'phone'] as const).map((k) => (
-            <div key={k} className="space-y-1.5">
-              <Label htmlFor={`c-${k}`}>
-                {k === 'full_name' ? 'Full name' : k === 'email' ? 'Email' : 'Phone'}
-              </Label>
-              <Input
-                id={`c-${k}`}
-                value={contact[k]}
-                onChange={(e) => setContact((c) => ({ ...c, [k]: e.target.value }))}
-              />
-            </div>
-          ))}
+      <Panel title="Contact details" label="Contact details">
+        <p className="text-muted-foreground mb-3 text-xs">
+          Kept for HR only and never sent to ChatGPT. Managers do not see them.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id="c-full_name" label="Full name" required wide>
+            <Input
+              id="c-full_name"
+              placeholder="e.g. Priya Sharma"
+              value={contact.full_name}
+              onChange={(e) => setContact((c) => ({ ...c, full_name: e.target.value }))}
+            />
+          </Field>
+          <Field id="c-email" label="Email">
+            <Input
+              id="c-email"
+              type="email"
+              value={contact.email}
+              onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))}
+            />
+          </Field>
+          <Field id="c-phone" label="Phone">
+            <Input
+              id="c-phone"
+              value={contact.phone}
+              onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))}
+            />
+          </Field>
         </div>
       </Panel>
 
-      <Panel title="3. Check what was read">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="p-designation">Role</Label>
+      <Panel title="Check what was read" label="Check what was read">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id="p-designation" label="Role" wide>
             <Input
               id="p-designation"
               value={profile.designation}
               onChange={(e) => set('designation', e.target.value)}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="p-level">Level</Label>
+          </Field>
+          <Field id="p-level" label="Level">
             <Select value={profile.level} onValueChange={(v) => set('level', v as Level)}>
               <SelectTrigger id="p-level">
                 <SelectValue />
@@ -258,9 +310,8 @@ function ReviewForm({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="p-years">Years of experience</Label>
+          </Field>
+          <Field id="p-years" label="Years of experience">
             <Input
               id="p-years"
               type="number"
@@ -270,9 +321,26 @@ function ReviewForm({
               value={profile.years_experience}
               onChange={(e) => set('years_experience', Number(e.target.value))}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="p-notice">Notice period (days)</Label>
+          </Field>
+          <Field id="p-location" label="Location">
+            <Select value={profile.location} onValueChange={(v) => set('location', v)}>
+              <SelectTrigger id="p-location">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LOCATIONS.map((l) => (
+                  <SelectItem key={l} value={l}>
+                    {locationLabel(l)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field
+            id="p-notice"
+            label="Notice period (days)"
+            help="Used as their availability when matching."
+          >
             <Input
               id="p-notice"
               type="number"
@@ -281,9 +349,12 @@ function ReviewForm({
               value={profile.notice_days}
               onChange={(e) => set('notice_days', Number(e.target.value))}
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="p-band">Expected pay band</Label>
+          </Field>
+          <Field
+            id="p-band"
+            label="Expected pay band"
+            help="Entered by HR, never read from the resume."
+          >
             <Select
               value={profile.cost_band ?? 'none'}
               onValueChange={(v) => set('cost_band', v === 'none' ? null : v)}
@@ -300,24 +371,9 @@ function ReviewForm({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="p-location">Location</Label>
-            <Select value={profile.location} onValueChange={(v) => set('location', v)}>
-              <SelectTrigger id="p-location">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {LOCATIONS.map((l) => (
-                  <SelectItem key={l} value={l}>
-                    {locationLabel(l)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          </Field>
         </div>
-        <div className="mt-3 space-y-1.5">
+        <div className="mt-4 space-y-1.5">
           <p className="text-sm font-medium">Skills (matched to our skills list)</p>
           <p className="flex flex-wrap gap-1">
             {profile.skills.map((k) => (
@@ -347,35 +403,39 @@ function ReviewForm({
             </p>
           )}
         </div>
-        <div className="mt-3 space-y-1.5">
-          <Label htmlFor="p-summary">Summary</Label>
-          <Textarea
-            id="p-summary"
-            rows={3}
-            value={profile.summary}
-            onChange={(e) => set('summary', e.target.value)}
-          />
+        <div className="mt-4">
+          <Field id="p-summary" label="Summary">
+            <Textarea
+              id="p-summary"
+              rows={3}
+              value={profile.summary}
+              onChange={(e) => set('summary', e.target.value)}
+            />
+          </Field>
         </div>
       </Panel>
 
-      <label className="flex items-start gap-2 text-sm">
-        <input
-          type="checkbox"
-          className="mt-0.5 size-4"
-          checked={consent}
-          onChange={(e) => setConsent(e.target.checked)}
-        />
-        The candidate agreed that we keep their resume for up to one year to match them to roles.
-      </label>
-      {create.isError && <ErrorState error={create.error} />}
-      <div className="flex gap-2">
-        <Button disabled={!consent || !contact.full_name.trim() || create.isPending} onClick={save}>
-          {create.isPending && <Loader2 className="animate-spin" aria-hidden />}
-          Save candidate
-        </Button>
-        <Button variant="outline" onClick={onRestart}>
-          Use another file
-        </Button>
+      <div className="bg-surface space-y-4 rounded-xl border p-4">
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 size-4"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+          />
+          The candidate agreed that we keep their resume for up to one year to match them to roles.
+        </label>
+        {create.isError && <ErrorState error={create.error} />}
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t pt-4">
+          {missing && <span className="text-muted-foreground mr-auto text-sm">{missing}</span>}
+          <Button variant="outline" onClick={onRestart}>
+            Use another file
+          </Button>
+          <Button disabled={!!missing || create.isPending} onClick={save}>
+            {create.isPending && <Loader2 className="animate-spin" aria-hidden />}
+            Save candidate
+          </Button>
+        </div>
       </div>
     </div>
   )

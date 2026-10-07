@@ -1,7 +1,8 @@
-import { ArrowLeft, Mail, Phone, ShieldCheck, Trash2 } from 'lucide-react'
+import { Check, Mail, Phone, ShieldCheck, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router'
 
+import { PageHeader } from '@/components/PageHeader'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,7 @@ import {
 import { CANDIDATE_STATUSES, type CandidateStatus, STATUS_LABELS } from '@/features/hr/types'
 import {
   CandidateStatusBadge,
+  DetailList,
   MatchReasons,
   Panel,
   ScoreBar,
@@ -54,7 +56,7 @@ export default function CandidatePage() {
   const [moving, setMoving] = useState<CandidateStatus | null>(null)
   const [deleting, setDeleting] = useState(false)
   if (!allowed) return <Navigate to="/tasks" replace />
-  if (candidate.isPending) return <Skeleton className="h-96 w-full rounded-2xl" />
+  if (candidate.isPending) return <Skeleton className="h-96 w-full rounded-xl" />
   if (candidate.isError) return <ErrorState error={candidate.error} />
   const c = candidate.data
   const days = c.delete_after ? daysUntil(c.delete_after) : null
@@ -62,52 +64,57 @@ export default function CandidatePage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        to="/candidates"
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
-      >
-        <ArrowLeft className="size-4" aria-hidden /> All candidates
-      </Link>
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">{c.full_name}</h1>
-            <CandidateStatusBadge status={c.status} />
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {c.designation} · {levelLabel(c.level)} · {c.years_experience} yrs ·{' '}
-            {locationLabel(c.location)} · can join in {c.profile.notice_days} days · via {c.source}
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => setDeleting(true)}>
-          <Trash2 aria-hidden /> Delete
-        </Button>
-      </header>
+      <PageHeader
+        back={{ to: '/candidates', label: 'All candidates' }}
+        title={c.full_name}
+        status={<CandidateStatusBadge status={c.status} />}
+        meta={`${c.designation} · ${levelLabel(c.level)} · ${c.years_experience} yrs · ${locationLabel(c.location)}`}
+        description="An external candidate. Move them through the steps below as you screen, contact and interview them."
+        actions={
+          <Button variant="outline" onClick={() => setDeleting(true)}>
+            <Trash2 aria-hidden /> Delete
+          </Button>
+        }
+      />
 
-      <ol className="flex flex-wrap gap-1.5" aria-label="Status">
-        {CANDIDATE_STATUSES.map((s, i) => (
-          <li key={s}>
-            <button
-              type="button"
-              disabled={s === c.status}
-              onClick={() => setMoving(s)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-sm',
-                s === c.status
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : i < step
-                    ? 'bg-accent/60'
-                    : 'hover:bg-accent/50',
-              )}
-            >
-              {STATUS_LABELS[s]}
-            </button>
-          </li>
-        ))}
-      </ol>
+      <section className="bg-surface rounded-xl border p-3" aria-label="Progress">
+        <p className="text-muted-foreground mb-2 px-1 text-xs">
+          Click a step to move the candidate there. Each move is recorded in the history.
+        </p>
+        <ol className="grid gap-1.5 sm:grid-cols-3 lg:grid-cols-6" aria-label="Status">
+          {CANDIDATE_STATUSES.map((s, i) => (
+            <li key={s}>
+              <button
+                type="button"
+                disabled={s === c.status}
+                onClick={() => setMoving(s)}
+                className={cn(
+                  'flex w-full items-center gap-2 rounded-md border px-3 py-2 text-left text-sm transition-colors',
+                  s === c.status
+                    ? 'bg-primary text-primary-foreground border-primary font-medium'
+                    : i < step
+                      ? 'bg-muted/60 text-foreground hover:bg-muted'
+                      : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+                )}
+              >
+                <span
+                  className={cn(
+                    'flex size-5 shrink-0 items-center justify-center rounded-full border text-[11px] tabular-nums',
+                    s === c.status && 'border-primary-foreground/60',
+                  )}
+                  aria-hidden
+                >
+                  {i < step ? <Check className="size-3" /> : i + 1}
+                </span>
+                {STATUS_LABELS[s]}
+              </button>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-        <div className="space-y-4">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="min-w-0 space-y-4">
           <Panel title="Open tasks this candidate fits" label="Open tasks this candidate fits">
             {matches.isPending ? (
               <Skeleton className="h-32 w-full" />
@@ -118,7 +125,7 @@ export default function CandidatePage() {
                 Kept in the pool: new tasks are checked against everyone here.
               </EmptyState>
             ) : (
-              <ul className="divide-y">
+              <ul className="-my-3 divide-y">
                 {matches.data.map((m) => (
                   <li key={m.task_id} className="flex gap-3 py-3">
                     <div className="min-w-0 flex-1 space-y-1.5">
@@ -134,61 +141,73 @@ export default function CandidatePage() {
               </ul>
             )}
           </Panel>
-          <Panel title="Profile (read from the resume, checked by HR)">
+          <Panel title="Profile (read from the resume, checked by HR)" label="Profile">
             <p className="text-sm">{c.profile.summary}</p>
-            <p className="mt-3 flex flex-wrap gap-1">
+            <h3 className="text-muted-foreground mt-4 mb-1.5 text-xs font-semibold">Skills</h3>
+            <p className="flex flex-wrap gap-1">
               {c.profile.skills.map((k) => (
                 <SkillChip key={k.skill_id}>
                   {k.skill_name} {k.proficiency}/5 · {k.years}y
                 </SkillChip>
               ))}
             </p>
-            <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>
-                <dt className="text-muted-foreground">Domains</dt>
-                <dd>{c.profile.domains.map(domainLabel).join(', ') || '—'}</dd>
+                <dt className="text-muted-foreground text-xs font-semibold">Domains</dt>
+                <dd className="mt-0.5">{c.profile.domains.map(domainLabel).join(', ') || '—'}</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Education</dt>
-                <dd>{c.profile.education.join(', ') || '—'}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Expected pay band</dt>
-                <dd className="mt-1">
-                  <Select
-                    value={c.profile.cost_band ?? NOT_KNOWN}
-                    onValueChange={(band) =>
-                      update.mutate({
-                        profile: { ...c.profile, cost_band: band === NOT_KNOWN ? null : band },
-                      })
-                    }
-                  >
-                    <SelectTrigger className="w-40" aria-label="Expected pay band">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={NOT_KNOWN}>Not known yet</SelectItem>
-                      {COST_BANDS.map((b) => (
-                        <SelectItem key={b} value={b}>
-                          Band {b}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </dd>
+                <dt className="text-muted-foreground text-xs font-semibold">Education</dt>
+                <dd className="mt-0.5">{c.profile.education.join(', ') || '—'}</dd>
               </div>
             </dl>
           </Panel>
         </div>
 
-        <div className="space-y-4">
+        <aside className="space-y-4">
+          <Panel title="Details">
+            <DetailList
+              items={[
+                { label: 'Source', value: c.source },
+                { label: 'Uploaded', value: date(c.uploaded_at) },
+                { label: 'Can join in', value: `${c.profile.notice_days} days` },
+                {
+                  label: 'Expected pay band',
+                  value: (
+                    <Select
+                      value={c.profile.cost_band ?? NOT_KNOWN}
+                      onValueChange={(band) =>
+                        update.mutate({
+                          profile: { ...c.profile, cost_band: band === NOT_KNOWN ? null : band },
+                        })
+                      }
+                    >
+                      <SelectTrigger className="h-8 w-full" aria-label="Expected pay band">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={NOT_KNOWN}>Not known yet</SelectItem>
+                        {COST_BANDS.map((b) => (
+                          <SelectItem key={b} value={b}>
+                            Band {b}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ),
+                },
+              ]}
+            />
+          </Panel>
           <Panel title="Contact (HR only)">
             <ul className="space-y-1.5 text-sm">
-              <li className="flex items-center gap-2">
-                <Mail className="text-muted-foreground size-4" aria-hidden /> {c.email ?? '—'}
+              <li className="flex items-center gap-2 break-all">
+                <Mail className="text-muted-foreground size-4 shrink-0" aria-hidden />{' '}
+                {c.email ?? '—'}
               </li>
               <li className="flex items-center gap-2">
-                <Phone className="text-muted-foreground size-4" aria-hidden /> {c.phone ?? '—'}
+                <Phone className="text-muted-foreground size-4 shrink-0" aria-hidden />{' '}
+                {c.phone ?? '—'}
               </li>
             </ul>
             <p className="text-muted-foreground mt-2 text-xs">
@@ -209,7 +228,7 @@ export default function CandidatePage() {
             </p>
           </Panel>
           <Panel title="History">
-            <ol className="space-y-2 text-sm">
+            <ol className="space-y-3 text-sm">
               {c.history.map((h) => (
                 <li key={h.at + h.status} className="border-l-2 pl-3">
                   <p className="font-medium">{STATUS_LABELS[h.status]}</p>
@@ -221,7 +240,7 @@ export default function CandidatePage() {
               ))}
             </ol>
           </Panel>
-        </div>
+        </aside>
       </div>
 
       {moving && (

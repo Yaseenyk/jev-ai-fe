@@ -1,5 +1,7 @@
+import { ChevronRight } from 'lucide-react'
+import { Fragment } from 'react'
+
 import type { MatchRun } from '@/api/types'
-import { cn } from '@/lib/utils'
 
 interface Step {
   label: string
@@ -26,72 +28,46 @@ export function Funnel({
       value: run.retrieved_count,
       hint: 'With at least one must-have skill',
     },
+    {
+      label: 'Recommended to you',
+      value: bands.shortlist + bands.review,
+      hint: `${bands.shortlist} shortlist · ${bands.review} review`,
+    },
   ]
   const max = Math.max(run.candidate_count, 1)
 
   return (
     <section
       aria-label="How people were narrowed down"
-      className="bg-surface rounded-2xl border p-4 sm:p-5"
+      className="bg-surface grid grid-cols-2 gap-4 rounded-xl border p-4 sm:flex sm:items-stretch sm:gap-2"
     >
-      <ol className="space-y-3">
-        {steps.map((s, i) => (
-          <li
-            key={s.label}
-            className="grid grid-cols-[minmax(0,10rem)_1fr] items-center gap-3 sm:grid-cols-[13rem_1fr]"
-          >
-            <div className="min-w-0">
-              <p className="text-sm font-medium">
-                <span className="text-muted-foreground mr-1.5 tabular-nums">{i + 1}.</span>
-                {s.label}
-              </p>
-              <p className="text-muted-foreground truncate text-xs">{s.hint}</p>
+      {steps.map((s, i) => (
+        <Fragment key={s.label}>
+          {i > 0 && (
+            <ChevronRight
+              className="text-muted-foreground hidden size-4 shrink-0 self-center sm:block"
+              aria-hidden
+            />
+          )}
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <p className="text-muted-foreground text-xs font-medium">{s.label}</p>
+            <p className="text-2xl leading-none font-semibold tabular-nums">{s.value ?? '…'}</p>
+            <div className="bg-muted h-1.5 overflow-hidden rounded-full" aria-hidden>
+              <div
+                className={
+                  i === steps.length - 1
+                    ? 'bg-band-shortlist-foreground h-full'
+                    : 'bg-primary h-full'
+                }
+                style={{
+                  width: s.value === null ? '0%' : `${Math.max(2, (s.value / max) * 100)}%`,
+                }}
+              />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-muted h-2.5 flex-1 overflow-hidden rounded-full">
-                <div
-                  className="bg-primary h-full rounded-full transition-[width] duration-700"
-                  style={{
-                    width: s.value === null ? '0%' : `${Math.max(1.5, (s.value / max) * 100)}%`,
-                  }}
-                />
-              </div>
-              <span className="w-12 text-right text-lg font-semibold tabular-nums">
-                {s.value ?? '…'}
-              </span>
-            </div>
-          </li>
-        ))}
-      </ol>
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-4">
-        <BandCount label="Shortlist" value={bands.shortlist} tone="shortlist" />
-        <BandCount label="Review" value={bands.review} tone="review" />
-        <BandCount label="Low confidence" value={bands.hidden} tone="hidden" />
-      </div>
+            <p className="text-muted-foreground truncate text-xs">{s.hint}</p>
+          </div>
+        </Fragment>
+      ))}
     </section>
-  )
-}
-
-function BandCount({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: number
-  tone: 'shortlist' | 'review' | 'hidden'
-}) {
-  return (
-    <div
-      className={cn(
-        'rounded-xl px-3 py-2.5',
-        tone === 'shortlist' && 'bg-band-shortlist text-band-shortlist-foreground',
-        tone === 'review' && 'bg-band-review text-band-review-foreground',
-        tone === 'hidden' && 'bg-muted text-muted-foreground',
-      )}
-    >
-      <p className="text-xs font-medium">{label}</p>
-      <p className="text-xl font-semibold tabular-nums">{value}</p>
-    </div>
   )
 }

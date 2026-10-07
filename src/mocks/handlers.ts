@@ -370,14 +370,19 @@ export function createHandlers(db: Db, session?: Storage) {
     http.get(api('/match-runs'), ({ request }) =>
       HttpResponse.json(
         page(
-          db.tasks.flatMap((t) =>
-            db.runsForTask(t.id).map((r) => ({
-              ...r,
-              task_code: t.code,
-              task_title: t.title,
-              requested_by_email: null,
-            })),
-          ),
+          db.tasks
+            .flatMap((t) =>
+              db.runsForTask(t.id).map((r) => ({
+                ...r,
+                task_code: t.code,
+                task_title: t.title,
+                requested_by_email: null,
+              })),
+            )
+            .filter((r) => {
+              const status = new URL(request.url).searchParams.get('status')
+              return !status || r.status === status
+            }),
           new URL(request.url),
         ),
       ),

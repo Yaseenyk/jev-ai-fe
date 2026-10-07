@@ -2,6 +2,7 @@ import { CheckCircle2, CircleAlert, XCircle } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import type { Band } from '@/api/types'
+import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import {
   type CandidateStatus,
   type RequestStatus,
@@ -12,37 +13,29 @@ import {
 import { BAND_LABELS, percent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const STATUS_TONE: Record<CandidateStatus, string> = {
-  new: 'bg-secondary text-secondary-foreground',
-  screened: 'bg-band-review text-band-review-foreground',
-  contacted: 'bg-band-review text-band-review-foreground',
-  interviewing: 'bg-primary/15 text-primary',
-  hired: 'bg-band-shortlist text-band-shortlist-foreground',
-  not_taken: 'bg-muted text-muted-foreground',
+const STATUS_TONE: Record<CandidateStatus, Tone> = {
+  new: 'neutral',
+  screened: 'attention',
+  contacted: 'attention',
+  interviewing: 'info',
+  hired: 'ready',
+  not_taken: 'neutral',
 }
 
 export function CandidateStatusBadge({ status }: { status: CandidateStatus }) {
-  return (
-    <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', STATUS_TONE[status])}>
-      {STATUS_LABELS[status]}
-    </span>
-  )
+  return <StatusBadge tone={STATUS_TONE[status]}>{STATUS_LABELS[status]}</StatusBadge>
 }
 
-const REQUEST_TONE: Record<RequestStatus, string> = {
-  new: 'bg-band-review text-band-review-foreground',
-  in_progress: 'bg-secondary text-secondary-foreground',
-  sent: 'bg-primary/15 text-primary',
-  reviewed: 'bg-band-shortlist text-band-shortlist-foreground',
-  closed: 'bg-muted text-muted-foreground',
+const REQUEST_TONE: Record<RequestStatus, Tone> = {
+  new: 'attention',
+  in_progress: 'neutral',
+  sent: 'info',
+  reviewed: 'ready',
+  closed: 'neutral',
 }
 
 export function RequestStatusBadge({ status }: { status: RequestStatus }) {
-  return (
-    <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', REQUEST_TONE[status])}>
-      {REQUEST_STATUS_LABELS[status]}
-    </span>
-  )
+  return <StatusBadge tone={REQUEST_TONE[status]}>{REQUEST_STATUS_LABELS[status]}</StatusBadge>
 }
 
 export function ScoreBar({ score, band }: { score: number; band: Band }) {
@@ -125,20 +118,36 @@ export function Panel({
   action,
   children,
   label,
+  id,
 }: {
   title: string
   action?: ReactNode
   children: ReactNode
   label?: string
+  id?: string
 }) {
   return (
-    <section className="bg-surface rounded-2xl border p-4" aria-label={label ?? title}>
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <section id={id} className="bg-surface rounded-xl border" aria-label={label ?? title}>
+      <div className="flex min-h-12 items-center justify-between gap-3 border-b px-4 py-2.5">
         <h2 className="text-sm font-semibold">{title}</h2>
         {action}
       </div>
-      {children}
+      <div className="p-4">{children}</div>
     </section>
+  )
+}
+
+/** The "Details" side card of a detail page: each label above its value. */
+export function DetailList({ items }: { items: { label: string; value: ReactNode }[] }) {
+  return (
+    <dl className="divide-y text-sm">
+      {items.map((i) => (
+        <div key={i.label} className="space-y-0.5 py-2 first:pt-0 last:pb-0">
+          <dt className="text-muted-foreground text-xs">{i.label}</dt>
+          <dd className="min-w-0 break-words">{i.value}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 

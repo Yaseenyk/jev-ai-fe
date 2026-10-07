@@ -2,6 +2,7 @@ import { Loader2, Send, UserSearch } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
+import { Field } from '@/components/FormSheet'
 import { ErrorState } from '@/components/QueryStates'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useCanEdit, useManagesPeople } from '@/features/auth/AuthProvider'
 import { useCreateRequest, useHiringRequests } from '@/features/hr/api'
@@ -31,7 +31,7 @@ export function NoInternalFit({ taskId }: { taskId: string }) {
 
   return (
     <section
-      className="bg-surface flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed p-4"
+      className="bg-surface flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4"
       aria-label="No internal fit"
     >
       <div className="flex items-start gap-3">
@@ -87,9 +87,12 @@ function AskDialog({ taskId, onClose }: { taskId: string; onClose: () => void })
             or not a fit; HR contacts the fit ones.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="wanted">How many candidates (1–{MAX_SUBMISSIONS})</Label>
+        <div className="space-y-4">
+          <Field
+            id="wanted"
+            label={`How many candidates (1–${MAX_SUBMISSIONS})`}
+            help="HR sends at most this many."
+          >
             <Input
               id="wanted"
               type="number"
@@ -99,9 +102,8 @@ function AskDialog({ taskId, onClose }: { taskId: string; onClose: () => void })
               onChange={(e) => setWanted(Number(e.target.value))}
             />
             {!valid && <p className="text-destructive text-sm">Between 1 and {MAX_SUBMISSIONS}.</p>}
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="ask-note">Anything HR should know</Label>
+          </Field>
+          <Field id="ask-note" label="Anything HR should know">
             <Textarea
               id="ask-note"
               rows={3}
@@ -109,7 +111,7 @@ function AskDialog({ taskId, onClose }: { taskId: string; onClose: () => void })
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
-          </div>
+          </Field>
         </div>
         {create.isError && <ErrorState error={create.error} />}
         <DialogFooter>

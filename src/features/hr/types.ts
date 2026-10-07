@@ -23,9 +23,27 @@ export interface EmployeeSummary {
   current_allocation_pct: number
   available_from: string
   skill_count: number
+  project_count: number
+  /** What the profile lacks before matching can trust it (Company screen). */
+  missing: ('few_skills' | 'no_projects')[]
+  reviewed_at: string | null
+  needs_review: boolean
 }
 
+/** Counts for the Company screen's cards. */
+export interface DataHealth {
+  total: number
+  ready: number
+  missing: number
+  due: number
+  review_after_days: number
+  min_skills: number
+}
+
+export type HealthFilter = 'ready' | 'missing' | 'due'
+
 export interface EmployeeDetail extends EmployeeSummary {
+  reviewed_by: string | null
   practice: string
   years_experience: number
   timezone: string
@@ -34,6 +52,7 @@ export interface EmployeeDetail extends EmployeeSummary {
   summary: string
   skills: EmployeeSkill[]
   projects: {
+    id: string
     project_name: string
     domain: Domain
     role_title: string
@@ -70,6 +89,25 @@ export interface EmployeeCreate {
   cost_band: string
   current_allocation_pct: number
   available_from: string
+}
+
+/** A company project HR can add to an employee's history. */
+export interface ProjectOption {
+  id: string
+  code: string
+  name: string
+  client_code: string
+  domain: Domain
+}
+
+export type ProjectOutcome = 'successful' | 'early_release' | 'escalated' | 'ongoing'
+
+export interface EmployeeProjectCreate {
+  project_id: string
+  role_title: string
+  start_date: string
+  end_date: string
+  outcome: ProjectOutcome
 }
 
 export type ImportKind = 'clients' | 'employees' | 'employee_skills'

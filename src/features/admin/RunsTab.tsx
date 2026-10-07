@@ -1,15 +1,23 @@
-import { useState } from 'react'
 import { Link } from 'react-router'
 
-import type { RunStatus } from '@/api/types'
-import { EmptyState, ErrorState } from '@/components/QueryStates'
+import type { AdminRun, RunStatus } from '@/api/types'
+import { type Column, DataTable, Pagination } from '@/components/DataTable'
+import { Segmented } from '@/components/FilterBar'
+import { ErrorState } from '@/components/QueryStates'
+import { StatusBadge, type Tone } from '@/components/StatusBadge'
+import { useUrlState } from '@/components/useUrlState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAllRuns } from '@/features/admin/api'
-import { RunStatusBadge } from '@/features/runs/RunStatusBadge'
 import { dateTime } from '@/lib/format'
-import { cn } from '@/lib/utils'
 
-const FILTERS: { value: RunStatus | ''; label: string }[] = [
+const STATUS: Record<RunStatus, { label: string; tone: Tone }> = {
+  completed: { label: 'Completed', tone: 'ready' },
+  running: { label: 'Running', tone: 'info' },
+  queued: { label: 'Queued', tone: 'neutral' },
+  failed: { label: 'Failed', tone: 'danger' },
+}
+
+const FILTERS = [
   { value: '', label: 'All' },
   { value: 'completed', label: 'Completed' },
   { value: 'running', label: 'Running' },
@@ -17,84 +25,144 @@ const FILTERS: { value: RunStatus | ''; label: string }[] = [
   { value: 'failed', label: 'Failed' },
 ]
 
+const DEFAULTS = { status: '', page: '1', size: '25' }
+
+function cost(usd: number): string {
+  if (usd === 0) return 'Free'
+  if (usd < 0.01) return '< $0.01'
+  return `$${usd.toFixed(2)}`
+}
+
+const columns: Column<AdminRun>[] = [
+  {
+    key: 'task',
+    header: 'Task',
+    cell: (r) => (
+      <div className="min-w-0">
+        <Link
+          to={`/runs/${r.id}`}
+          className="font-medium hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {r.task_title}
+        </Link>
+        <div className="text-muted-foreground text-xs">{r.task_code}</div>
+      </div>
+    ),
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    cell: (r) => (
+      <div className="space-y-1">
+        <StatusBadge tone={STATUS[r.status].tone}>{STATUS[r.status].label}</StatusBadge>
+        {r.error && (
+          <p className="text-muted-foreground max-w-56 truncate text-xs" title={r.error}>
+            {r.error}
+          </p>
+        )}
+      </div>
+    ),
+  },
+  {
+    key: 'ranked',
+    header: 'Ranked of considered',
+    align: 'right',
+    cell: (r) => (
+      <span className="whitespace-nowrap">
+        {r.retrieved_count} <span className="text-muted-foreground">of {r.candidate_count}</span>
+      </span>
+    ),
+  },
+  {
+    key: 'by',
+    header: 'Started by',
+    cell: (r) => <span className="text-muted-foreground">{r.requested_by_email ?? '—'}</span>,
+  },
+  {
+    key: 'time',
+    header: 'Took',
+    align: 'right',
+    cell: (r) => <span className="whitespace-nowrap">{(r.latency_ms / 1000).toFixed(1)} s</span>,
+  },
+  {
+    key: 'cost',
+    header: 'AI cost',
+    align: 'right',
+    cell: (r) => (
+      <span className="whitespace-nowrap" title={`$${r.total_cost_usd.toFixed(4)}`}>
+        {cost(r.total_cost_usd)}
+      </span>
+    ),
+  },
+  {
+    key: 'finished',
+    header: 'Finished',
+    cell: (r) => (
+      <span className="text-muted-foreground whitespace-nowrap">
+        {r.finished_at ? dateTime(r.finished_at) : 'Not yet'}
+      </span>
+    ),
+  },
+]
+
 export function RunsTab() {
-  const [status, setStatus] = useState<RunStatus | ''>('')
-  const runs = useAllRuns(status)
+  const [f, set] = useUrlState(DEFAULTS)
+  const page = Math.max(1, Number(f.page) || 1)
+  const size = Number(f.size) || 25
+  const runs = useAllRuns(f.status as RunStatus | '', size, (page - 1) * size)
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by status">
-        {FILTERS.map((f) => (
-          <button
-            key={f.label}
-            type="button"
-            aria-pressed={status === f.value}
-            onClick={() => setStatus(f.value)}
-            className={cn(
-              'h-8 rounded-full border px-3 text-sm',
-              status === f.value ? 'bg-foreground text-background' : 'hover:bg-muted',
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground max-w-2xl text-sm">
+          Every time someone asked the system for people, newest first. “Ranked of considered” is
+          how many people passed the rules and were scored, out of everyone looked at. Open a run to
+          see its results.
+        </p>
+        <Segmented
+          label="Filter by status"
+          value={f.status}
+          onChange={(status) => set({ status })}
+          options={FILTERS}
+        />
       </div>
 
       {runs.isPending ? (
-        <Skeleton className="h-64 w-full rounded-2xl" />
+        <Skeleton className="h-96 w-full rounded-xl" />
       ) : runs.isError ? (
         <ErrorState error={runs.error} onRetry={() => void runs.refetch()} />
-      ) : runs.data.items.length === 0 ? (
-        <EmptyState title="No runs yet" />
       ) : (
-        <div className="bg-surface overflow-x-auto rounded-2xl border">
-          <table className="w-full min-w-[46rem] text-sm">
-            <thead className="text-muted-foreground border-b text-left text-xs">
-              <tr>
-                <th className="px-4 py-3 font-medium">Task</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 text-right font-medium">Ranked</th>
-                <th className="px-4 py-3 font-medium">Started by</th>
-                <th className="px-4 py-3 text-right font-medium">Time</th>
-                <th className="px-4 py-3 text-right font-medium">Cost</th>
-                <th className="px-4 py-3 font-medium">Finished</th>
-              </tr>
-            </thead>
-            <tbody>
-              {runs.data.items.map((r) => (
-                <tr key={r.id} className="hover:bg-muted/40 border-b last:border-0">
-                  <td className="px-4 py-2.5">
-                    <Link to={`/runs/${r.id}`} className="hover:underline">
-                      <span className="text-muted-foreground font-mono text-xs">{r.task_code}</span>{' '}
-                      <span className="font-medium">{r.task_title}</span>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <RunStatusBadge status={r.status} />
-                  </td>
-                  <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
-                    {r.retrieved_count} / {r.candidate_count}
-                  </td>
-                  <td className="text-muted-foreground px-4 py-2.5">
-                    {r.requested_by_email ?? '—'}
-                  </td>
-                  <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
-                    {(r.latency_ms / 1000).toFixed(1)} s
-                  </td>
-                  <td className="px-4 py-2.5 text-right whitespace-nowrap tabular-nums">
-                    ${r.total_cost_usd.toFixed(4)}
-                  </td>
-                  <td className="text-muted-foreground px-4 py-2.5 whitespace-nowrap">
-                    {r.finished_at ? dateTime(r.finished_at) : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="text-muted-foreground border-t px-4 py-2 text-xs">
-            Showing {runs.data.items.length} of {runs.data.total} runs, newest first.
-          </p>
-        </div>
+        <>
+          <DataTable
+            label="Matching runs"
+            rows={runs.data.items}
+            columns={columns}
+            rowKey={(r) => r.id}
+            rowHref={(r) => `/runs/${r.id}`}
+            empty={
+              f.status
+                ? {
+                    title: `No ${FILTERS.find((x) => x.value === f.status)?.label.toLowerCase()} runs`,
+                    body: 'Pick “All” to see every run.',
+                  }
+                : {
+                    title: 'No runs yet',
+                    body: 'Runs appear here once a manager runs matching on a task.',
+                  }
+            }
+          />
+          {runs.data.total > 0 && (
+            <Pagination
+              total={runs.data.total}
+              page={page}
+              pageSize={size}
+              noun="runs"
+              onPage={(p) => set({ page: String(p) })}
+              onPageSize={(n) => set({ size: String(n) })}
+            />
+          )}
+        </>
       )}
     </div>
   )

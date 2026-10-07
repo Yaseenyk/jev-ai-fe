@@ -1,21 +1,14 @@
 import type { RunStatus } from '@/api/types'
-import { Badge } from '@/components/ui/badge'
+import { StatusBadge, type Tone } from '@/components/StatusBadge'
 
-const LABEL: Record<RunStatus, string> = {
-  queued: 'Queued',
-  running: 'Running',
-  completed: 'Completed',
-  failed: 'Failed',
+const STATUS: Record<RunStatus, [Tone, string]> = {
+  queued: ['neutral', 'Queued'],
+  running: ['info', 'Running'],
+  completed: ['ready', 'Completed'],
+  failed: ['danger', 'Failed'],
 }
 
 export function RunStatusBadge({ status }: { status: RunStatus }) {
-  return (
-    <Badge
-      variant={
-        status === 'failed' ? 'destructive' : status === 'completed' ? 'secondary' : 'outline'
-      }
-    >
-      {LABEL[status]}
-    </Badge>
-  )
+  const [tone, label] = STATUS[status]
+  return <StatusBadge tone={tone}>{label}</StatusBadge>
 }

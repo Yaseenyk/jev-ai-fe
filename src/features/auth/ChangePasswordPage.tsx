@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, KeyRound, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, KeyRound, Loader2, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
@@ -54,20 +54,28 @@ export default function ChangePasswordPage() {
   })
 
   return (
-    <main className="grid min-h-svh place-items-center p-6">
+    <main className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 px-5 py-10">
+      <div className="flex items-center gap-2.5">
+        <span className="bg-primary text-primary-foreground grid size-9 place-items-center rounded-lg">
+          <Users className="size-[18px]" aria-hidden />
+        </span>
+        <span className="font-heading text-lg font-semibold">Resource Matching</span>
+      </div>
       <form
         onSubmit={(e) => void onSubmit(e)}
-        className="bg-surface w-full max-w-md space-y-5 rounded-2xl border p-6"
+        className="bg-surface w-full max-w-md space-y-5 rounded-xl border p-6 shadow-sm sm:p-8"
         noValidate
       >
-        <div className="space-y-1">
-          <h1 className="flex items-center gap-2 text-2xl font-semibold">
-            <KeyRound className="text-primary size-6" aria-hidden />
+        <div className="space-y-1.5">
+          <span className="bg-accent text-accent-foreground mb-3 grid size-10 place-items-center rounded-lg">
+            <KeyRound className="size-5" aria-hidden />
+          </span>
+          <h1 className="text-xl font-semibold">
             {forced ? 'Choose your own password' : 'Change your password'}
           </h1>
           <p className="text-muted-foreground text-sm">
             {forced
-              ? 'You signed in with a temporary password from an admin. Choose your own to continue.'
+              ? `Signed in as ${user?.email ?? ''} with a temporary password from an admin. Choose your own to continue.`
               : 'Other devices signed in with your account will be signed out.'}
           </p>
         </div>
@@ -78,9 +86,10 @@ export default function ChangePasswordPage() {
             id="current"
             type={show ? 'text' : 'password'}
             autoComplete="current-password"
+            aria-invalid={errors.current ? true : undefined}
             {...form.register('current')}
           />
-          {errors.current && <p className="text-destructive text-sm">{errors.current.message}</p>}
+          {errors.current && <p className="text-destructive text-xs">{errors.current.message}</p>}
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="next">New password</Label>
@@ -88,12 +97,15 @@ export default function ChangePasswordPage() {
             id="next"
             type={show ? 'text' : 'password'}
             autoComplete="new-password"
+            aria-invalid={errors.next ? true : undefined}
             {...form.register('next')}
           />
           {errors.next ? (
-            <p className="text-destructive text-sm">{errors.next.message}</p>
+            <p className="text-destructive text-xs">{errors.next.message}</p>
           ) : (
-            <p className="text-muted-foreground text-xs">At least {MIN} characters.</p>
+            <p className="text-muted-foreground text-xs">
+              At least {MIN} characters. A short sentence is easy to remember and hard to guess.
+            </p>
           )}
         </div>
         <div className="space-y-1.5">
@@ -102,14 +114,16 @@ export default function ChangePasswordPage() {
             id="repeat"
             type={show ? 'text' : 'password'}
             autoComplete="new-password"
+            aria-invalid={errors.repeat ? true : undefined}
             {...form.register('repeat')}
           />
-          {errors.repeat && <p className="text-destructive text-sm">{errors.repeat.message}</p>}
+          {errors.repeat && <p className="text-destructive text-xs">{errors.repeat.message}</p>}
         </div>
         <Button
           type="button"
           variant="ghost"
           size="sm"
+          className="-ml-2"
           aria-pressed={show}
           onClick={() => setShow((s) => !s)}
         >
@@ -122,13 +136,19 @@ export default function ChangePasswordPage() {
             <AlertDescription>{serverError}</AlertDescription>
           </Alert>
         )}
-        <div className="flex gap-2">
-          <Button type="submit" className="flex-1" disabled={form.formState.isSubmitting}>
+        <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
+          {forced ? (
+            <Button type="button" variant="outline" onClick={() => void logout()}>
+              Sign out
+            </Button>
+          ) : (
+            <Button type="button" variant="outline" onClick={() => void navigate('/')}>
+              Cancel
+            </Button>
+          )}
+          <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting && <Loader2 className="animate-spin" aria-hidden />}
             Save new password
-          </Button>
-          <Button type="button" variant="outline" onClick={() => void logout()}>
-            Sign out
           </Button>
         </div>
       </form>
