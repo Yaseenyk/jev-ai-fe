@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { RollOffsTab } from '@/features/planning/RollOffsTab'
+import { WhatIfTab } from '@/features/planning/WhatIfTab'
 import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
 import { useTasks } from '@/features/tasks/api'
 import { BAND_LABELS, chance, date, percent } from '@/lib/format'
@@ -39,8 +41,10 @@ export default function PlanningPage() {
       <Tabs value={f.tab} onValueChange={(tab) => set({ tab })}>
         <TabsList>
           <TabsTrigger value="bench">Bench</TabsTrigger>
+          <TabsTrigger value="rolloffs">Rolling off</TabsTrigger>
           <TabsTrigger value="skills">Skill gaps</TabsTrigger>
           <TabsTrigger value="staffing">Project staffing</TabsTrigger>
+          <TabsTrigger value="whatif">What-if</TabsTrigger>
         </TabsList>
         <TabsContent value="bench" className="mt-4">
           <BenchTab />
@@ -50,6 +54,12 @@ export default function PlanningPage() {
         </TabsContent>
         <TabsContent value="staffing" className="mt-4">
           <StaffingTab />
+        </TabsContent>
+        <TabsContent value="rolloffs" className="mt-4">
+          <RollOffsTab />
+        </TabsContent>
+        <TabsContent value="whatif" className="mt-4">
+          <WhatIfTab />
         </TabsContent>
       </Tabs>
     </div>

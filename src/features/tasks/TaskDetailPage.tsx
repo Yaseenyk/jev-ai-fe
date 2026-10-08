@@ -36,6 +36,7 @@ import { StartRunway } from '@/features/tasks/StartRunway'
 import { useCanEdit, useManagesPeople } from '@/features/auth/AuthProvider'
 import { CandidatesFromHr } from '@/features/hr/CandidatesFromHr'
 import { HireOrMoveCard } from '@/features/planning/HireOrMoveCard'
+import { OutcomesCard } from '@/features/planning/OutcomesCard'
 import { useResumeChecks, useSuggest } from '@/features/hr/api'
 import type { CandidateMatch, SentState } from '@/features/hr/types'
 import { ScoreBar } from '@/features/hr/ui'
@@ -274,6 +275,9 @@ function TaskDetail({ task }: { task: Task }) {
           </section>
 
           {!closed && (canEdit || managesPeople) && <HireOrMoveCard taskId={task.id} />}
+          {task.status === 'filled' && (canEdit || managesPeople) && (
+            <OutcomesCard taskId={task.id} canAnswer={canEdit} />
+          )}
           {managesPeople && canEdit && <ResumeChecks taskId={task.id} closed={closed} />}
         </div>
 

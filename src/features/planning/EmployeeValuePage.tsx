@@ -9,7 +9,9 @@ import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth, useManagesPeople } from '@/features/auth/AuthProvider'
 import { MarginBadge, usd } from '@/features/planning/PlanningPage'
+import { ActionList } from '@/features/planning/RollOffsTab'
 import { useEmployeeValue } from '@/features/planning/api'
+import { useEmployeeActions } from '@/features/planning/insightsApi'
 import { date, domainLabel, humanize, locationLabel, percent } from '@/lib/format'
 
 const OUTCOME: Record<string, { label: string; tone: Tone }> = {
@@ -26,6 +28,7 @@ export default function EmployeeValuePage() {
   const role = useAuth().user?.role
   const card = useEmployeeValue(employeeId)
   const managesPeople = useManagesPeople()
+  const actions = useEmployeeActions(employeeId)
   if (role === 'viewer') return <Navigate to="/tasks" replace />
   if (card.isPending) return <Skeleton className="h-[32rem] w-full rounded-xl" />
   if (card.isError) return <ErrorState error={card.error} />
@@ -36,6 +39,14 @@ export default function EmployeeValuePage() {
       <PageHeader
         back={{ to: '/planning', label: 'Bench' }}
         title={v.full_name}
+        actions={
+          <Link
+            to={`/planning/people/${v.employee_id}/profile`}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center rounded-md px-3 text-sm font-medium"
+          >
+            Client profile
+          </Link>
+        }
         description={`${v.designation} · ${v.level} · ${humanize(v.practice)} · ${locationLabel(v.location)} · ${v.years_experience} years`}
         status={
           <StatusBadge
@@ -131,6 +142,12 @@ export default function EmployeeValuePage() {
               </ul>
             )}
           </Panel>
+
+          {actions.data && actions.data.length > 0 && (
+            <Panel title="Planning actions">
+              <ActionList actions={actions.data} />
+            </Panel>
+          )}
 
           <Panel title="Now" icon={<CalendarClock className="size-4" aria-hidden />}>
             {v.current.length === 0 && v.upcoming_leave.length === 0 ? (

@@ -17,6 +17,7 @@ import TaskCandidatesPage from '@/features/hr/TaskCandidatesPage'
 import UploadResumePage from '@/features/hr/UploadResumePage'
 import LoginPage from '@/features/auth/LoginPage'
 import NewTaskChatPage from '@/features/newTask/NewTaskChatPage'
+import ClientProfilePage from '@/features/planning/ClientProfilePage'
 import EmployeeValuePage from '@/features/planning/EmployeeValuePage'
 import PlanningPage from '@/features/planning/PlanningPage'
 import RunPage from '@/features/runs/RunPage'
@@ -54,6 +55,7 @@ export const routes = [
       { path: 'runs/:runId', element: <RunPage /> },
       { path: 'planning', element: <PlanningPage /> },
       { path: 'planning/people/:employeeId', element: <EmployeeValuePage /> },
+      { path: 'planning/people/:employeeId/profile', element: <ClientProfilePage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'company', element: <CompanyPage /> },
       { path: 'clients', element: <Navigate to="/company?tab=clients" replace /> },

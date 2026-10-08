@@ -14,6 +14,11 @@ test('manager plans: bench, skill gaps, a team for two tasks, then hire or move 
   await expect(page.getByRole('region', { name: 'Best next tasks' })).toBeVisible()
   await page.getByRole('link', { name: 'Bench' }).click()
 
+  await page.getByRole('tab', { name: 'Rolling off' }).click()
+  await expect(page.getByText('Weekly cost at risk')).toBeVisible()
+  await page.getByRole('tab', { name: 'What-if' }).click()
+  await expect(page.getByRole('button', { name: /Can we staff it/ })).toBeVisible()
+
   await page.getByRole('tab', { name: 'Skill gaps' }).click()
   await page.getByRole('button', { name: /All skills/ }).click()
   await expect(
