@@ -130,3 +130,23 @@ test('tasks without a finished run can be matched from the plan in one click', a
   await user.click(screen.getByRole('button', { name: 'Run matching for it' }))
   expect(await screen.findByText(/Matching started for 1 of 1 tasks/)).toBeInTheDocument()
 })
+
+test('a manager opens a person from the bench and sees their value to the company', async () => {
+  const user = userEvent.setup()
+  renderRoute('/planning')
+  const table = await screen.findByRole('table', { name: 'Bench' })
+  const person = within(table).getAllByRole('link')[0] as HTMLElement
+  const name = person.textContent
+  await user.click(person)
+  expect(await screen.findByRole('heading', { name })).toBeInTheDocument()
+  expect(screen.getByText('Revenue billed (estimate)')).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Revenue by client' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Best next tasks' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Project history' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: /^Skills/ })).toBeInTheDocument()
+  expect(screen.getByText(/Salaries are never stored/)).toBeInTheDocument()
+  // Managers cannot open HR's employee page, so no link to it.
+  expect(screen.queryByRole('link', { name: 'Full profile' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('link', { name: 'Bench' }))
+  expect(await screen.findByRole('table', { name: 'Bench' })).toBeInTheDocument()
+})

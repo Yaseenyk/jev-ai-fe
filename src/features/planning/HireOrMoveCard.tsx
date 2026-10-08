@@ -58,7 +58,7 @@ function Body({ h }: { h: HireOrMove }) {
           {h.internal ? (
             <div className="mt-1 space-y-1">
               <Link
-                to={`/employees/${h.internal.employee_id}`}
+                to={`/planning/people/${h.internal.employee_id}`}
                 className="font-medium hover:underline"
               >
                 {h.internal.full_name}

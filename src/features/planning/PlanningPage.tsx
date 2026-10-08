@@ -82,7 +82,7 @@ function BenchTab() {
       header: 'Person',
       cell: (p) => (
         <div className="min-w-0">
-          <Link to={`/employees/${p.employee_id}`} className="font-medium hover:underline">
+          <Link to={`/planning/people/${p.employee_id}`} className="font-medium hover:underline">
             {p.full_name}
           </Link>
           <p className="text-muted-foreground text-xs">
@@ -255,7 +255,10 @@ function SkillGapsTab() {
           <ul className="space-y-0.5 text-xs">
             {g.closest.map((c) => (
               <li key={c.employee_id}>
-                <Link to={`/employees/${c.employee_id}`} className="font-medium hover:underline">
+                <Link
+                  to={`/planning/people/${c.employee_id}`}
+                  className="font-medium hover:underline"
+                >
                   {c.full_name}
                 </Link>{' '}
                 <span className="text-muted-foreground">{c.why}</span>
@@ -316,7 +319,7 @@ export function MarginBadge({ margin }: { margin: Margin }) {
 function PersonLine({ p }: { p: ProposedPerson }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Link to={`/employees/${p.employee_id}`} className="font-medium hover:underline">
+      <Link to={`/planning/people/${p.employee_id}`} className="font-medium hover:underline">
         {p.full_name}
       </Link>
       <span className="text-muted-foreground text-xs">

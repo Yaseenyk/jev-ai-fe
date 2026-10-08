@@ -3,6 +3,7 @@ import { HttpResponse, http } from 'msw'
 import type {
   BenchPerson,
   BenchReport,
+  EmployeeValue,
   CostBand,
   HireOrMove,
   Margin,
@@ -28,7 +29,24 @@ interface MockEmployee {
   cost_band: CostBand
   current_allocation_pct: number
   available_from: string
-  skills: { skill_id: string; proficiency: number }[]
+  skills: {
+    skill_id: string
+    skill_name: string
+    proficiency: number
+    years: number
+    last_used: string
+    certified: boolean
+  }[]
+  projects: {
+    project_name: string
+    domain: string
+    role_title: string
+    start_date: string
+    end_date: string
+    outcome: string
+  }[]
+  location: string
+  years_experience: number
 }
 
 const employees = (hrData as unknown as { employees: MockEmployee[] }).employees
@@ -164,6 +182,91 @@ export function createPlanningHandlers(db: Db) {
         total: rows.length,
         limit,
         offset,
+      }
+      return HttpResponse.json(body)
+    }),
+
+    http.get(api('/planning/people/:employeeId'), ({ params }) => {
+      const e = byId.get(String(params.employeeId))
+      if (!e) return problem(404, 'employee_not_found', 'Employee not found')
+      const m = margin(e.cost_band)
+      const lines = e.projects.map((p) => {
+        const end = p.end_date < TODAY ? p.end_date : TODAY
+        const weeks = Math.max(
+          0,
+          Math.round(((Date.parse(end) - Date.parse(p.start_date)) / 6.048e8) * 10) / 10,
+        )
+        const client = `CL-${p.domain.toUpperCase().slice(0, 6)}`
+        return {
+          project_code: p.project_name,
+          project_name: p.project_name,
+          client_code: client,
+          client_name: client,
+          domain: p.domain,
+          role_title: p.role_title,
+          start_date: p.start_date,
+          end_date: p.end_date,
+          weeks,
+          manager_rating: null,
+          outcome: p.outcome,
+          current: p.start_date <= TODAY && TODAY <= p.end_date,
+          estimated_revenue_usd: Math.round(weeks * m.weekly_bill_usd),
+        }
+      })
+      const clients = new Map<string, { n: number; weeks: number; usd: number }>()
+      for (const l of lines) {
+        const c = clients.get(l.client_code) ?? { n: 0, weeks: 0, usd: 0 }
+        clients.set(l.client_code, {
+          n: c.n + 1,
+          weeks: c.weeks + l.weeks,
+          usd: c.usd + l.estimated_revenue_usd,
+        })
+      }
+      const free = e.available_from <= TODAY ? 100 : 100 - e.current_allocation_pct
+      const onBench = bench(365).find((b) => b.employee_id === e.id)
+      const outcomes: Record<string, number> = {}
+      for (const l of lines) outcomes[l.outcome] = (outcomes[l.outcome] ?? 0) + 1
+      const body: EmployeeValue = {
+        employee_id: e.id,
+        employee_code: e.employee_code,
+        full_name: e.full_name,
+        designation: e.designation,
+        level: e.level,
+        cost_band: e.cost_band,
+        practice: e.practice,
+        location: e.location,
+        years_experience: e.years_experience,
+        current_allocation_pct: e.current_allocation_pct,
+        free_now_pct: free,
+        fully_free_from: e.available_from > TODAY ? e.available_from : TODAY,
+        margin: m,
+        estimated_revenue_usd: lines.reduce((s, l) => s + l.estimated_revenue_usd, 0),
+        billed_weeks: Math.round(lines.reduce((s, l) => s + l.weeks, 0) * 10) / 10,
+        average_rating: null,
+        outcomes,
+        clients: [...clients.entries()]
+          .map(([code, c]) => ({
+            client_code: code,
+            client_name: code,
+            projects: c.n,
+            weeks: Math.round(c.weeks * 10) / 10,
+            estimated_revenue_usd: c.usd,
+          }))
+          .sort((a, b) => b.estimated_revenue_usd - a.estimated_revenue_usd),
+        current: lines.filter((l) => l.current),
+        history: lines.filter((l) => !l.current),
+        upcoming_leave: [],
+        skills: [...e.skills]
+          .sort((a, b) => b.proficiency - a.proficiency || b.years - a.years)
+          .map((s) => ({
+            skill_id: s.skill_id,
+            name: s.skill_name,
+            proficiency: s.proficiency,
+            years: s.years,
+            last_used: s.last_used,
+            certified: s.certified,
+          })),
+        next_tasks: (onBench?.best_tasks ?? []).map((t) => ({ ...t, missing_must_haves: [] })),
       }
       return HttpResponse.json(body)
     }),

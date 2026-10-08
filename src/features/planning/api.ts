@@ -3,6 +3,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { ApiError, apiFetch } from '@/api/client'
 import type {
   BenchReport,
+  EmployeeValue,
   HireOrMove,
   RateCard,
   RateCardLine,
@@ -22,6 +23,13 @@ export function useBench(horizon: number, page: number, size: number) {
     queryKey: ['planning', 'bench', horizon, page, size],
     queryFn: () => apiFetch<BenchReport>(`/planning/bench?${params.toString()}`),
     placeholderData: keepPreviousData,
+  })
+}
+
+export function useEmployeeValue(employeeId: string) {
+  return useQuery({
+    queryKey: ['planning', 'people', employeeId],
+    queryFn: () => apiFetch<EmployeeValue>(`/planning/people/${employeeId}`),
   })
 }
 
