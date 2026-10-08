@@ -89,9 +89,10 @@ function Fairness() {
           <h2 className="text-sm font-semibold">Fairness check</h2>
           <p className="text-muted-foreground max-w-3xl text-sm">
             Among people who passed the rules, how often each group was recommended. A group below
-            {` ${percent(r.threshold)}`} of the best group&apos;s rate is flagged for a look (the
-            four-fifths rule). Gender, age, religion and other protected attributes are never
-            stored, so they cannot be scored or reported. {r.runs} matching runs in the period.
+            {` ${percent(r.threshold)}`} of the best group&apos;s rate (the four-fifths rule) is
+            flagged for a look when the gap is unlikely to be chance. Gender, age, religion and
+            other protected attributes are never stored, so they cannot be scored or reported.{' '}
+            {r.runs} matching runs in the period.
           </p>
         </div>
         <Segmented
