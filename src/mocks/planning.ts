@@ -16,6 +16,7 @@ import type {
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
 import hrData from '@/mocks/data/hr.json'
+import { unitFor } from '@/mocks/org'
 
 const api = (path: string) => `*/api/v1${path}`
 
@@ -142,6 +143,7 @@ export function createPlanningHandlers(db: Db) {
           designation: e.designation,
           level: e.level,
           cost_band: e.cost_band,
+          business_unit: unitFor(e.id),
           practice: e.practice,
           current_allocation_pct: e.current_allocation_pct,
           free_now_pct: free,
@@ -233,6 +235,7 @@ export function createPlanningHandlers(db: Db) {
         designation: e.designation,
         level: e.level,
         cost_band: e.cost_band,
+        business_unit: unitFor(e.id),
         practice: e.practice,
         location: e.location,
         years_experience: e.years_experience,

@@ -13,6 +13,7 @@ import { ActionList } from '@/features/planning/RollOffsTab'
 import { useEmployeeValue } from '@/features/planning/api'
 import { useEmployeeActions } from '@/features/planning/insightsApi'
 import { date, domainLabel, humanize, locationLabel, percent } from '@/lib/format'
+import { UnitBadge } from '@/features/org/UnitBadge'
 
 const OUTCOME: Record<string, { label: string; tone: Tone }> = {
   successful: { label: 'Completed well', tone: 'ready' },
@@ -60,6 +61,12 @@ export default function EmployeeValuePage() {
         meta={
           <span className="text-muted-foreground text-xs">
             {v.employee_code} · cost band {v.cost_band}
+            {v.business_unit && (
+              <>
+                {' · '}
+                <UnitBadge unit={v.business_unit} />
+              </>
+            )}
             {managesPeople && (
               <>
                 {' · '}

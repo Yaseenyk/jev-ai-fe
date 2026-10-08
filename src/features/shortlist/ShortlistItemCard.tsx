@@ -21,6 +21,7 @@ import {
   percent,
 } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { UnitBadge } from '@/features/org/UnitBadge'
 
 /** The few code-computed facts a manager scans first; the full list is in the details. */
 function keyFacts(item: ShortlistItem): [string, string][] {
@@ -90,6 +91,7 @@ export function ShortlistItemCard({
               </span>
               <span aria-hidden>·</span>
               <span className="font-mono">{e.employee_code}</span>
+              <UnitBadge unit={e.business_unit} />
             </p>
           </div>
           <dl className="hidden gap-5 text-xs md:flex" aria-label="Key facts">

@@ -528,6 +528,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/business-units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Units
+         * @description The company's units with their heads and how many employees each has.
+         */
+        get: operations["list_units_api_v1_business_units_get"];
+        put?: never;
+        /**
+         * Create Unit
+         * @description `{code, name, head_user_id?}`; the code is stored upper-case. 409 `unit_exists`,
+         *     422 `invalid_head`. Audited.
+         */
+        post: operations["create_unit_api_v1_business_units_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/business-units/heads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Head Options
+         * @description Active managers and admins who can head a unit.
+         */
+        get: operations["head_options_api_v1_business_units_heads_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/business-units/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Unit
+         * @description The unit the signed-in person heads (null if none): people from other units are shown
+         *     with their unit and whom to contact.
+         */
+        get: operations["my_unit_api_v1_business_units_mine_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/business-units/{unit_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Unit
+         * @description Rename or change the head (`head_user_id: null` removes it). Audited.
+         */
+        patch: operations["update_unit_api_v1_business_units__unit_id__patch"];
+        trace?: never;
+    };
     "/api/v1/candidates": {
         parameters: {
             query?: never;
@@ -2096,6 +2182,7 @@ export interface components {
         BenchPerson: {
             /** Best Tasks */
             best_tasks: components["schemas"]["TaskFit"][];
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             cost_band: components["schemas"]["CostBand"];
             /** Current Allocation Pct */
             current_allocation_pct: number;
@@ -2181,6 +2268,56 @@ export interface components {
             allow_images: boolean;
             /** File */
             file: string;
+        };
+        /** BusinessUnitCreate */
+        BusinessUnitCreate: {
+            /**
+             * Code
+             * @description e.g. BU001
+             */
+            code: string;
+            /** Head User Id */
+            head_user_id?: string | null;
+            /** Name */
+            name: string;
+        };
+        /** BusinessUnitRead */
+        BusinessUnitRead: {
+            /** Code */
+            code: string;
+            /** Employees */
+            employees: number;
+            /** Head Email */
+            head_email: string | null;
+            /** Head Name */
+            head_name: string | null;
+            /** Head User Id */
+            head_user_id: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * BusinessUnitRef
+         * @description Shown next to a person from another unit: whom to contact (ADR 026).
+         */
+        BusinessUnitRef: {
+            /** Code */
+            code: string;
+            /** Head Email */
+            head_email: string | null;
+            /** Head Name */
+            head_name: string | null;
+            /** Name */
+            name: string;
+        };
+        /** BusinessUnitUpdate */
+        BusinessUnitUpdate: {
+            /** Head User Id */
+            head_user_id?: string | null;
+            /** Name */
+            name?: string | null;
         };
         /** CandidateCreate */
         CandidateCreate: {
@@ -2459,6 +2596,7 @@ export interface components {
         };
         /** CloseCandidate */
         CloseCandidate: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             cost_band: components["schemas"]["CostBand"];
             /** Designation */
             designation: string;
@@ -2728,6 +2866,9 @@ export interface components {
              * Format: date
              */
             available_from: string;
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            /** Business Unit Id */
+            business_unit_id?: string | null;
             /** Client Clearances */
             client_clearances: string[];
             cost_band: components["schemas"]["CostBand"];
@@ -2811,6 +2952,7 @@ export interface components {
         };
         /** EmployeeRef */
         EmployeeRef: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             /** Designation */
             designation: string;
             /** Employee Code */
@@ -2919,6 +3061,8 @@ export interface components {
         EmployeeUpdate: {
             /** Available From */
             available_from?: string | null;
+            /** Business Unit Id */
+            business_unit_id?: string | null;
             /** Client Clearances */
             client_clearances?: string[] | null;
             cost_band?: components["schemas"]["CostBand"] | null;
@@ -2943,6 +3087,7 @@ export interface components {
             average_rating: number | null;
             /** Billed Weeks */
             billed_weeks: number;
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             /** Clients */
             clients: components["schemas"]["ClientRevenue"][];
             cost_band: components["schemas"]["CostBand"];
@@ -3197,7 +3342,7 @@ export interface components {
         };
         /**
          * FairnessReport
-         * @description Recommendation rates by group among people who passed the rules (four-fifths check).
+         * @description Recommendation rates by group among qualified people (four-fifths check, p < 0.05).
          *     Protected attributes are not stored, so they are not reported.
          */
         FairnessReport: {
@@ -3306,6 +3451,15 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HeadOption */
+        HeadOption: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string;
+            /** Id */
+            id: string;
         };
         /** HealthModel */
         HealthModel: {
@@ -3518,6 +3672,7 @@ export interface components {
              */
             available_from: string;
             band: components["schemas"]["Band"];
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             cost_band: components["schemas"]["CostBand"];
             /** Designation */
             designation: string;
@@ -3804,6 +3959,13 @@ export interface components {
             models: components["schemas"]["ModelRead"][];
             /** Pinned Dir */
             pinned_dir: string | null;
+        };
+        /**
+         * MyUnit
+         * @description The unit the signed-in person heads, if any.
+         */
+        MyUnit: {
+            unit: components["schemas"]["BusinessUnitRef"] | null;
         };
         /** NearMiss */
         NearMiss: {
@@ -4222,6 +4384,7 @@ export interface components {
         /** ProposedPerson */
         ProposedPerson: {
             band: components["schemas"]["Band"];
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             cost_band: components["schemas"]["CostBand"];
             /** Designation */
             designation: string;
@@ -4282,6 +4445,7 @@ export interface components {
         RollOff: {
             /** Actions */
             actions: components["schemas"]["PlanningActionRead"][];
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             cost_band: components["schemas"]["CostBand"];
             /** Current Allocation Pct */
             current_allocation_pct: number;
@@ -4938,6 +5102,7 @@ export interface components {
         };
         /** WhatIfPerson */
         WhatIfPerson: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
             cost_band: components["schemas"]["CostBand"];
             /** Designation */
             designation: string;
@@ -5876,6 +6041,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_units_api_v1_business_units_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessUnitRead"][];
+                };
+            };
+        };
+    };
+    create_unit_api_v1_business_units_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BusinessUnitCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessUnitRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    head_options_api_v1_business_units_heads_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HeadOption"][];
+                };
+            };
+        };
+    };
+    my_unit_api_v1_business_units_mine_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyUnit"];
+                };
+            };
+        };
+    };
+    update_unit_api_v1_business_units__unit_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                unit_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BusinessUnitUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessUnitRead"];
                 };
             };
             /** @description Validation Error */

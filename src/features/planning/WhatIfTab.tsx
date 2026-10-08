@@ -12,6 +12,7 @@ import { useSkills } from '@/features/newTask/api'
 import { MarginBadge, usd } from '@/features/planning/PlanningPage'
 import { useWhatIf } from '@/features/planning/insightsApi'
 import { percent } from '@/lib/format'
+import { UnitBadge } from '@/features/org/UnitBadge'
 
 const LEVELS: Level[] = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
 const BANDS: CostBand[] = ['A', 'B', 'C', 'D', 'E']
@@ -262,6 +263,7 @@ export function WhatIfTab() {
                         <span className="text-muted-foreground text-xs">
                           {p.level} · {percent(p.must_have_coverage)} of must-haves
                         </span>
+                        <UnitBadge unit={p.business_unit} />
                         <MarginBadge margin={p.margin} />
                       </li>
                     ))}

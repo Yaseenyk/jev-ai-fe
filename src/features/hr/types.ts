@@ -2,6 +2,7 @@
 // Hand-written; they match the backend's published schemas and can become generated aliases
 // in src/api/types.ts, like the other screens.
 import type { Band, Domain, Level } from '@/api/types'
+import type { BusinessUnitRef } from '@/api/types'
 
 export interface EmployeeSkill {
   skill_id: string
@@ -61,6 +62,8 @@ export interface EmployeeDetail extends EmployeeSummary {
     outcome: string
   }[]
   leaves: { id: string; start_date: string; end_date: string }[]
+  business_unit_id?: string | null
+  business_unit?: BusinessUnitRef | null
 }
 
 export type EmployeeUpdate = Partial<
@@ -75,6 +78,7 @@ export type EmployeeUpdate = Partial<
     | 'current_allocation_pct'
     | 'available_from'
     | 'client_clearances'
+    | 'business_unit_id'
   >
 >
 

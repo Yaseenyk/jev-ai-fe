@@ -27,6 +27,7 @@ import type {
 import type { Db } from '@/mocks/db'
 import { createHrHandlers } from '@/mocks/hr'
 import { createInsightHandlers } from '@/mocks/insights'
+import { createOrgHandlers } from '@/mocks/org'
 import { createPlanningHandlers } from '@/mocks/planning'
 
 const MOCK_USER_ID = 'demo-resource-manager'
@@ -222,6 +223,7 @@ export function createHandlers(db: Db, session?: Storage) {
     ...createHrHandlers(db, () => user),
     ...createPlanningHandlers(db),
     ...createInsightHandlers(db),
+    ...createOrgHandlers(() => user),
     http.post(api('/auth/login'), async ({ request }) => {
       const { email } = (await request.json()) as { email: string }
       signInAs(email)
