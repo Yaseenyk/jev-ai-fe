@@ -2,6 +2,9 @@ import type { Band, Level, RejectReason, UserRole } from '@/api/types'
 
 export const percent = (p: number): string => `${Math.round(p * 100)}%`
 
+/** A probability: never shown as a certain 100% or 0% (scores near certainty saturate). */
+export const chance = (p: number): string => (p >= 0.995 ? '>99%' : p <= 0.005 ? '<1%' : percent(p))
+
 export const date = (iso: string): string =>
   new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 

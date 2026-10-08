@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
 import { useTasks } from '@/features/tasks/api'
-import { BAND_LABELS, date, percent } from '@/lib/format'
+import { BAND_LABELS, chance, date, percent } from '@/lib/format'
 
 const HORIZONS = [
   { value: '30', label: '30 days' },
@@ -323,7 +323,7 @@ function PersonLine({ p }: { p: ProposedPerson }) {
         {p.employee_code} · {p.level} · band {p.cost_band}
       </span>
       <StatusBadge tone={p.band === 'shortlist' ? 'ready' : 'info'}>
-        {BAND_LABELS[p.band]} · {percent(p.score)}
+        {BAND_LABELS[p.band]} · {chance(p.score)}
       </StatusBadge>
       <MarginBadge margin={p.margin} />
     </div>

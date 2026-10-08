@@ -13,6 +13,7 @@ import { useCanEdit } from '@/features/auth/AuthProvider'
 import { RejectDialog } from '@/features/shortlist/RejectDialog'
 import {
   FLAG_LABELS,
+  chance,
   REJECT_REASON_LABELS,
   humanize,
   levelLabel,
@@ -103,7 +104,7 @@ export function ShortlistItemCard({
             <div className="flex items-center gap-2">
               <BandBadge band={item.band} />
               <span className="text-lg leading-none font-semibold tabular-nums">
-                {percent(item.rank_score)}
+                {chance(item.rank_score)}
               </span>
             </div>
             <span className="bg-muted block h-1 w-full overflow-hidden rounded-full" aria-hidden>

@@ -74,3 +74,10 @@ test('score decisions use short labels and an expected-value headline', () => {
   })
   expect(headline(skill, r)).toBeCloseTo(0.875)
 })
+
+test('a probability is never shown as certain', async () => {
+  const { chance } = await import('@/lib/format')
+  expect(chance(0.9999)).toBe('>99%')
+  expect(chance(0.001)).toBe('<1%')
+  expect(chance(0.734)).toBe('73%')
+})

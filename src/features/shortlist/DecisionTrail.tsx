@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import type { DecisionDefinition, ShortlistItem, Thresholds } from '@/api/types'
 import { DecisionBars } from '@/features/shortlist/DecisionBars'
 import { FactsList } from '@/features/shortlist/FactsList'
-import { FLAG_LABELS, humanize, percent } from '@/lib/format'
+import { FLAG_LABELS, chance, humanize, percent } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 const RULES = [
@@ -18,7 +18,7 @@ const RULES = [
 
 /** Why the result is what it is, in the order the system decided it. */
 export function bandReason(item: ShortlistItem, th: Thresholds | null | undefined): string {
-  const score = percent(item.rank_score)
+  const score = chance(item.rank_score)
   if (item.band === 'shortlist') {
     return th
       ? `Overall fit ${score} is at least ${percent(th.shortlist_min)}, with no warnings, so it is on the shortlist.`

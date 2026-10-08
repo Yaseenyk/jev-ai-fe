@@ -7,7 +7,7 @@ import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MarginBadge } from '@/features/planning/PlanningPage'
 import { useHireOrMove } from '@/features/planning/api'
-import { BAND_LABELS, date, percent } from '@/lib/format'
+import { BAND_LABELS, chance, date } from '@/lib/format'
 
 const NEITHER = { label: 'Nobody fits yet', tone: 'attention' as Tone }
 const ANSWER: Record<string, { label: string; tone: Tone }> = {
@@ -68,7 +68,7 @@ function Body({ h }: { h: HireOrMove }) {
               </p>
               <div className="flex flex-wrap gap-1">
                 <StatusBadge tone="ready">
-                  {BAND_LABELS[h.internal.band]} · {percent(h.internal.score)}
+                  {BAND_LABELS[h.internal.band]} · {chance(h.internal.score)}
                 </StatusBadge>
                 <MarginBadge margin={h.internal.margin} />
               </div>
@@ -92,7 +92,7 @@ function Body({ h }: { h: HireOrMove }) {
               </p>
               <div className="flex flex-wrap gap-1">
                 <StatusBadge tone="info">
-                  {BAND_LABELS[h.external.band]} · {percent(h.external.score)}
+                  {BAND_LABELS[h.external.band]} · {chance(h.external.score)}
                 </StatusBadge>
                 {h.external.margin && <MarginBadge margin={h.external.margin} />}
               </div>
