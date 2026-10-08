@@ -4,6 +4,7 @@ import type { ModelHealth } from '@/api/types'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
+import { OutcomeProofSection } from '@/features/admin/FairnessTab'
 import { useModelHealth } from '@/features/admin/api'
 import { date, percent, REJECT_REASON_LABELS } from '@/lib/format'
 
@@ -21,15 +22,19 @@ export function HealthTab() {
 
   if (h.overall.decisions === 0) {
     return (
-      <EmptyState title="No manager decisions yet">
-        Accept or reject people on a results page. This screen then shows how often the model
-        agreed, week by week.
-      </EmptyState>
+      <div className="space-y-6">
+        <EmptyState title="No manager decisions yet">
+          Accept or reject people on a results page. This screen then shows how often the model
+          agreed, week by week.
+        </EmptyState>
+        <OutcomeProofSection />
+      </div>
     )
   }
 
   return (
     <div className="space-y-6">
+      <OutcomeProofSection />
       <p className="text-muted-foreground max-w-3xl text-sm">
         How often managers agree with the model when they accept or reject a suggested person. It
         &quot;leans yes&quot; when its score is 50% or more. Rejections for availability, client

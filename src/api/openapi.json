@@ -618,7 +618,7 @@
             "title": "Phone"
           },
           "profile": {
-            "$ref": "#/components/schemas/CandidateProfile"
+            "$ref": "#/components/schemas/CandidateProfile-Input"
           },
           "source": {
             "maxLength": 60,
@@ -729,7 +729,7 @@
             "title": "Phone"
           },
           "profile": {
-            "$ref": "#/components/schemas/CandidateProfile"
+            "$ref": "#/components/schemas/CandidateProfile-Output"
           },
           "source": {
             "title": "Source",
@@ -918,7 +918,7 @@
         "title": "CandidateMatch",
         "type": "object"
       },
-      "CandidateProfile": {
+      "CandidateProfile-Input": {
         "properties": {
           "cost_band": {
             "anyOf": [
@@ -964,7 +964,98 @@
           },
           "skills": {
             "items": {
-              "$ref": "#/components/schemas/ProfileSkill"
+              "$ref": "#/components/schemas/ProfileSkill-Input"
+            },
+            "maxItems": 60,
+            "title": "Skills",
+            "type": "array"
+          },
+          "summary": {
+            "maxLength": 1000,
+            "title": "Summary",
+            "type": "string"
+          },
+          "unconfirmed": {
+            "default": [],
+            "items": {
+              "enum": [
+                "notice_days",
+                "location",
+                "level"
+              ],
+              "type": "string"
+            },
+            "title": "Unconfirmed",
+            "type": "array"
+          },
+          "years_experience": {
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "designation",
+          "level",
+          "years_experience",
+          "location",
+          "notice_days",
+          "domains",
+          "skills",
+          "education",
+          "summary"
+        ],
+        "title": "CandidateProfile",
+        "type": "object"
+      },
+      "CandidateProfile-Output": {
+        "properties": {
+          "cost_band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostBand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "designation": {
+            "maxLength": 120,
+            "title": "Designation",
+            "type": "string"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/Domain"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "education": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Education",
+            "type": "array"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "notice_days": {
+            "maximum": 180.0,
+            "minimum": 0.0,
+            "title": "Notice Days",
+            "type": "integer"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/app__schemas__candidates__ProfileSkill"
             },
             "maxItems": 60,
             "title": "Skills",
@@ -1116,7 +1207,7 @@
           "profile": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/CandidateProfile"
+                "$ref": "#/components/schemas/CandidateProfile-Input"
               },
               {
                 "type": "null"
@@ -1183,6 +1274,61 @@
           "name"
         ],
         "title": "ClientCreate",
+        "type": "object"
+      },
+      "ClientProfile": {
+        "description": "What a client may see about a proposed person: no cost, rating, revenue, availability\nterms or other clients' names (ADR 025).",
+        "properties": {
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "experience": {
+            "items": {
+              "$ref": "#/components/schemas/ProfileExperience"
+            },
+            "title": "Experience",
+            "type": "array"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level_title": {
+            "title": "Level Title",
+            "type": "string"
+          },
+          "location": {
+            "title": "Location",
+            "type": "string"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/app__schemas__insights__ProfileSkill"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "years_experience": {
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "full_name",
+          "designation",
+          "level_title",
+          "years_experience",
+          "location",
+          "summary",
+          "skills",
+          "experience"
+        ],
+        "title": "ClientProfile",
         "type": "object"
       },
       "ClientRead": {
@@ -3317,7 +3463,7 @@
             "type": "array"
           },
           "profile": {
-            "$ref": "#/components/schemas/CandidateProfile"
+            "$ref": "#/components/schemas/CandidateProfile-Output"
           },
           "removed": {
             "items": {
@@ -3344,6 +3490,167 @@
           "model"
         ],
         "title": "ExtractionRead",
+        "type": "object"
+      },
+      "Factor": {
+        "properties": {
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "share": {
+            "title": "Share",
+            "type": "number"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "feature",
+          "label",
+          "weight",
+          "share",
+          "direction"
+        ],
+        "title": "Factor",
+        "type": "object"
+      },
+      "FairnessAttribute": {
+        "properties": {
+          "attribute": {
+            "title": "Attribute",
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/FairnessGroup"
+            },
+            "title": "Groups",
+            "type": "array"
+          }
+        },
+        "required": [
+          "attribute",
+          "groups"
+        ],
+        "title": "FairnessAttribute",
+        "type": "object"
+      },
+      "FairnessGroup": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "integer"
+          },
+          "considered": {
+            "title": "Considered",
+            "type": "integer"
+          },
+          "flagged": {
+            "title": "Flagged",
+            "type": "boolean"
+          },
+          "passed_rules": {
+            "title": "Passed Rules",
+            "type": "integer"
+          },
+          "ratio_to_best": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ratio To Best"
+          },
+          "recommend_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommend Rate"
+          },
+          "recommended": {
+            "title": "Recommended",
+            "type": "integer"
+          },
+          "top_rule_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Top Rule Reasons",
+            "type": "object"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "considered",
+          "passed_rules",
+          "recommended",
+          "accepted",
+          "recommend_rate",
+          "ratio_to_best",
+          "flagged",
+          "top_rule_reasons"
+        ],
+        "title": "FairnessGroup",
+        "type": "object"
+      },
+      "FairnessReport": {
+        "description": "Recommendation rates by group among people who passed the rules (four-fifths check).\nProtected attributes are not stored, so they are not reported.",
+        "properties": {
+          "attributes": {
+            "items": {
+              "$ref": "#/components/schemas/FairnessAttribute"
+            },
+            "title": "Attributes",
+            "type": "array"
+          },
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "min_group": {
+            "title": "Min Group",
+            "type": "integer"
+          },
+          "runs": {
+            "title": "Runs",
+            "type": "integer"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "number"
+          }
+        },
+        "required": [
+          "days",
+          "runs",
+          "min_group",
+          "threshold",
+          "attributes"
+        ],
+        "title": "FairnessReport",
         "type": "object"
       },
       "FeedbackAction": {
@@ -4379,6 +4686,48 @@
         "title": "InterpretResponse",
         "type": "object"
       },
+      "Judgement": {
+        "description": "What the final scorer has learned to value from managers' decisions.",
+        "properties": {
+          "company_own": {
+            "title": "Company Own",
+            "type": "boolean"
+          },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/Factor"
+            },
+            "title": "Factors",
+            "type": "array"
+          },
+          "reject_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Reject Reasons",
+            "type": "object"
+          },
+          "trained_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trained On"
+          }
+        },
+        "required": [
+          "trained_on",
+          "company_own",
+          "factors",
+          "reject_reasons"
+        ],
+        "title": "Judgement",
+        "type": "object"
+      },
       "LearningSummary": {
         "properties": {
           "accepted": {
@@ -4992,6 +5341,44 @@
         "title": "ModelsRead",
         "type": "object"
       },
+      "NearMiss": {
+        "properties": {
+          "has_level": {
+            "title": "Has Level",
+            "type": "integer"
+          },
+          "needs_level": {
+            "title": "Needs Level",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_code",
+          "skill_id",
+          "skill_name",
+          "has_level",
+          "needs_level"
+        ],
+        "title": "NearMiss",
+        "type": "object"
+      },
       "NewApiKey": {
         "description": "The key itself is shown once and never stored.",
         "properties": {
@@ -5065,7 +5452,8 @@
           "request_reviewed",
           "candidate_fit",
           "model_ready",
-          "feedback_report"
+          "feedback_report",
+          "outcome_check"
         ],
         "title": "NotificationKind",
         "type": "string"
@@ -5131,6 +5519,59 @@
         "title": "OptionRead",
         "type": "object"
       },
+      "OutcomeAnswer": {
+        "properties": {
+          "note": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Note",
+            "type": "string"
+          },
+          "result": {
+            "$ref": "#/components/schemas/OutcomeResult"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "OutcomeAnswer",
+        "type": "object"
+      },
+      "OutcomeGroup": {
+        "properties": {
+          "answered": {
+            "title": "Answered",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "working_well": {
+            "title": "Working Well",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "label",
+          "answered",
+          "working_well",
+          "rate"
+        ],
+        "title": "OutcomeGroup",
+        "type": "object"
+      },
       "OutcomeIn": {
         "properties": {
           "correct": {
@@ -5144,6 +5585,154 @@
         ],
         "title": "OutcomeIn",
         "type": "object"
+      },
+      "OutcomeProof": {
+        "description": "Did the people we ranked highly work out? From managers' answers weeks after the start.",
+        "properties": {
+          "answered": {
+            "title": "Answered",
+            "type": "integer"
+          },
+          "by_band": {
+            "items": {
+              "$ref": "#/components/schemas/OutcomeGroup"
+            },
+            "title": "By Band",
+            "type": "array"
+          },
+          "by_rank": {
+            "items": {
+              "$ref": "#/components/schemas/OutcomeGroup"
+            },
+            "title": "By Rank",
+            "type": "array"
+          },
+          "min_answers": {
+            "title": "Min Answers",
+            "type": "integer"
+          },
+          "overall": {
+            "$ref": "#/components/schemas/OutcomeGroup"
+          },
+          "waiting": {
+            "title": "Waiting",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "answered",
+          "waiting",
+          "min_answers",
+          "overall",
+          "by_rank",
+          "by_band"
+        ],
+        "title": "OutcomeProof",
+        "type": "object"
+      },
+      "OutcomeRead": {
+        "properties": {
+          "answered_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answered At"
+          },
+          "band": {
+            "$ref": "#/components/schemas/Band"
+          },
+          "due_on": {
+            "format": "date",
+            "title": "Due On",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "integer"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OutcomeResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "task_code",
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "rank",
+          "band",
+          "score",
+          "due_on",
+          "result",
+          "note",
+          "answered_at"
+        ],
+        "title": "OutcomeRead",
+        "type": "object"
+      },
+      "OutcomeResult": {
+        "description": "How a placement is going, asked of the manager weeks after the start (ADR 025).",
+        "enum": [
+          "working_well",
+          "struggling",
+          "released_early"
+        ],
+        "title": "OutcomeResult",
+        "type": "string"
       },
       "Page_AdminRunRead_": {
         "properties": {
@@ -5477,6 +6066,215 @@
         "title": "PasswordChange",
         "type": "object"
       },
+      "PlanningActionCreate": {
+        "properties": {
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PlanningActionKind"
+          },
+          "note": {
+            "default": "",
+            "maxLength": 500,
+            "title": "Note",
+            "type": "string"
+          },
+          "skill_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill Id"
+          },
+          "target_level": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Level"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "required": [
+          "kind",
+          "employee_id"
+        ],
+        "title": "PlanningActionCreate",
+        "type": "object"
+      },
+      "PlanningActionKind": {
+        "enum": [
+          "hold",
+          "upskill"
+        ],
+        "title": "PlanningActionKind",
+        "type": "string"
+      },
+      "PlanningActionRead": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "due_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due On"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PlanningActionKind"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "skill_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill Id"
+          },
+          "skill_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill Name"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PlanningActionStatus"
+          },
+          "target_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Level"
+          },
+          "task_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Code"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "employee_id",
+          "task_id",
+          "task_code",
+          "skill_id",
+          "skill_name",
+          "target_level",
+          "due_on",
+          "note",
+          "status",
+          "created_at"
+        ],
+        "title": "PlanningActionRead",
+        "type": "object"
+      },
+      "PlanningActionStatus": {
+        "enum": [
+          "open",
+          "done",
+          "cancelled"
+        ],
+        "title": "PlanningActionStatus",
+        "type": "string"
+      },
+      "PlanningActionUpdate": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PlanningActionStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "PlanningActionUpdate",
+        "type": "object"
+      },
       "Practice": {
         "enum": [
           "data_analytics",
@@ -5489,7 +6287,38 @@
         "title": "Practice",
         "type": "string"
       },
-      "ProfileSkill": {
+      "ProfileExperience": {
+        "properties": {
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "months": {
+            "title": "Months",
+            "type": "integer"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "role_title",
+          "domain",
+          "months",
+          "skills"
+        ],
+        "title": "ProfileExperience",
+        "type": "object"
+      },
+      "ProfileSkill-Input": {
         "properties": {
           "last_used": {
             "format": "date",
@@ -5803,6 +6632,145 @@
           "uploaded_at"
         ],
         "title": "ResumeBacking",
+        "type": "object"
+      },
+      "RollOff": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningActionRead"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "current_allocation_pct": {
+            "title": "Current Allocation Pct",
+            "type": "integer"
+          },
+          "current_client": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Client"
+          },
+          "current_project": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Project"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "near_miss": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NearMiss"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "next_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskFit"
+            },
+            "title": "Next Tasks",
+            "type": "array"
+          },
+          "rolls_off_on": {
+            "format": "date",
+            "title": "Rolls Off On",
+            "type": "string"
+          },
+          "weekly_cost_usd": {
+            "title": "Weekly Cost Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "rolls_off_on",
+          "current_project",
+          "current_client",
+          "current_allocation_pct",
+          "weekly_cost_usd",
+          "next_tasks",
+          "near_miss",
+          "actions"
+        ],
+        "title": "RollOff",
+        "type": "object"
+      },
+      "RollOffReport": {
+        "properties": {
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RollOff"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "weekly_cost_at_risk_usd": {
+            "title": "Weekly Cost At Risk Usd",
+            "type": "integer"
+          },
+          "with_next_task": {
+            "title": "With Next Task",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "days",
+          "people",
+          "weekly_cost_at_risk_usd",
+          "with_next_task",
+          "items"
+        ],
+        "title": "RollOffReport",
         "type": "object"
       },
       "RunStatus": {
@@ -6356,7 +7324,7 @@
             "type": "integer"
           },
           "profile": {
-            "$ref": "#/components/schemas/CandidateProfile"
+            "$ref": "#/components/schemas/CandidateProfile-Output"
           },
           "years_experience": {
             "title": "Years Experience",
@@ -7579,6 +8547,236 @@
         "title": "VerdictIn",
         "type": "object"
       },
+      "WhatIfIn": {
+        "properties": {
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/WhatIfRole"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Roles",
+            "type": "array"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "weeks": {
+            "default": 12,
+            "maximum": 104.0,
+            "minimum": 1.0,
+            "title": "Weeks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "start_date",
+          "roles"
+        ],
+        "title": "WhatIfIn",
+        "type": "object"
+      },
+      "WhatIfPerson": {
+        "properties": {
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "free_from": {
+            "format": "date",
+            "title": "Free From",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/Margin"
+          },
+          "must_have_coverage": {
+            "title": "Must Have Coverage",
+            "type": "number"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "must_have_coverage",
+          "free_from",
+          "margin"
+        ],
+        "title": "WhatIfPerson",
+        "type": "object"
+      },
+      "WhatIfResult": {
+        "description": "A quick estimate by the rules (skills, level, band, capacity), no model and no task\ncreated. Run matching on real tasks for the ranked shortlist.",
+        "properties": {
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/WhatIfRoleResult"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "staffed": {
+            "title": "Staffed",
+            "type": "integer"
+          },
+          "wanted": {
+            "title": "Wanted",
+            "type": "integer"
+          },
+          "weekly_margin_usd": {
+            "title": "Weekly Margin Usd",
+            "type": "integer"
+          },
+          "weekly_revenue_usd": {
+            "title": "Weekly Revenue Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "roles",
+          "staffed",
+          "wanted",
+          "weekly_revenue_usd",
+          "weekly_margin_usd"
+        ],
+        "title": "WhatIfResult",
+        "type": "object"
+      },
+      "WhatIfRole": {
+        "properties": {
+          "allocation_pct": {
+            "default": 100,
+            "maximum": 100.0,
+            "minimum": 10.0,
+            "title": "Allocation Pct",
+            "type": "integer"
+          },
+          "max_cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "people": {
+            "default": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "People",
+            "type": "integer"
+          },
+          "required_level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/WhatIfSkill"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Skills",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "required_level",
+          "max_cost_band",
+          "skills"
+        ],
+        "title": "WhatIfRole",
+        "type": "object"
+      },
+      "WhatIfRoleResult": {
+        "properties": {
+          "missing_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Skills",
+            "type": "array"
+          },
+          "proposed": {
+            "items": {
+              "$ref": "#/components/schemas/WhatIfPerson"
+            },
+            "title": "Proposed",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "to_hire": {
+            "title": "To Hire",
+            "type": "integer"
+          },
+          "wanted": {
+            "title": "Wanted",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "title",
+          "wanted",
+          "proposed",
+          "to_hire",
+          "missing_skills"
+        ],
+        "title": "WhatIfRoleResult",
+        "type": "object"
+      },
+      "WhatIfSkill": {
+        "properties": {
+          "min_proficiency": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Min Proficiency",
+            "type": "integer"
+          },
+          "must_have": {
+            "default": true,
+            "title": "Must Have",
+            "type": "boolean"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id",
+          "min_proficiency"
+        ],
+        "title": "WhatIfSkill",
+        "type": "object"
+      },
       "WorkMode": {
         "enum": [
           "onsite",
@@ -7587,6 +8785,68 @@
         ],
         "title": "WorkMode",
         "type": "string"
+      },
+      "app__schemas__candidates__ProfileSkill": {
+        "properties": {
+          "last_used": {
+            "format": "date",
+            "title": "Last Used",
+            "type": "string"
+          },
+          "proficiency": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "years": {
+            "maximum": 50.0,
+            "minimum": 0.0,
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "skill_id",
+          "skill_name",
+          "proficiency",
+          "years",
+          "last_used"
+        ],
+        "title": "ProfileSkill",
+        "type": "object"
+      },
+      "app__schemas__insights__ProfileSkill": {
+        "properties": {
+          "last_used": {
+            "format": "date",
+            "title": "Last Used",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "years": {
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "years",
+          "last_used"
+        ],
+        "title": "ProfileSkill",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -7965,6 +9225,57 @@
         ]
       }
     },
+    "/api/v1/admin/fairness": {
+      "get": {
+        "description": "Recommendation rates by location, practice and level among people who passed the rules;\na group under four-fifths of the best group is flagged for a look.",
+        "operationId": "fairness_api_v1_admin_fairness_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 90,
+              "maximum": 365,
+              "minimum": 7,
+              "title": "Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FairnessReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Fairness",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
     "/api/v1/admin/feedback-reports": {
       "get": {
         "description": "The weekly reports, newest first.",
@@ -8142,6 +9453,33 @@
         ]
       }
     },
+    "/api/v1/admin/judgement": {
+      "get": {
+        "description": "What the final scorer has learned to value from managers' decisions, in plain factors.",
+        "operationId": "judgement_api_v1_admin_judgement_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Judgement"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Judgement",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
     "/api/v1/admin/learning": {
       "get": {
         "description": "How much manager feedback there is, and how much of it can train the model.",
@@ -8303,6 +9641,33 @@
         "summary": "Activate",
         "tags": [
           "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/outcomes": {
+      "get": {
+        "description": "Did the people the model ranked highly work out? Rates from 10 answers per group.",
+        "operationId": "outcome_proof_api_v1_admin_outcomes_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeProof"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Outcome Proof",
+        "tags": [
+          "insights"
         ]
       }
     },
@@ -11769,6 +13134,170 @@
         ]
       }
     },
+    "/api/v1/outcomes/{outcome_id}": {
+      "put": {
+        "description": "`working_well` / `struggling` / `released_early`. Audited `outcome.answered`.",
+        "operationId": "answer_outcome_api_v1_outcomes__outcome_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "outcome_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Outcome Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutcomeAnswer"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutcomeRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Answer Outcome",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/planning/actions": {
+      "post": {
+        "description": "`hold` (needs `task_id`) or `upskill` (needs `skill_id`). Recorded only: nothing is\nassigned. 422 `task_required` / `skill_required`, 404 `employee_not_found`.",
+        "operationId": "create_action_api_v1_planning_actions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningActionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningActionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Action",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/planning/actions/{action_id}": {
+      "patch": {
+        "operationId": "update_action_api_v1_planning_actions__action_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "action_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Action Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningActionUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningActionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Action",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
     "/api/v1/planning/bench": {
       "get": {
         "description": "People free now or within the horizon, what idle capacity costs per week (rate card),\nand up to 3 open tasks each could take next (half the must-haves or more, level within one\nstep, cost band allowed, capacity when the task starts).",
@@ -11892,6 +13421,158 @@
         ]
       }
     },
+    "/api/v1/planning/people/{employee_id}/actions": {
+      "get": {
+        "operationId": "employee_actions_api_v1_planning_people__employee_id__actions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanningActionRead"
+                  },
+                  "title": "Response Employee Actions Api V1 Planning People  Employee Id  Actions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Employee Actions",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/planning/people/{employee_id}/client-profile": {
+      "get": {
+        "description": "What may be sent to a client: no cost, rate, rating, revenue or other clients' names.",
+        "operationId": "client_profile_api_v1_planning_people__employee_id__client_profile_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClientProfile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Client Profile",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
+    "/api/v1/planning/roll-offs": {
+      "get": {
+        "description": "People whose current work ends within `days`: the open tasks they could move to, the one\nskill between them and the closest task when none fits, and their open planning actions.",
+        "operationId": "roll_offs_api_v1_planning_roll_offs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 45,
+              "maximum": 120,
+              "minimum": 7,
+              "title": "Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RollOffReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Roll Offs",
+        "tags": [
+          "insights"
+        ]
+      }
+    },
     "/api/v1/planning/skill-gaps": {
       "get": {
         "description": "Must-have skills that open tasks starting within the horizon need more often than there\nare free people with them, and who is closest to filling each (one level short, or a\nrelated skill): training before hiring.",
@@ -11987,6 +13668,53 @@
         "summary": "Staffing",
         "tags": [
           "planning"
+        ]
+      }
+    },
+    "/api/v1/planning/what-if": {
+      "post": {
+        "description": "Could these roles be staffed from inside? Rules only; no task is created.",
+        "operationId": "what_if_api_v1_planning_what_if_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WhatIfIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WhatIfResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "What If",
+        "tags": [
+          "insights"
         ]
       }
     },
@@ -12773,6 +14501,59 @@
         "summary": "Start Run",
         "tags": [
           "match-runs"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/outcomes": {
+      "get": {
+        "description": "How each person accepted for this filled task is doing (asked 6 weeks after the start;\ncan be answered any time).",
+        "operationId": "task_outcomes_api_v1_tasks__task_id__outcomes_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OutcomeRead"
+                  },
+                  "title": "Response Task Outcomes Api V1 Tasks  Task Id  Outcomes Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Task Outcomes",
+        "tags": [
+          "insights"
         ]
       }
     },

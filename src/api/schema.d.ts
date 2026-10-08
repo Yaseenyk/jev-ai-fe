@@ -122,6 +122,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/fairness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Fairness
+         * @description Recommendation rates by location, practice and level among people who passed the rules;
+         *     a group under four-fifths of the best group is flagged for a look.
+         */
+        get: operations["fairness_api_v1_admin_fairness_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/feedback-reports": {
         parameters: {
             query?: never;
@@ -179,6 +200,26 @@ export interface paths {
          * @description How often managers agree with the model: overall, by band, week by week and per model.
          */
         get: operations["model_health_api_v1_admin_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/judgement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Judgement
+         * @description What the final scorer has learned to value from managers' decisions, in plain factors.
+         */
+        get: operations["judgement_api_v1_admin_judgement_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -282,6 +323,26 @@ export interface paths {
          *     active one, unless `force`. The worker switches to it before its next run.
          */
         post: operations["activate_api_v1_admin_models__name__activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/outcomes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Outcome Proof
+         * @description Did the people the model ranked highly work out? Rates from 10 answers per group.
+         */
+        get: operations["outcome_proof_api_v1_admin_outcomes_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1378,6 +1439,64 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/outcomes/{outcome_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Answer Outcome
+         * @description `working_well` / `struggling` / `released_early`. Audited `outcome.answered`.
+         */
+        put: operations["answer_outcome_api_v1_outcomes__outcome_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Action
+         * @description `hold` (needs `task_id`) or `upskill` (needs `skill_id`). Recorded only: nothing is
+         *     assigned. 422 `task_required` / `skill_required`, 404 `employee_not_found`.
+         */
+        post: operations["create_action_api_v1_planning_actions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/actions/{action_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Action */
+        patch: operations["update_action_api_v1_planning_actions__action_id__patch"];
+        trace?: never;
+    };
     "/api/v1/planning/bench": {
         parameters: {
             query?: never;
@@ -1414,6 +1533,64 @@ export interface paths {
          *     No salary, ever (docs/08 §2).
          */
         get: operations["employee_value_api_v1_planning_people__employee_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/people/{employee_id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Employee Actions */
+        get: operations["employee_actions_api_v1_planning_people__employee_id__actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/people/{employee_id}/client-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Client Profile
+         * @description What may be sent to a client: no cost, rate, rating, revenue or other clients' names.
+         */
+        get: operations["client_profile_api_v1_planning_people__employee_id__client_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/roll-offs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Roll Offs
+         * @description People whose current work ends within `days`: the open tasks they could move to, the one
+         *     skill between them and the closest task when none fits, and their open planning actions.
+         */
+        get: operations["roll_offs_api_v1_planning_roll_offs_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1459,6 +1636,26 @@ export interface paths {
          *     for more than their capacity. A proposal only: nothing is assigned.
          */
         post: operations["staffing_api_v1_planning_staffing_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/what-if": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * What If
+         * @description Could these roles be staffed from inside? Rules only; no task is created.
+         */
+        post: operations["what_if_api_v1_planning_what_if_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1651,6 +1848,27 @@ export interface paths {
          * @description Queue a match run; poll GET /match-runs/{run_id} until it completes.
          */
         post: operations["start_run_api_v1_tasks__task_id__match_runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}/outcomes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Task Outcomes
+         * @description How each person accepted for this filled task is doing (asked 6 weeks after the start;
+         *     can be answered any time).
+         */
+        get: operations["task_outcomes_api_v1_tasks__task_id__outcomes_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1976,7 +2194,7 @@ export interface components {
             full_name: string;
             /** Phone */
             phone?: string | null;
-            profile: components["schemas"]["CandidateProfile"];
+            profile: components["schemas"]["CandidateProfile-Input"];
             /** Source */
             source: string;
             /** Task Id */
@@ -2008,7 +2226,7 @@ export interface components {
             location: components["schemas"]["Location"];
             /** Phone */
             phone: string | null;
-            profile: components["schemas"]["CandidateProfile"];
+            profile: components["schemas"]["CandidateProfile-Output"];
             /** Source */
             source: string;
             status: components["schemas"]["CandidateStatus"];
@@ -2071,7 +2289,7 @@ export interface components {
             sent?: ("waiting" | "fit" | "not_fit") | null;
         };
         /** CandidateProfile */
-        CandidateProfile: {
+        "CandidateProfile-Input": {
             cost_band?: components["schemas"]["CostBand"] | null;
             /** Designation */
             designation: string;
@@ -2084,7 +2302,32 @@ export interface components {
             /** Notice Days */
             notice_days: number;
             /** Skills */
-            skills: components["schemas"]["ProfileSkill"][];
+            skills: components["schemas"]["ProfileSkill-Input"][];
+            /** Summary */
+            summary: string;
+            /**
+             * Unconfirmed
+             * @default []
+             */
+            unconfirmed: ("notice_days" | "location" | "level")[];
+            /** Years Experience */
+            years_experience: number;
+        };
+        /** CandidateProfile */
+        "CandidateProfile-Output": {
+            cost_band?: components["schemas"]["CostBand"] | null;
+            /** Designation */
+            designation: string;
+            /** Domains */
+            domains: components["schemas"]["Domain"][];
+            /** Education */
+            education: string[];
+            level: components["schemas"]["Level"];
+            location: components["schemas"]["Location"];
+            /** Notice Days */
+            notice_days: number;
+            /** Skills */
+            skills: components["schemas"]["app__schemas__candidates__ProfileSkill"][];
             /** Summary */
             summary: string;
             /**
@@ -2134,7 +2377,7 @@ export interface components {
              * @default
              */
             note: string;
-            profile?: components["schemas"]["CandidateProfile"] | null;
+            profile?: components["schemas"]["CandidateProfile-Input"] | null;
             status?: components["schemas"]["CandidateStatus"] | null;
         };
         /** ClientCreate */
@@ -2151,6 +2394,29 @@ export interface components {
             notes: string;
             /** Timezone */
             timezone?: string | null;
+        };
+        /**
+         * ClientProfile
+         * @description What a client may see about a proposed person: no cost, rating, revenue, availability
+         *     terms or other clients' names (ADR 025).
+         */
+        ClientProfile: {
+            /** Designation */
+            designation: string;
+            /** Experience */
+            experience: components["schemas"]["ProfileExperience"][];
+            /** Full Name */
+            full_name: string;
+            /** Level Title */
+            level_title: string;
+            /** Location */
+            location: string;
+            /** Skills */
+            skills: components["schemas"]["app__schemas__insights__ProfileSkill"][];
+            /** Summary */
+            summary: string;
+            /** Years Experience */
+            years_experience: number;
         };
         /** ClientRead */
         ClientRead: {
@@ -2880,11 +3146,71 @@ export interface components {
             model: string;
             /** Notes */
             notes: string[];
-            profile: components["schemas"]["CandidateProfile"];
+            profile: components["schemas"]["CandidateProfile-Output"];
             /** Removed */
             removed: string[];
             /** Unmatched Skills */
             unmatched_skills: string[];
+        };
+        /** Factor */
+        Factor: {
+            /** Direction */
+            direction: string;
+            /** Feature */
+            feature: string;
+            /** Label */
+            label: string;
+            /** Share */
+            share: number;
+            /** Weight */
+            weight: number;
+        };
+        /** FairnessAttribute */
+        FairnessAttribute: {
+            /** Attribute */
+            attribute: string;
+            /** Groups */
+            groups: components["schemas"]["FairnessGroup"][];
+        };
+        /** FairnessGroup */
+        FairnessGroup: {
+            /** Accepted */
+            accepted: number;
+            /** Considered */
+            considered: number;
+            /** Flagged */
+            flagged: boolean;
+            /** Passed Rules */
+            passed_rules: number;
+            /** Ratio To Best */
+            ratio_to_best: number | null;
+            /** Recommend Rate */
+            recommend_rate: number | null;
+            /** Recommended */
+            recommended: number;
+            /** Top Rule Reasons */
+            top_rule_reasons: {
+                [key: string]: number;
+            };
+            /** Value */
+            value: string;
+        };
+        /**
+         * FairnessReport
+         * @description Recommendation rates by group among people who passed the rules (four-fifths check).
+         *     Protected attributes are not stored, so they are not reported.
+         */
+        FairnessReport: {
+            /** Attributes */
+            attributes: components["schemas"]["FairnessAttribute"][];
+            /** Days */
+            days: number;
+            /** Min Group */
+            min_group: number;
+            /** Runs */
+            runs: number;
+            /** Threshold */
+            threshold: number;
         };
         /**
          * FeedbackAction
@@ -3248,6 +3574,22 @@ export interface components {
             unmatched_skills: string[];
             work_mode: components["schemas"]["WorkMode"] | null;
         };
+        /**
+         * Judgement
+         * @description What the final scorer has learned to value from managers' decisions.
+         */
+        Judgement: {
+            /** Company Own */
+            company_own: boolean;
+            /** Factors */
+            factors: components["schemas"]["Factor"][];
+            /** Reject Reasons */
+            reject_reasons: {
+                [key: string]: number;
+            };
+            /** Trained On */
+            trained_on: string | null;
+        };
         /** LearningSummary */
         LearningSummary: {
             /** Accepted */
@@ -3463,6 +3805,21 @@ export interface components {
             /** Pinned Dir */
             pinned_dir: string | null;
         };
+        /** NearMiss */
+        NearMiss: {
+            /** Has Level */
+            has_level: number;
+            /** Needs Level */
+            needs_level: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Skill Name */
+            skill_name: string;
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+        };
         /**
          * NewApiKey
          * @description The key itself is shown once and never stored.
@@ -3497,7 +3854,7 @@ export interface components {
          * NotificationKind
          * @enum {string}
          */
-        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit" | "model_ready" | "feedback_report";
+        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit" | "model_ready" | "feedback_report" | "outcome_check";
         /** NotificationRead */
         NotificationRead: {
             /** Body */
@@ -3524,11 +3881,84 @@ export interface components {
             /** Value */
             value: string;
         };
+        /** OutcomeAnswer */
+        OutcomeAnswer: {
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            result: components["schemas"]["OutcomeResult"];
+        };
+        /** OutcomeGroup */
+        OutcomeGroup: {
+            /** Answered */
+            answered: number;
+            /** Label */
+            label: string;
+            /** Rate */
+            rate: number | null;
+            /** Working Well */
+            working_well: number;
+        };
         /** OutcomeIn */
         OutcomeIn: {
             /** Correct */
             correct: string;
         };
+        /**
+         * OutcomeProof
+         * @description Did the people we ranked highly work out? From managers' answers weeks after the start.
+         */
+        OutcomeProof: {
+            /** Answered */
+            answered: number;
+            /** By Band */
+            by_band: components["schemas"]["OutcomeGroup"][];
+            /** By Rank */
+            by_rank: components["schemas"]["OutcomeGroup"][];
+            /** Min Answers */
+            min_answers: number;
+            overall: components["schemas"]["OutcomeGroup"];
+            /** Waiting */
+            waiting: number;
+        };
+        /** OutcomeRead */
+        OutcomeRead: {
+            /** Answered At */
+            answered_at: string | null;
+            band: components["schemas"]["Band"];
+            /**
+             * Due On
+             * Format: date
+             */
+            due_on: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            /** Id */
+            id: string;
+            /** Note */
+            note: string | null;
+            /** Rank */
+            rank: number;
+            result: components["schemas"]["OutcomeResult"] | null;
+            /** Score */
+            score: number;
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+        };
+        /**
+         * OutcomeResult
+         * @description How a placement is going, asked of the manager weeks after the start (ADR 025).
+         * @enum {string}
+         */
+        OutcomeResult: "working_well" | "struggling" | "released_early";
         /** Page[AdminRunRead] */
         Page_AdminRunRead_: {
             /** Items */
@@ -3646,13 +4076,85 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** PlanningActionCreate */
+        PlanningActionCreate: {
+            /** Due On */
+            due_on?: string | null;
+            /** Employee Id */
+            employee_id: string;
+            kind: components["schemas"]["PlanningActionKind"];
+            /**
+             * Note
+             * @default
+             */
+            note: string;
+            /** Skill Id */
+            skill_id?: string | null;
+            /** Target Level */
+            target_level?: number | null;
+            /** Task Id */
+            task_id?: string | null;
+        };
+        /**
+         * PlanningActionKind
+         * @enum {string}
+         */
+        PlanningActionKind: "hold" | "upskill";
+        /** PlanningActionRead */
+        PlanningActionRead: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Due On */
+            due_on: string | null;
+            /** Employee Id */
+            employee_id: string;
+            /** Id */
+            id: string;
+            kind: components["schemas"]["PlanningActionKind"];
+            /** Note */
+            note: string;
+            /** Skill Id */
+            skill_id: string | null;
+            /** Skill Name */
+            skill_name: string | null;
+            status: components["schemas"]["PlanningActionStatus"];
+            /** Target Level */
+            target_level: number | null;
+            /** Task Code */
+            task_code: string | null;
+            /** Task Id */
+            task_id: string | null;
+        };
+        /**
+         * PlanningActionStatus
+         * @enum {string}
+         */
+        PlanningActionStatus: "open" | "done" | "cancelled";
+        /** PlanningActionUpdate */
+        PlanningActionUpdate: {
+            status: components["schemas"]["PlanningActionStatus"];
+        };
         /**
          * Practice
          * @enum {string}
          */
         Practice: "data_analytics" | "cloud" | "app_dev" | "ai_ml" | "qa" | "devops";
+        /** ProfileExperience */
+        ProfileExperience: {
+            /** Domain */
+            domain: string;
+            /** Months */
+            months: number;
+            /** Role Title */
+            role_title: string;
+            /** Skills */
+            skills: string[];
+        };
         /** ProfileSkill */
-        ProfileSkill: {
+        "ProfileSkill-Input": {
             /**
              * Last Used
              * Format: date
@@ -3775,6 +4277,50 @@ export interface components {
              * Format: date-time
              */
             uploaded_at: string;
+        };
+        /** RollOff */
+        RollOff: {
+            /** Actions */
+            actions: components["schemas"]["PlanningActionRead"][];
+            cost_band: components["schemas"]["CostBand"];
+            /** Current Allocation Pct */
+            current_allocation_pct: number;
+            /** Current Client */
+            current_client: string | null;
+            /** Current Project */
+            current_project: string | null;
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            near_miss: components["schemas"]["NearMiss"] | null;
+            /** Next Tasks */
+            next_tasks: components["schemas"]["TaskFit"][];
+            /**
+             * Rolls Off On
+             * Format: date
+             */
+            rolls_off_on: string;
+            /** Weekly Cost Usd */
+            weekly_cost_usd: number;
+        };
+        /** RollOffReport */
+        RollOffReport: {
+            /** Days */
+            days: number;
+            /** Items */
+            items: components["schemas"]["RollOff"][];
+            /** People */
+            people: number;
+            /** Weekly Cost At Risk Usd */
+            weekly_cost_at_risk_usd: number;
+            /** With Next Task */
+            with_next_task: number;
         };
         /**
          * RunStatus
@@ -3960,7 +4506,7 @@ export interface components {
             location: components["schemas"]["Location"];
             /** Notice Days */
             notice_days: number;
-            profile: components["schemas"]["CandidateProfile"];
+            profile: components["schemas"]["CandidateProfile-Output"];
             /** Years Experience */
             years_experience: number;
         };
@@ -4375,11 +4921,136 @@ export interface components {
             note: string;
             verdict: components["schemas"]["Verdict"];
         };
+        /** WhatIfIn */
+        WhatIfIn: {
+            /** Roles */
+            roles: components["schemas"]["WhatIfRole"][];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Weeks
+             * @default 12
+             */
+            weeks: number;
+        };
+        /** WhatIfPerson */
+        WhatIfPerson: {
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /**
+             * Free From
+             * Format: date
+             */
+            free_from: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            margin: components["schemas"]["Margin"];
+            /** Must Have Coverage */
+            must_have_coverage: number;
+        };
+        /**
+         * WhatIfResult
+         * @description A quick estimate by the rules (skills, level, band, capacity), no model and no task
+         *     created. Run matching on real tasks for the ranked shortlist.
+         */
+        WhatIfResult: {
+            /** Roles */
+            roles: components["schemas"]["WhatIfRoleResult"][];
+            /** Staffed */
+            staffed: number;
+            /** Wanted */
+            wanted: number;
+            /** Weekly Margin Usd */
+            weekly_margin_usd: number;
+            /** Weekly Revenue Usd */
+            weekly_revenue_usd: number;
+        };
+        /** WhatIfRole */
+        WhatIfRole: {
+            /**
+             * Allocation Pct
+             * @default 100
+             */
+            allocation_pct: number;
+            max_cost_band: components["schemas"]["CostBand"];
+            /**
+             * People
+             * @default 1
+             */
+            people: number;
+            required_level: components["schemas"]["Level"];
+            /** Skills */
+            skills: components["schemas"]["WhatIfSkill"][];
+            /** Title */
+            title: string;
+        };
+        /** WhatIfRoleResult */
+        WhatIfRoleResult: {
+            /** Missing Skills */
+            missing_skills: string[];
+            /** Proposed */
+            proposed: components["schemas"]["WhatIfPerson"][];
+            /** Title */
+            title: string;
+            /** To Hire */
+            to_hire: number;
+            /** Wanted */
+            wanted: number;
+        };
+        /** WhatIfSkill */
+        WhatIfSkill: {
+            /** Min Proficiency */
+            min_proficiency: number;
+            /**
+             * Must Have
+             * @default true
+             */
+            must_have: boolean;
+            /** Skill Id */
+            skill_id: string;
+        };
         /**
          * WorkMode
          * @enum {string}
          */
         WorkMode: "onsite" | "hybrid" | "remote";
+        /** ProfileSkill */
+        app__schemas__candidates__ProfileSkill: {
+            /**
+             * Last Used
+             * Format: date
+             */
+            last_used: string;
+            /** Proficiency */
+            proficiency: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Skill Name */
+            skill_name: string;
+            /** Years */
+            years: number;
+        };
+        /** ProfileSkill */
+        app__schemas__insights__ProfileSkill: {
+            /**
+             * Last Used
+             * Format: date
+             */
+            last_used: string;
+            /** Name */
+            name: string;
+            /** Years */
+            years: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -4618,6 +5289,37 @@ export interface operations {
             };
         };
     };
+    fairness_api_v1_admin_fairness_get: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FairnessReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_reports_api_v1_admin_feedback_reports_get: {
         parameters: {
             query?: never;
@@ -4721,6 +5423,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    judgement_api_v1_admin_judgement_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Judgement"];
                 };
             };
         };
@@ -4836,6 +5558,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    outcome_proof_api_v1_admin_outcomes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutcomeProof"];
                 };
             };
         };
@@ -6925,6 +7667,109 @@ export interface operations {
             };
         };
     };
+    answer_outcome_api_v1_outcomes__outcome_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                outcome_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OutcomeAnswer"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutcomeRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_action_api_v1_planning_actions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningActionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningActionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_action_api_v1_planning_actions__action_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                action_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningActionUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningActionRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     bench_api_v1_planning_bench_get: {
         parameters: {
             query?: {
@@ -6989,6 +7834,99 @@ export interface operations {
             };
         };
     };
+    employee_actions_api_v1_planning_people__employee_id__actions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningActionRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    client_profile_api_v1_planning_people__employee_id__client_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientProfile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    roll_offs_api_v1_planning_roll_offs_get: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RollOffReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     skill_gaps_api_v1_planning_skill_gaps_get: {
         parameters: {
             query?: {
@@ -7040,6 +7978,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StaffingPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    what_if_api_v1_planning_what_if_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WhatIfIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhatIfResult"];
                 };
             };
             /** @description Validation Error */
@@ -7459,6 +8430,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MatchRunCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    task_outcomes_api_v1_tasks__task_id__outcomes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OutcomeRead"][];
                 };
             };
             /** @description Validation Error */

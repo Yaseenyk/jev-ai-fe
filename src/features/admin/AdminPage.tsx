@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AuditTab } from '@/features/admin/AuditTab'
 import { CompaniesTab } from '@/features/admin/CompaniesTab'
 import { EvalTab } from '@/features/admin/EvalTab'
+import { FairnessTab } from '@/features/admin/FairnessTab'
 import { useCompanies } from '@/features/admin/api'
 import { HealthTab } from '@/features/admin/HealthTab'
 import { DecisionApiTab } from '@/features/admin/DecisionApiTab'
@@ -21,6 +22,7 @@ const TABS = [
   { value: 'thresholds', label: 'Thresholds', body: <ThresholdsTab /> },
   { value: 'eval', label: 'Test reports', body: <EvalTab /> },
   { value: 'health', label: 'Health', body: <HealthTab /> },
+  { value: 'fairness', label: 'Fairness', body: <FairnessTab /> },
   { value: 'learning', label: 'Learning', body: <LearningTab /> },
   { value: 'models', label: 'Models', body: <ModelsTab /> },
   { value: 'users', label: 'Users', body: <UsersTab /> },
