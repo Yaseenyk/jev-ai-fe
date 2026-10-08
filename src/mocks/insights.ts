@@ -156,7 +156,6 @@ export function createInsightHandlers(db: Db) {
             ],
           },
           { attribute: 'practice', groups: [] },
-          { attribute: 'level', groups: [] },
         ],
       }
       return HttpResponse.json(body)

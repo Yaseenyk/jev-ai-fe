@@ -18,7 +18,6 @@ const REJECT_LABELS: Partial<Record<string, string>> = REJECT_REASON_LABELS sati
 const ATTRIBUTE_LABELS: Record<string, string> = {
   location: 'By location',
   practice: 'By practice',
-  level: 'By level',
 }
 
 /** Is it fair, and what has it learned? (ADR 025) */
@@ -88,7 +87,8 @@ function Fairness() {
         <div>
           <h2 className="text-sm font-semibold">Fairness check</h2>
           <p className="text-muted-foreground max-w-3xl text-sm">
-            Among people who passed the rules, how often each group was recommended. A group below
+            Among qualified people (passed the rules and have half the must-have skills), how often
+            each group was recommended. A group below
             {` ${percent(r.threshold)}`} of the best group&apos;s rate (the four-fifths rule) is
             flagged for a look when the gap is unlikely to be chance. Gender, age, religion and
             other protected attributes are never stored, so they cannot be scored or reported.{' '}
@@ -118,7 +118,7 @@ function Fairness() {
               <thead className="text-muted-foreground border-b text-left text-xs">
                 <tr>
                   <th className="px-4 py-2 font-medium">Group</th>
-                  <th className="px-4 py-2 text-right font-medium">Passed the rules</th>
+                  <th className="px-4 py-2 text-right font-medium">Qualified</th>
                   <th className="px-4 py-2 text-right font-medium">Recommended</th>
                   <th className="px-4 py-2 text-right font-medium">Rate</th>
                   <th className="px-4 py-2 font-medium">Vs best</th>
