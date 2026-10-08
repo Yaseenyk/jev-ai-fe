@@ -1400,6 +1400,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/planning/people/{employee_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Employee Value
+         * @description A person's value card: estimated revenue billed (rate card bill rate x project weeks),
+         *     by client; ratings and outcomes; current work and leave; skills; the best open tasks next.
+         *     No salary, ever (docs/08 §2).
+         */
+        get: operations["employee_value_api_v1_planning_people__employee_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/planning/skill-gaps": {
         parameters: {
             query?: never;
@@ -2144,6 +2166,19 @@ export interface components {
             /** Timezone */
             timezone: string | null;
         };
+        /** ClientRevenue */
+        ClientRevenue: {
+            /** Client Code */
+            client_code: string;
+            /** Client Name */
+            client_name: string;
+            /** Estimated Revenue Usd */
+            estimated_revenue_usd: number;
+            /** Projects */
+            projects: number;
+            /** Weeks */
+            weeks: number;
+        };
         /** ClientUpdate */
         ClientUpdate: {
             domain?: components["schemas"]["Domain"] | null;
@@ -2630,6 +2665,64 @@ export interface components {
             /** Timezone */
             timezone?: string | null;
             work_mode_preference?: components["schemas"]["WorkMode"] | null;
+        };
+        /**
+         * EmployeeValue
+         * @description What a person is worth to the company (ADR 024): revenue billed (estimated at the rate
+         *     card's bill rate for their band), clients, skills, what they do now and could do next.
+         *     Never a salary (docs/08 §2).
+         */
+        EmployeeValue: {
+            /** Average Rating */
+            average_rating: number | null;
+            /** Billed Weeks */
+            billed_weeks: number;
+            /** Clients */
+            clients: components["schemas"]["ClientRevenue"][];
+            cost_band: components["schemas"]["CostBand"];
+            /** Current */
+            current: components["schemas"]["ProjectLine"][];
+            /** Current Allocation Pct */
+            current_allocation_pct: number;
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Estimated Revenue Usd */
+            estimated_revenue_usd: number;
+            /** Free Now Pct */
+            free_now_pct: number;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Fully Free From
+             * Format: date
+             */
+            fully_free_from: string;
+            /** History */
+            history: components["schemas"]["ProjectLine"][];
+            level: components["schemas"]["Level"];
+            /** Location */
+            location: string;
+            margin: components["schemas"]["Margin"];
+            /** Next Tasks */
+            next_tasks: components["schemas"]["NextTask"][];
+            /** Outcomes */
+            outcomes: {
+                [key: string]: number;
+            };
+            practice: components["schemas"]["Practice"];
+            /** Skills */
+            skills: components["schemas"]["SkillLine"][];
+            /** Upcoming Leave */
+            upcoming_leave: [
+                string,
+                string
+            ][];
+            /** Years Experience */
+            years_experience: number;
         };
         /** EvalReportRead */
         EvalReportRead: {
@@ -3382,6 +3475,24 @@ export interface components {
             /** Prefix */
             prefix: string;
         };
+        /** NextTask */
+        NextTask: {
+            /** Missing Must Haves */
+            missing_must_haves: string[];
+            /** Must Have Coverage */
+            must_have_coverage: number;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Task Code */
+            task_code: string;
+            /** Task Id */
+            task_id: string;
+            /** Title */
+            title: string;
+        };
         /**
          * NotificationKind
          * @enum {string}
@@ -3556,6 +3667,41 @@ export interface components {
             /** Years */
             years: number;
         };
+        /** ProjectLine */
+        ProjectLine: {
+            /** Client Code */
+            client_code: string;
+            /** Client Name */
+            client_name: string;
+            /** Current */
+            current: boolean;
+            /** Domain */
+            domain: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Estimated Revenue Usd */
+            estimated_revenue_usd: number;
+            /** Manager Rating */
+            manager_rating: number | null;
+            /** Outcome */
+            outcome: string;
+            /** Project Code */
+            project_code: string;
+            /** Project Name */
+            project_name: string;
+            /** Role Title */
+            role_title: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Weeks */
+            weeks: number;
+        };
         /**
          * ProjectOption
          * @description A company project HR can attach to an employee's history.
@@ -3693,6 +3839,24 @@ export interface components {
             horizon_days: number;
             /** Open Tasks */
             open_tasks: number;
+        };
+        /** SkillLine */
+        SkillLine: {
+            /** Certified */
+            certified: boolean;
+            /**
+             * Last Used
+             * Format: date
+             */
+            last_used: string;
+            /** Name */
+            name: string;
+            /** Proficiency */
+            proficiency: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Years */
+            years: number;
         };
         /** SkillRead */
         SkillRead: {
@@ -6781,6 +6945,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BenchReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    employee_value_api_v1_planning_people__employee_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmployeeValue"];
                 };
             };
             /** @description Validation Error */

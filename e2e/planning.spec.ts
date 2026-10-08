@@ -9,6 +9,11 @@ test('manager plans: bench, skill gaps, a team for two tasks, then hire or move 
   await expect(page.getByText('Idle cost per week')).toBeVisible()
   await expect(page.getByRole('table', { name: 'Bench' }).getByRole('row').nth(1)).toBeVisible()
 
+  await page.getByRole('table', { name: 'Bench' }).getByRole('link').first().click()
+  await expect(page.getByText('Revenue billed (estimate)')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Best next tasks' })).toBeVisible()
+  await page.getByRole('link', { name: 'Bench' }).click()
+
   await page.getByRole('tab', { name: 'Skill gaps' }).click()
   await page.getByRole('button', { name: /All skills/ }).click()
   await expect(

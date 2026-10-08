@@ -1236,6 +1236,39 @@
         "title": "ClientRead",
         "type": "object"
       },
+      "ClientRevenue": {
+        "properties": {
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "client_name": {
+            "title": "Client Name",
+            "type": "string"
+          },
+          "estimated_revenue_usd": {
+            "title": "Estimated Revenue Usd",
+            "type": "integer"
+          },
+          "projects": {
+            "title": "Projects",
+            "type": "integer"
+          },
+          "weeks": {
+            "title": "Weeks",
+            "type": "number"
+          }
+        },
+        "required": [
+          "client_code",
+          "client_name",
+          "projects",
+          "weeks",
+          "estimated_revenue_usd"
+        ],
+        "title": "ClientRevenue",
+        "type": "object"
+      },
       "ClientUpdate": {
         "properties": {
           "domain": {
@@ -2630,6 +2663,167 @@
           }
         },
         "title": "EmployeeUpdate",
+        "type": "object"
+      },
+      "EmployeeValue": {
+        "description": "What a person is worth to the company (ADR 024): revenue billed (estimated at the rate\ncard's bill rate for their band), clients, skills, what they do now and could do next.\nNever a salary (docs/08 \u00a72).",
+        "properties": {
+          "average_rating": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Rating"
+          },
+          "billed_weeks": {
+            "title": "Billed Weeks",
+            "type": "number"
+          },
+          "clients": {
+            "items": {
+              "$ref": "#/components/schemas/ClientRevenue"
+            },
+            "title": "Clients",
+            "type": "array"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "current": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectLine"
+            },
+            "title": "Current",
+            "type": "array"
+          },
+          "current_allocation_pct": {
+            "title": "Current Allocation Pct",
+            "type": "integer"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "estimated_revenue_usd": {
+            "title": "Estimated Revenue Usd",
+            "type": "integer"
+          },
+          "free_now_pct": {
+            "title": "Free Now Pct",
+            "type": "integer"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "fully_free_from": {
+            "format": "date",
+            "title": "Fully Free From",
+            "type": "string"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectLine"
+            },
+            "title": "History",
+            "type": "array"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "title": "Location",
+            "type": "string"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/Margin"
+          },
+          "next_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/NextTask"
+            },
+            "title": "Next Tasks",
+            "type": "array"
+          },
+          "outcomes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Outcomes",
+            "type": "object"
+          },
+          "practice": {
+            "$ref": "#/components/schemas/Practice"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillLine"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "upcoming_leave": {
+            "items": {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "format": "date",
+                  "type": "string"
+                }
+              ],
+              "type": "array"
+            },
+            "title": "Upcoming Leave",
+            "type": "array"
+          },
+          "years_experience": {
+            "title": "Years Experience",
+            "type": "number"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "practice",
+          "location",
+          "years_experience",
+          "current_allocation_pct",
+          "free_now_pct",
+          "fully_free_from",
+          "margin",
+          "estimated_revenue_usd",
+          "billed_weeks",
+          "average_rating",
+          "outcomes",
+          "clients",
+          "current",
+          "history",
+          "upcoming_leave",
+          "skills",
+          "next_tasks"
+        ],
+        "title": "EmployeeValue",
         "type": "object"
       },
       "EvalReportRead": {
@@ -4822,6 +5016,48 @@
         "title": "NewApiKey",
         "type": "object"
       },
+      "NextTask": {
+        "properties": {
+          "missing_must_haves": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing Must Haves",
+            "type": "array"
+          },
+          "must_have_coverage": {
+            "title": "Must Have Coverage",
+            "type": "number"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "task_code": {
+            "title": "Task Code",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_code",
+          "title",
+          "start_date",
+          "must_have_coverage",
+          "missing_must_haves"
+        ],
+        "title": "NextTask",
+        "type": "object"
+      },
       "NotificationKind": {
         "enum": [
           "request_new",
@@ -5291,6 +5527,88 @@
         "title": "ProfileSkill",
         "type": "object"
       },
+      "ProjectLine": {
+        "properties": {
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "client_name": {
+            "title": "Client Name",
+            "type": "string"
+          },
+          "current": {
+            "title": "Current",
+            "type": "boolean"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "estimated_revenue_usd": {
+            "title": "Estimated Revenue Usd",
+            "type": "integer"
+          },
+          "manager_rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Rating"
+          },
+          "outcome": {
+            "title": "Outcome",
+            "type": "string"
+          },
+          "project_code": {
+            "title": "Project Code",
+            "type": "string"
+          },
+          "project_name": {
+            "title": "Project Name",
+            "type": "string"
+          },
+          "role_title": {
+            "title": "Role Title",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "weeks": {
+            "title": "Weeks",
+            "type": "number"
+          }
+        },
+        "required": [
+          "project_code",
+          "project_name",
+          "client_code",
+          "client_name",
+          "domain",
+          "role_title",
+          "start_date",
+          "end_date",
+          "weeks",
+          "manager_rating",
+          "outcome",
+          "current",
+          "estimated_revenue_usd"
+        ],
+        "title": "ProjectLine",
+        "type": "object"
+      },
       "ProjectOption": {
         "description": "A company project HR can attach to an employee's history.",
         "properties": {
@@ -5702,6 +6020,45 @@
           "gaps"
         ],
         "title": "SkillGapReport",
+        "type": "object"
+      },
+      "SkillLine": {
+        "properties": {
+          "certified": {
+            "title": "Certified",
+            "type": "boolean"
+          },
+          "last_used": {
+            "format": "date",
+            "title": "Last Used",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "proficiency": {
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "years": {
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name",
+          "proficiency",
+          "years",
+          "last_used",
+          "certified"
+        ],
+        "title": "SkillLine",
         "type": "object"
       },
       "SkillRead": {
@@ -11481,6 +11838,55 @@
           }
         ],
         "summary": "Bench",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/v1/planning/people/{employee_id}": {
+      "get": {
+        "description": "A person's value card: estimated revenue billed (rate card bill rate x project weeks),\nby client; ratings and outcomes; current work and leave; skills; the best open tasks next.\nNo salary, ever (docs/08 \u00a72).",
+        "operationId": "employee_value_api_v1_planning_people__employee_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeValue"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Employee Value",
         "tags": [
           "planning"
         ]
