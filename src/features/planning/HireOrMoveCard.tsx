@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { MarginBadge } from '@/features/planning/PlanningPage'
 import { useHireOrMove } from '@/features/planning/api'
 import { BAND_LABELS, chance, date } from '@/lib/format'
+import { UnitBadge } from '@/features/org/UnitBadge'
 
 const NEITHER = { label: 'Nobody fits yet', tone: 'attention' as Tone }
 const ANSWER: Record<string, { label: string; tone: Tone }> = {
@@ -66,6 +67,7 @@ function Body({ h }: { h: HireOrMove }) {
               <p className="text-muted-foreground text-xs">
                 {h.internal.employee_code} · free from {date(h.internal.available_from)}
               </p>
+              <UnitBadge unit={h.internal.business_unit} />
               <div className="flex flex-wrap gap-1">
                 <StatusBadge tone="ready">
                   {BAND_LABELS[h.internal.band]} · {chance(h.internal.score)}

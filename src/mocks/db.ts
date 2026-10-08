@@ -9,6 +9,7 @@ import type {
   TaskCreate,
 } from '@/api/types'
 import demo from '@/mocks/data/demo.json'
+import { unitFor } from '@/mocks/org'
 
 interface RecordedRun {
   run: MatchRun
@@ -61,7 +62,12 @@ export function createDb(now: () => number = Date.now) {
     if (!state) return undefined
     return state.recorded.shortlist.map((item) => {
       const id = itemId(runId, item.employee.id)
-      return { ...item, id, feedback: feedback.get(id) ?? null }
+      return {
+        ...item,
+        id,
+        employee: { ...item.employee, business_unit: unitFor(item.employee.id) },
+        feedback: feedback.get(id) ?? null,
+      }
     })
   }
 

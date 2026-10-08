@@ -70,6 +70,7 @@ import type {
 import { ProfileStatus, ago } from '@/features/hr/EmployeesPage'
 import { useSkills } from '@/features/newTask/api'
 import { LEVEL_TITLES, date, domainLabel, humanize, levelLabel, locationLabel } from '@/lib/format'
+import { useUnits } from '@/features/org/api'
 
 const LOCATIONS = ['hyderabad', 'bengaluru', 'pune', 'chennai', 'remote_india', 'usa', 'uk']
 const COST_BANDS = ['A', 'B', 'C', 'D', 'E']
@@ -126,6 +127,7 @@ export default function EmployeePage() {
         }
       />
       <Attention employee={e} />
+      <UnitPicker employeeId={e.id} current={e.business_unit_id ?? null} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-6">
@@ -997,5 +999,35 @@ function ResumeFile({ blob, failed }: { blob: Blob | undefined; failed: boolean 
         Download the resume (Word)
       </a>
     </Button>
+  )
+}
+
+/** HR moves a person between business units (ADR 026). */
+function UnitPicker({ employeeId, current }: { employeeId: string; current: string | null }) {
+  const units = useUnits()
+  const update = useUpdateEmployee(employeeId)
+  if (!units.data) return null
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      <label htmlFor="employee-unit" className="text-muted-foreground">
+        Business unit
+      </label>
+      <select
+        id="employee-unit"
+        className="border-input bg-background h-9 rounded-md border px-2 text-sm"
+        value={current ?? ''}
+        disabled={update.isPending}
+        onChange={(ev) => update.mutate({ business_unit_id: ev.target.value || null })}
+      >
+        <option value="">None</option>
+        {units.data.map((u) => (
+          <option key={u.id} value={u.id}>
+            {u.code} · {u.name}
+            {u.head_name ? ` (head: ${u.head_name})` : ''}
+          </option>
+        ))}
+      </select>
+      {update.isError && <span className="text-destructive text-xs">Could not save the unit.</span>}
+    </div>
   )
 }

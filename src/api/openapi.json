@@ -357,6 +357,16 @@
             "title": "Best Tasks",
             "type": "array"
           },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "cost_band": {
             "$ref": "#/components/schemas/CostBand"
           },
@@ -568,6 +578,176 @@
           "file"
         ],
         "title": "Body_upload_resume_api_v1_employees__employee_id__resume_post",
+        "type": "object"
+      },
+      "BusinessUnitCreate": {
+        "properties": {
+          "code": {
+            "description": "e.g. BU001",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{1,19}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "head_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head User Id"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "BusinessUnitCreate",
+        "type": "object"
+      },
+      "BusinessUnitRead": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "employees": {
+            "title": "Employees",
+            "type": "integer"
+          },
+          "head_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Email"
+          },
+          "head_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Name"
+          },
+          "head_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head User Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "head_name",
+          "head_email",
+          "id",
+          "head_user_id",
+          "employees"
+        ],
+        "title": "BusinessUnitRead",
+        "type": "object"
+      },
+      "BusinessUnitRef": {
+        "description": "Shown next to a person from another unit: whom to contact (ADR 026).",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "head_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Email"
+          },
+          "head_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head Name"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "head_name",
+          "head_email"
+        ],
+        "title": "BusinessUnitRef",
+        "type": "object"
+      },
+      "BusinessUnitUpdate": {
+        "properties": {
+          "head_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Head User Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 2,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "BusinessUnitUpdate",
         "type": "object"
       },
       "CandidateCreate": {
@@ -1480,6 +1660,16 @@
       },
       "CloseCandidate": {
         "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "cost_band": {
             "$ref": "#/components/schemas/CostBand"
           },
@@ -2198,6 +2388,27 @@
             "title": "Available From",
             "type": "string"
           },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "business_unit_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Unit Id"
+          },
           "client_clearances": {
             "items": {
               "type": "string"
@@ -2430,6 +2641,16 @@
       },
       "EmployeeRef": {
         "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "designation": {
             "title": "Designation",
             "type": "string"
@@ -2714,6 +2935,17 @@
             ],
             "title": "Available From"
           },
+          "business_unit_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Unit Id"
+          },
           "client_clearances": {
             "anyOf": [
               {
@@ -2828,6 +3060,16 @@
           "billed_weeks": {
             "title": "Billed Weeks",
             "type": "number"
+          },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "clients": {
             "items": {
@@ -3617,7 +3859,7 @@
         "type": "object"
       },
       "FairnessReport": {
-        "description": "Recommendation rates by group among people who passed the rules (four-fifths check).\nProtected attributes are not stored, so they are not reported.",
+        "description": "Recommendation rates by group among qualified people (four-fifths check, p < 0.05).\nProtected attributes are not stored, so they are not reported.",
         "properties": {
           "attributes": {
             "items": {
@@ -3908,6 +4150,29 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HeadOption": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "email"
+        ],
+        "title": "HeadOption",
         "type": "object"
       },
       "HealthModel": {
@@ -4439,6 +4704,16 @@
           },
           "band": {
             "$ref": "#/components/schemas/Band"
+          },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "cost_band": {
             "$ref": "#/components/schemas/CostBand"
@@ -5339,6 +5614,26 @@
           "history"
         ],
         "title": "ModelsRead",
+        "type": "object"
+      },
+      "MyUnit": {
+        "description": "The unit the signed-in person heads, if any.",
+        "properties": {
+          "unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "unit"
+        ],
+        "title": "MyUnit",
         "type": "object"
       },
       "NearMiss": {
@@ -6476,6 +6771,16 @@
           "band": {
             "$ref": "#/components/schemas/Band"
           },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "cost_band": {
             "$ref": "#/components/schemas/CostBand"
           },
@@ -6642,6 +6947,16 @@
             },
             "title": "Actions",
             "type": "array"
+          },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "cost_band": {
             "$ref": "#/components/schemas/CostBand"
@@ -8580,6 +8895,16 @@
       },
       "WhatIfPerson": {
         "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "cost_band": {
             "$ref": "#/components/schemas/CostBand"
           },
@@ -10101,6 +10426,199 @@
         "summary": "Refresh",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/business-units": {
+      "get": {
+        "description": "The company's units with their heads and how many employees each has.",
+        "operationId": "list_units_api_v1_business_units_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BusinessUnitRead"
+                  },
+                  "title": "Response List Units Api V1 Business Units Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Units",
+        "tags": [
+          "business-units"
+        ]
+      },
+      "post": {
+        "description": "`{code, name, head_user_id?}`; the code is stored upper-case. 409 `unit_exists`,\n422 `invalid_head`. Audited.",
+        "operationId": "create_unit_api_v1_business_units_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessUnitCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessUnitRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Unit",
+        "tags": [
+          "business-units"
+        ]
+      }
+    },
+    "/api/v1/business-units/heads": {
+      "get": {
+        "description": "Active managers and admins who can head a unit.",
+        "operationId": "head_options_api_v1_business_units_heads_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/HeadOption"
+                  },
+                  "title": "Response Head Options Api V1 Business Units Heads Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Head Options",
+        "tags": [
+          "business-units"
+        ]
+      }
+    },
+    "/api/v1/business-units/mine": {
+      "get": {
+        "description": "The unit the signed-in person heads (null if none): people from other units are shown\nwith their unit and whom to contact.",
+        "operationId": "my_unit_api_v1_business_units_mine_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyUnit"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Unit",
+        "tags": [
+          "business-units"
+        ]
+      }
+    },
+    "/api/v1/business-units/{unit_id}": {
+      "patch": {
+        "description": "Rename or change the head (`head_user_id: null` removes it). Audited.",
+        "operationId": "update_unit_api_v1_business_units__unit_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "unit_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Unit Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessUnitUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessUnitRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Unit",
+        "tags": [
+          "business-units"
         ]
       }
     },

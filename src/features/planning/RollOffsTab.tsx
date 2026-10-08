@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { usd } from '@/features/planning/PlanningPage'
 import { useCreateAction, useRollOffs, useUpdateAction } from '@/features/planning/insightsApi'
 import { date, percent } from '@/lib/format'
+import { UnitBadge } from '@/features/org/UnitBadge'
 
 const WINDOWS = [
   { value: '30', label: '30 days' },
@@ -92,7 +93,8 @@ function RollOffCard({ p }: { p: RollOff }) {
           <span className="text-muted-foreground text-xs">
             {' '}
             · {p.designation} · {p.level}
-          </span>
+          </span>{' '}
+          <UnitBadge unit={p.business_unit} />
         </div>
         <StatusBadge tone="attention">Free from {date(p.rolls_off_on)}</StatusBadge>
       </div>

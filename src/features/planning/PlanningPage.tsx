@@ -18,6 +18,7 @@ import { WhatIfTab } from '@/features/planning/WhatIfTab'
 import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
 import { useTasks } from '@/features/tasks/api'
 import { BAND_LABELS, chance, date, percent } from '@/lib/format'
+import { UnitBadge } from '@/features/org/UnitBadge'
 
 const HORIZONS = [
   { value: '30', label: '30 days' },
@@ -98,6 +99,7 @@ function BenchTab() {
           <p className="text-muted-foreground text-xs">
             {p.employee_code} · {p.designation} · {p.level}
           </p>
+          <UnitBadge unit={p.business_unit} />
         </div>
       ),
     },
@@ -335,6 +337,7 @@ function PersonLine({ p }: { p: ProposedPerson }) {
       <span className="text-muted-foreground text-xs">
         {p.employee_code} · {p.level} · band {p.cost_band}
       </span>
+      <UnitBadge unit={p.business_unit} />
       <StatusBadge tone={p.band === 'shortlist' ? 'ready' : 'info'}>
         {BAND_LABELS[p.band]} · {chance(p.score)}
       </StatusBadge>
