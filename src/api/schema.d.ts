@@ -97,6 +97,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/client-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Client Rates
+         * @description Clients' own weekly bill rates per band, next to the rate card's default.
+         */
+        get: operations["client_rates_api_v1_admin_client_rates_get"];
+        /**
+         * Save Client Rate
+         * @description Set one client's bill rate for one band. 422 `unknown_client`. Audited.
+         */
+        put: operations["save_client_rate_api_v1_admin_client_rates_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/client-rates/{client_code}/{cost_band}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Client Rate
+         * @description Back to the rate card's default for this client and band.
+         */
+        delete: operations["delete_client_rate_api_v1_admin_client_rates__client_code___cost_band__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/companies": {
         parameters: {
             query?: never;
@@ -767,6 +811,46 @@ export interface paths {
         patch: operations["update_client_api_v1_clients__code__patch"];
         trace?: never;
     };
+    "/api/v1/data-quality": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Data Quality
+         * @description How many profiles matching can trust, what holds the rest back, and 20 to fix first.
+         */
+        get: operations["data_quality_api_v1_data_quality_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/data-quality/refresh-skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Skills
+         * @description Run the nightly freshening now: 'last used' dates from finished work, new suggestions.
+         */
+        post: operations["refresh_skills_api_v1_data_quality_refresh_skills_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/decide": {
         parameters: {
             query?: never;
@@ -1097,6 +1181,67 @@ export interface paths {
          * @description HR confirms the profile is up to date today (editing it does the same). Audited.
          */
         post: operations["confirm_reviewed_api_v1_employees__employee_id__review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/skill-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Skill Suggestions
+         * @description Skills this person's projects or placements used that the profile lacks. Also moves the
+         *     person's 'last used' dates forward from that work (audited).
+         */
+        get: operations["skill_suggestions_api_v1_employees__employee_id__skill_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/skill-suggestions/{suggestion_id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept Suggestion
+         * @description Add the skill at the level HR chooses (default 2). 409 `suggestion_decided`.
+         */
+        post: operations["accept_suggestion_api_v1_employees__employee_id__skill_suggestions__suggestion_id__accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/skill-suggestions/{suggestion_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dismiss Suggestion
+         * @description Not suggested again.
+         */
+        post: operations["dismiss_suggestion_api_v1_employees__employee_id__skill_suggestions__suggestion_id__dismiss_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1636,6 +1781,27 @@ export interface paths {
         };
         /** Employee Actions */
         get: operations["employee_actions_api_v1_planning_people__employee_id__actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/people/{employee_id}/career": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Career
+         * @description The smallest skill gaps that open the most tasks (last year's demand, their level and one
+         *     above): for 1:1s and development plans.
+         */
+        get: operations["career_api_v1_planning_people__employee_id__career_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2517,6 +2683,41 @@ export interface components {
             profile?: components["schemas"]["CandidateProfile-Input"] | null;
             status?: components["schemas"]["CandidateStatus"] | null;
         };
+        /**
+         * CareerPath
+         * @description Learn these skills and these tasks fit: the smallest gaps that open the most work.
+         */
+        CareerPath: {
+            /** Examples */
+            examples: string[];
+            /** Next Level */
+            next_level: boolean;
+            /** Open Now */
+            open_now: number;
+            /** Skills */
+            skills: components["schemas"]["PathSkill"][];
+            /** Tasks */
+            tasks: number;
+        };
+        /** CareerView */
+        CareerView: {
+            /** Designation */
+            designation: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Fits Now */
+            fits_now: number;
+            /** Fits Open Now */
+            fits_open_now: number;
+            /** Full Name */
+            full_name: string;
+            /** Level */
+            level: string;
+            /** Looked At */
+            looked_at: number;
+            /** Paths */
+            paths: components["schemas"]["CareerPath"][];
+        };
         /** ClientCreate */
         ClientCreate: {
             /** Code */
@@ -2554,6 +2755,28 @@ export interface components {
             summary: string;
             /** Years Experience */
             years_experience: number;
+        };
+        /**
+         * ClientRateIn
+         * @description A client's own weekly bill rate for one band (ADR 027).
+         */
+        ClientRateIn: {
+            /** Client Code */
+            client_code: string;
+            cost_band: components["schemas"]["CostBand"];
+            /** Weekly Bill Usd */
+            weekly_bill_usd: number;
+        };
+        /** ClientRateLine */
+        ClientRateLine: {
+            /** Client Code */
+            client_code: string;
+            cost_band: components["schemas"]["CostBand"];
+            /** Default Bill Usd */
+            default_bill_usd: number;
+            margin: components["schemas"]["Margin"];
+            /** Weekly Bill Usd */
+            weekly_bill_usd: number;
         };
         /** ClientRead */
         ClientRead: {
@@ -2691,6 +2914,24 @@ export interface components {
             review_after_days: number;
             /** Total */
             total: number;
+        };
+        /**
+         * DataQuality
+         * @description How much matching can trust the profiles, and who to fix first.
+         */
+        DataQuality: {
+            /** Fix First */
+            fix_first: components["schemas"]["FixFirst"][];
+            /** Headline */
+            headline: string;
+            /** Issues */
+            issues: components["schemas"]["QualityIssue"][];
+            /** People */
+            people: number;
+            /** Score */
+            score: number;
+            /** Trusted */
+            trusted: number;
         };
         /** DecideBatchIn */
         DecideBatchIn: {
@@ -3446,6 +3687,24 @@ export interface components {
             thumbs_down: number;
             /** Thumbs Up */
             thumbs_up: number;
+        };
+        /** FixFirst */
+        FixFirst: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            /** Issues */
+            issues: string[];
+            level: components["schemas"]["Level"];
+            /** Why First */
+            why_first: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -4238,6 +4497,17 @@ export interface components {
             /** New Password */
             new_password: string;
         };
+        /** PathSkill */
+        PathSkill: {
+            /** Has Level */
+            has_level: number;
+            /** Name */
+            name: string;
+            /** Needs Level */
+            needs_level: number;
+            /** Skill Id */
+            skill_id: string;
+        };
         /** PlanningActionCreate */
         PlanningActionCreate: {
             /** Due On */
@@ -4399,6 +4669,17 @@ export interface components {
             /** Score */
             score: number;
         };
+        /** QualityIssue */
+        QualityIssue: {
+            /** Issue */
+            issue: string;
+            /** Label */
+            label: string;
+            /** People */
+            people: number;
+            /** Share */
+            share: number;
+        };
         /** RateCard */
         RateCard: {
             /** Margin Target Pct */
@@ -4420,6 +4701,15 @@ export interface components {
             weekly_bill_usd: number;
             /** Weekly Cost Usd */
             weekly_cost_usd: number;
+        };
+        /** RefreshResult */
+        RefreshResult: {
+            /** Dates Updated */
+            dates_updated: number;
+            /** People */
+            people: number;
+            /** Suggestions Added */
+            suggestions_added: number;
         };
         /**
          * RejectReason
@@ -4601,6 +4891,30 @@ export interface components {
             /** Must Have */
             must_have: boolean;
             skill: components["schemas"]["SkillRef"];
+        };
+        /** SkillSuggestionAccept */
+        SkillSuggestionAccept: {
+            /**
+             * Proficiency
+             * @default 2
+             */
+            proficiency: number;
+        };
+        /** SkillSuggestionRead */
+        SkillSuggestionRead: {
+            /**
+             * Evidence Date
+             * Format: date
+             */
+            evidence_date: string;
+            /** Id */
+            id: string;
+            /** Skill Id */
+            skill_id: string;
+            /** Skill Name */
+            skill_name: string;
+            /** Source */
+            source: string;
         };
         /** StaffedTask */
         StaffedTask: {
@@ -5087,6 +5401,8 @@ export interface components {
         };
         /** WhatIfIn */
         WhatIfIn: {
+            /** Client Code */
+            client_code?: string | null;
             /** Roles */
             roles: components["schemas"]["WhatIfRole"][];
             /**
@@ -5389,6 +5705,89 @@ export interface operations {
                 content: {
                     "application/json": unknown;
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    client_rates_api_v1_admin_client_rates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientRateLine"][];
+                };
+            };
+        };
+    };
+    save_client_rate_api_v1_admin_client_rates_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientRateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientRateLine"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_client_rate_api_v1_admin_client_rates__client_code___cost_band__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_code: string;
+                cost_band: components["schemas"]["CostBand"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -6527,6 +6926,46 @@ export interface operations {
             };
         };
     };
+    data_quality_api_v1_data_quality_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataQuality"];
+                };
+            };
+        };
+    };
+    refresh_skills_api_v1_data_quality_refresh_skills_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefreshResult"];
+                };
+            };
+        };
+    };
     decide_api_v1_decide_post: {
         parameters: {
             query?: never;
@@ -7222,6 +7661,101 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["EmployeeDetail"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    skill_suggestions_api_v1_employees__employee_id__skill_suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillSuggestionRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_suggestion_api_v1_employees__employee_id__skill_suggestions__suggestion_id__accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillSuggestionAccept"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dismiss_suggestion_api_v1_employees__employee_id__skill_suggestions__suggestion_id__dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+                suggestion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -8145,6 +8679,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PlanningActionRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    career_api_v1_planning_people__employee_id__career_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CareerView"];
                 };
             };
             /** @description Validation Error */

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useRateCard, useSaveRateCard } from '@/features/planning/api'
+import { ClientRatesPanel } from '@/features/planning/QualityPanels'
 
 /** Weekly cost and bill rate per cost band; margins are checked against it (ADR 024). */
 export function RateCardTab() {
@@ -15,12 +16,15 @@ export function RateCardTab() {
   if (card.isPending) return <Skeleton className="h-64 w-full rounded-xl" />
   if (card.isError) return <ErrorState error={card.error} />
   return (
-    <RateCardForm
-      key={JSON.stringify(card.data.rows)}
-      rows={card.data.rows}
-      target={card.data.margin_target_pct}
-      synthetic={card.data.synthetic}
-    />
+    <div className="space-y-8">
+      <RateCardForm
+        key={JSON.stringify(card.data.rows)}
+        rows={card.data.rows}
+        target={card.data.margin_target_pct}
+        synthetic={card.data.synthetic}
+      />
+      <ClientRatesPanel />
+    </div>
   )
 }
 

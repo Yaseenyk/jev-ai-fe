@@ -6,6 +6,7 @@ import { useManagesPeople } from '@/features/auth/AuthProvider'
 import ClientsPage from '@/features/clients/ClientsPage'
 import { EmployeesTab } from '@/features/hr/EmployeesPage'
 import { BusinessUnitsTab } from '@/features/org/BusinessUnitsTab'
+import { DataQualityCard } from '@/features/planning/QualityPanels'
 
 /** HR's home for the company's own data: employees (with data health) and clients. */
 export default function CompanyPage() {
@@ -28,7 +29,10 @@ export default function CompanyPage() {
           <TabsTrigger value="units">Business units</TabsTrigger>
         </TabsList>
         <TabsContent value="employees" className="mt-4">
-          <EmployeesTab />
+          <div className="space-y-6">
+            <DataQualityCard />
+            <EmployeesTab />
+          </div>
         </TabsContent>
         <TabsContent value="clients" className="mt-4">
           <ClientsPage />

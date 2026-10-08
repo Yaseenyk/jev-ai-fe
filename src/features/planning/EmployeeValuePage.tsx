@@ -14,6 +14,7 @@ import { useEmployeeValue } from '@/features/planning/api'
 import { useEmployeeActions } from '@/features/planning/insightsApi'
 import { date, domainLabel, humanize, locationLabel, percent } from '@/lib/format'
 import { UnitBadge } from '@/features/org/UnitBadge'
+import { CareerPanel } from '@/features/planning/QualityPanels'
 
 const OUTCOME: Record<string, { label: string; tone: Tone }> = {
   successful: { label: 'Completed well', tone: 'ready' },
@@ -110,6 +111,8 @@ export default function EmployeeValuePage() {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="space-y-6">
+          <CareerPanel employeeId={v.employee_id} />
+
           <Panel title="Best next tasks" icon={<Briefcase className="size-4" aria-hidden />}>
             {v.next_tasks.length === 0 ? (
               <p className="text-muted-foreground text-sm">

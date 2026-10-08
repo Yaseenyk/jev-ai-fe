@@ -1408,6 +1408,97 @@
         "title": "CandidateUpdate",
         "type": "object"
       },
+      "CareerPath": {
+        "description": "Learn these skills and these tasks fit: the smallest gaps that open the most work.",
+        "properties": {
+          "examples": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Examples",
+            "type": "array"
+          },
+          "next_level": {
+            "title": "Next Level",
+            "type": "boolean"
+          },
+          "open_now": {
+            "title": "Open Now",
+            "type": "integer"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/PathSkill"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "tasks": {
+            "title": "Tasks",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "skills",
+          "tasks",
+          "open_now",
+          "next_level",
+          "examples"
+        ],
+        "title": "CareerPath",
+        "type": "object"
+      },
+      "CareerView": {
+        "properties": {
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "fits_now": {
+            "title": "Fits Now",
+            "type": "integer"
+          },
+          "fits_open_now": {
+            "title": "Fits Open Now",
+            "type": "integer"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "looked_at": {
+            "title": "Looked At",
+            "type": "integer"
+          },
+          "paths": {
+            "items": {
+              "$ref": "#/components/schemas/CareerPath"
+            },
+            "title": "Paths",
+            "type": "array"
+          }
+        },
+        "required": [
+          "employee_id",
+          "full_name",
+          "designation",
+          "level",
+          "fits_now",
+          "fits_open_now",
+          "paths",
+          "looked_at"
+        ],
+        "title": "CareerView",
+        "type": "object"
+      },
       "ClientCreate": {
         "properties": {
           "code": {
@@ -1509,6 +1600,68 @@
           "experience"
         ],
         "title": "ClientProfile",
+        "type": "object"
+      },
+      "ClientRateIn": {
+        "description": "A client's own weekly bill rate for one band (ADR 027).",
+        "properties": {
+          "client_code": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Client Code",
+            "type": "string"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "weekly_bill_usd": {
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Weekly Bill Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "client_code",
+          "cost_band",
+          "weekly_bill_usd"
+        ],
+        "title": "ClientRateIn",
+        "type": "object"
+      },
+      "ClientRateLine": {
+        "properties": {
+          "client_code": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Client Code",
+            "type": "string"
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "default_bill_usd": {
+            "title": "Default Bill Usd",
+            "type": "integer"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/Margin"
+          },
+          "weekly_bill_usd": {
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Weekly Bill Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "client_code",
+          "cost_band",
+          "weekly_bill_usd",
+          "default_bill_usd",
+          "margin"
+        ],
+        "title": "ClientRateLine",
         "type": "object"
       },
       "ClientRead": {
@@ -1912,6 +2065,51 @@
           "min_skills"
         ],
         "title": "DataHealth",
+        "type": "object"
+      },
+      "DataQuality": {
+        "description": "How much matching can trust the profiles, and who to fix first.",
+        "properties": {
+          "fix_first": {
+            "items": {
+              "$ref": "#/components/schemas/FixFirst"
+            },
+            "title": "Fix First",
+            "type": "array"
+          },
+          "headline": {
+            "title": "Headline",
+            "type": "string"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/QualityIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "trusted": {
+            "title": "Trusted",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "people",
+          "trusted",
+          "score",
+          "headline",
+          "issues",
+          "fix_first"
+        ],
+        "title": "DataQuality",
         "type": "object"
       },
       "DecideBatchIn": {
@@ -4139,6 +4337,65 @@
         "title": "FeedbackReportRead",
         "type": "object"
       },
+      "FixFirst": {
+        "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "why_first": {
+            "title": "Why First",
+            "type": "string"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "issues",
+          "why_first"
+        ],
+        "title": "FixFirst",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -6361,6 +6618,34 @@
         "title": "PasswordChange",
         "type": "object"
       },
+      "PathSkill": {
+        "properties": {
+          "has_level": {
+            "title": "Has Level",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "needs_level": {
+            "title": "Needs Level",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name",
+          "has_level",
+          "needs_level"
+        ],
+        "title": "PathSkill",
+        "type": "object"
+      },
       "PlanningActionCreate": {
         "properties": {
           "due_on": {
@@ -6825,6 +7110,34 @@
         "title": "ProposedPerson",
         "type": "object"
       },
+      "QualityIssue": {
+        "properties": {
+          "issue": {
+            "title": "Issue",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "share": {
+            "title": "Share",
+            "type": "number"
+          }
+        },
+        "required": [
+          "issue",
+          "label",
+          "people",
+          "share"
+        ],
+        "title": "QualityIssue",
+        "type": "object"
+      },
       "RateCard": {
         "properties": {
           "margin_target_pct": {
@@ -6893,6 +7206,29 @@
           "weekly_bill_usd"
         ],
         "title": "RateCardRow",
+        "type": "object"
+      },
+      "RefreshResult": {
+        "properties": {
+          "dates_updated": {
+            "title": "Dates Updated",
+            "type": "integer"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "suggestions_added": {
+            "title": "Suggestions Added",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "people",
+          "dates_updated",
+          "suggestions_added"
+        ],
+        "title": "RefreshResult",
         "type": "object"
       },
       "RejectReason": {
@@ -7437,6 +7773,53 @@
           "must_have"
         ],
         "title": "SkillRequirementRead",
+        "type": "object"
+      },
+      "SkillSuggestionAccept": {
+        "properties": {
+          "proficiency": {
+            "default": 2,
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Proficiency",
+            "type": "integer"
+          }
+        },
+        "title": "SkillSuggestionAccept",
+        "type": "object"
+      },
+      "SkillSuggestionRead": {
+        "properties": {
+          "evidence_date": {
+            "format": "date",
+            "title": "Evidence Date",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "skill_id",
+          "skill_name",
+          "source",
+          "evidence_date"
+        ],
+        "title": "SkillSuggestionRead",
         "type": "object"
       },
       "StaffedTask": {
@@ -8864,6 +9247,17 @@
       },
       "WhatIfIn": {
         "properties": {
+          "client_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Code"
+          },
           "roles": {
             "items": {
               "$ref": "#/components/schemas/WhatIfRole"
@@ -9469,6 +9863,135 @@
           }
         ],
         "summary": "Audit Decisions",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/v1/admin/client-rates": {
+      "get": {
+        "description": "Clients' own weekly bill rates per band, next to the rate card's default.",
+        "operationId": "client_rates_api_v1_admin_client_rates_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClientRateLine"
+                  },
+                  "title": "Response Client Rates Api V1 Admin Client Rates Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Client Rates",
+        "tags": [
+          "planning"
+        ]
+      },
+      "put": {
+        "description": "Set one client's bill rate for one band. 422 `unknown_client`. Audited.",
+        "operationId": "save_client_rate_api_v1_admin_client_rates_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientRateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClientRateLine"
+                  },
+                  "title": "Response Save Client Rate Api V1 Admin Client Rates Put",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Client Rate",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/v1/admin/client-rates/{client_code}/{cost_band}": {
+      "delete": {
+        "description": "Back to the rate card's default for this client and band.",
+        "operationId": "delete_client_rate_api_v1_admin_client_rates__client_code___cost_band__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "client_code",
+            "required": true,
+            "schema": {
+              "title": "Client Code",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cost_band",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/CostBand"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Client Rate",
         "tags": [
           "planning"
         ]
@@ -11187,6 +11710,60 @@
         ]
       }
     },
+    "/api/v1/data-quality": {
+      "get": {
+        "description": "How many profiles matching can trust, what holds the rest back, and 20 to fix first.",
+        "operationId": "data_quality_api_v1_data_quality_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataQuality"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Data Quality",
+        "tags": [
+          "people-quality"
+        ]
+      }
+    },
+    "/api/v1/data-quality/refresh-skills": {
+      "post": {
+        "description": "Run the nightly freshening now: 'last used' dates from finished work, new suggestions.",
+        "operationId": "refresh_skills_api_v1_data_quality_refresh_skills_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefreshResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Refresh Skills",
+        "tags": [
+          "people-quality"
+        ]
+      }
+    },
     "/api/v1/decide": {
       "post": {
         "description": "One typed question \u2192 probabilities over its options; `answer` is null when unsure.",
@@ -12426,6 +13003,173 @@
         "summary": "Confirm Reviewed",
         "tags": [
           "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/skill-suggestions": {
+      "get": {
+        "description": "Skills this person's projects or placements used that the profile lacks. Also moves the\nperson's 'last used' dates forward from that work (audited).",
+        "operationId": "skill_suggestions_api_v1_employees__employee_id__skill_suggestions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SkillSuggestionRead"
+                  },
+                  "title": "Response Skill Suggestions Api V1 Employees  Employee Id  Skill Suggestions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Skill Suggestions",
+        "tags": [
+          "people-quality"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/skill-suggestions/{suggestion_id}/accept": {
+      "post": {
+        "description": "Add the skill at the level HR chooses (default 2). 409 `suggestion_decided`.",
+        "operationId": "accept_suggestion_api_v1_employees__employee_id__skill_suggestions__suggestion_id__accept_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Suggestion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillSuggestionAccept"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Accept Suggestion",
+        "tags": [
+          "people-quality"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/skill-suggestions/{suggestion_id}/dismiss": {
+      "post": {
+        "description": "Not suggested again.",
+        "operationId": "dismiss_suggestion_api_v1_employees__employee_id__skill_suggestions__suggestion_id__dismiss_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "suggestion_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Suggestion Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Dismiss Suggestion",
+        "tags": [
+          "people-quality"
         ]
       }
     },
@@ -13988,6 +14732,55 @@
         "summary": "Employee Actions",
         "tags": [
           "insights"
+        ]
+      }
+    },
+    "/api/v1/planning/people/{employee_id}/career": {
+      "get": {
+        "description": "The smallest skill gaps that open the most tasks (last year's demand, their level and one\nabove): for 1:1s and development plans.",
+        "operationId": "career_api_v1_planning_people__employee_id__career_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareerView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Career",
+        "tags": [
+          "people-quality"
         ]
       }
     },
