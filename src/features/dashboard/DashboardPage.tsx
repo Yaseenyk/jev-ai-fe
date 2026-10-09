@@ -12,7 +12,7 @@ import { TaskStatusBadge } from '@/features/tasks/PriorityBadge'
 import { date as formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const CARD = 'bg-surface rounded-2xl p-5 shadow-(--card-shadow)'
+const CARD = 'bg-surface min-w-0 rounded-2xl p-5 shadow-(--card-shadow)'
 
 const monthShort = (iso: string) =>
   new Date(`${iso}T00:00:00`).toLocaleString('en-GB', { month: 'short' })
@@ -201,29 +201,32 @@ function BarChart<T extends { month: string }>({
           </span>
         ))}
       </figcaption>
-      <table className="sr-only">
-        <caption>{label}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Month</th>
-            {series.map((s) => (
-              <th key={s.key} scope="col">
-                {s.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.month}>
-              <th scope="row">{monthLong(row.month)}</th>
+      {/* In a hidden wrapper: a <caption> escapes a table that is itself sr-only. */}
+      <div className="sr-only">
+        <table>
+          <caption>{label}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Month</th>
               {series.map((s) => (
-                <td key={s.key}>{format(value(row, s.key))}</td>
+                <th key={s.key} scope="col">
+                  {s.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.month}>
+                <th scope="row">{monthLong(row.month)}</th>
+                {series.map((s) => (
+                  <td key={s.key}>{format(value(row, s.key))}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   )
 }
@@ -273,7 +276,7 @@ function OpenTasks({ lines, total }: { lines: OpenTaskLine[]; total: number }) {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{t.title}</span>
-                  <span className="text-muted-foreground flex items-center gap-2 text-xs">
+                  <span className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                     {t.code} · starts {formatDate(t.start_date)}
                     <TaskStatusBadge status={t.status} />
                   </span>
@@ -421,7 +424,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-5">
       <h1 className="sr-only">Dashboard</h1>
-      <div className="grid gap-5 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         <section className={CARD} aria-labelledby="health-h">
           <CardTitle>
             <span id="health-h">Staffing health</span>

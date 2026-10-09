@@ -18,7 +18,7 @@ import {
   Sun,
   UserSearch,
 } from 'lucide-react'
-import { useState, type ComponentType, type SyntheticEvent } from 'react'
+import { useId, useState, type ComponentType, type SyntheticEvent } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 
 import { apiFetch } from '@/api/client'
@@ -198,14 +198,16 @@ function useBadges(): Record<Badge, number | undefined> {
 }
 
 function LogoMark({ className }: { className?: string }) {
+  // Own gradient ids: the sidebar's copy is display:none on phones, and a hidden gradient cannot paint.
+  const id = useId()
   return (
     <svg viewBox="0 0 32 32" aria-hidden className={className}>
       <defs>
-        <linearGradient id="logo-a" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={`${id}a`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#8b5cf6" />
           <stop offset="1" stopColor="#3b82f6" />
         </linearGradient>
-        <linearGradient id="logo-b" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={`${id}b`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#ec4899" />
           <stop offset="1" stopColor="#f59e0b" />
         </linearGradient>
@@ -217,7 +219,7 @@ function LogoMark({ className }: { className?: string }) {
         height="18"
         rx="6"
         fill="none"
-        stroke="url(#logo-a)"
+        stroke={`url(#${id}a)`}
         strokeWidth="3.5"
       />
       <rect
@@ -227,7 +229,7 @@ function LogoMark({ className }: { className?: string }) {
         height="18"
         rx="6"
         fill="none"
-        stroke="url(#logo-b)"
+        stroke={`url(#${id}b)`}
         strokeWidth="3.5"
       />
     </svg>
