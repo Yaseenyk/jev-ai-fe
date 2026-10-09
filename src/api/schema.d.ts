@@ -811,6 +811,26 @@ export interface paths {
         patch: operations["update_client_api_v1_clients__code__patch"];
         trace?: never;
     };
+    "/api/v1/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard
+         * @description Home dashboard: headline shares, tasks by month, open tasks and idle cost ahead.
+         */
+        get: operations["dashboard_api_v1_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/data-quality": {
         parameters: {
             query?: never;
@@ -2926,6 +2946,19 @@ export interface components {
          * @enum {string}
          */
         CostBand: "A" | "B" | "C" | "D" | "E";
+        /** Dashboard */
+        Dashboard: {
+            /** Idle Cost By Month */
+            idle_cost_by_month: components["schemas"]["MonthIdleCost"][];
+            /** Open Tasks */
+            open_tasks: components["schemas"]["OpenTaskLine"][];
+            /** Open Tasks Total */
+            open_tasks_total: number;
+            /** Rings */
+            rings: components["schemas"]["Ring"][];
+            /** Tasks By Month */
+            tasks_by_month: components["schemas"]["MonthTasks"][];
+        };
         /** DataHealth */
         DataHealth: {
             /** Due */
@@ -4245,6 +4278,30 @@ export interface components {
             /** Pinned Dir */
             pinned_dir: string | null;
         };
+        /** MonthIdleCost */
+        MonthIdleCost: {
+            /** Idle Cost Usd */
+            idle_cost_usd: number;
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Recoverable Usd */
+            recoverable_usd: number;
+        };
+        /** MonthTasks */
+        MonthTasks: {
+            /** Filled */
+            filled: number;
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Opened */
+            opened: number;
+        };
         /**
          * MyUnit
          * @description The unit the signed-in person heads, if any.
@@ -4318,6 +4375,25 @@ export interface components {
             link: string;
             /** Read */
             read: boolean;
+            /** Title */
+            title: string;
+        };
+        /** OpenTaskLine */
+        OpenTaskLine: {
+            /** Client Code */
+            client_code: string | null;
+            /** Code */
+            code: string;
+            /** Recommended */
+            recommended: number | null;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            status: components["schemas"]["TaskStatus"];
+            /** Task Id */
+            task_id: string;
             /** Title */
             title: string;
         };
@@ -4758,6 +4834,24 @@ export interface components {
              * Format: date-time
              */
             uploaded_at: string;
+        };
+        /**
+         * Ring
+         * @description One headline share: `value` is None when there is too little data to say.
+         */
+        Ring: {
+            /** Denominator */
+            denominator: number;
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Note */
+            note: string;
+            /** Numerator */
+            numerator: number;
+            /** Value */
+            value: number | null;
         };
         /** RollOff */
         RollOff: {
@@ -6969,6 +7063,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_api_v1_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dashboard"];
                 };
             };
         };

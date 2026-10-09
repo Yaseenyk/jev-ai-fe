@@ -2029,6 +2029,51 @@
         "title": "CostBand",
         "type": "string"
       },
+      "Dashboard": {
+        "properties": {
+          "idle_cost_by_month": {
+            "items": {
+              "$ref": "#/components/schemas/MonthIdleCost"
+            },
+            "title": "Idle Cost By Month",
+            "type": "array"
+          },
+          "open_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/OpenTaskLine"
+            },
+            "title": "Open Tasks",
+            "type": "array"
+          },
+          "open_tasks_total": {
+            "title": "Open Tasks Total",
+            "type": "integer"
+          },
+          "rings": {
+            "items": {
+              "$ref": "#/components/schemas/Ring"
+            },
+            "title": "Rings",
+            "type": "array"
+          },
+          "tasks_by_month": {
+            "items": {
+              "$ref": "#/components/schemas/MonthTasks"
+            },
+            "title": "Tasks By Month",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rings",
+          "tasks_by_month",
+          "open_tasks",
+          "open_tasks_total",
+          "idle_cost_by_month"
+        ],
+        "title": "Dashboard",
+        "type": "object"
+      },
       "DataHealth": {
         "properties": {
           "due": {
@@ -5873,6 +5918,54 @@
         "title": "ModelsRead",
         "type": "object"
       },
+      "MonthIdleCost": {
+        "properties": {
+          "idle_cost_usd": {
+            "title": "Idle Cost Usd",
+            "type": "integer"
+          },
+          "month": {
+            "format": "date",
+            "title": "Month",
+            "type": "string"
+          },
+          "recoverable_usd": {
+            "title": "Recoverable Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "idle_cost_usd",
+          "recoverable_usd"
+        ],
+        "title": "MonthIdleCost",
+        "type": "object"
+      },
+      "MonthTasks": {
+        "properties": {
+          "filled": {
+            "title": "Filled",
+            "type": "integer"
+          },
+          "month": {
+            "format": "date",
+            "title": "Month",
+            "type": "string"
+          },
+          "opened": {
+            "title": "Opened",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "opened",
+          "filled"
+        ],
+        "title": "MonthTasks",
+        "type": "object"
+      },
       "MyUnit": {
         "description": "The unit the signed-in person heads, if any.",
         "properties": {
@@ -6051,6 +6144,63 @@
           "read"
         ],
         "title": "NotificationRead",
+        "type": "object"
+      },
+      "OpenTaskLine": {
+        "properties": {
+          "client_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Code"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "recommended": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recommended"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "code",
+          "title",
+          "client_code",
+          "start_date",
+          "status",
+          "recommended"
+        ],
+        "title": "OpenTaskLine",
         "type": "object"
       },
       "OptionRead": {
@@ -7286,6 +7436,52 @@
           "uploaded_at"
         ],
         "title": "ResumeBacking",
+        "type": "object"
+      },
+      "Ring": {
+        "description": "One headline share: `value` is None when there is too little data to say.",
+        "properties": {
+          "denominator": {
+            "title": "Denominator",
+            "type": "integer"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "numerator": {
+            "title": "Numerator",
+            "type": "integer"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value",
+          "numerator",
+          "denominator",
+          "note"
+        ],
+        "title": "Ring",
         "type": "object"
       },
       "RollOff": {
@@ -11767,6 +11963,33 @@
         "summary": "Update Client",
         "tags": [
           "clients"
+        ]
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "description": "Home dashboard: headline shares, tasks by month, open tasks and idle cost ahead.",
+        "operationId": "dashboard_api_v1_dashboard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dashboard"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Dashboard",
+        "tags": [
+          "dashboard"
         ]
       }
     },

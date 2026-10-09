@@ -24,11 +24,15 @@ import RunPage from '@/features/runs/RunPage'
 import TaskDetailPage from '@/features/tasks/TaskDetailPage'
 import TaskListPage from '@/features/tasks/TaskListPage'
 import CareerPage from '@/features/planning/CareerPage'
+import DashboardPage from '@/features/dashboard/DashboardPage'
 
-/** HR start on their own home; everyone else on the task board. */
+/** HR start on their own queue; viewers, who cannot see bench cost, on the task board; everyone
+ * else on the dashboard (ADR 028). */
 function HomeRedirect() {
   const role = useAuth().user?.role
-  return <Navigate to={role === 'hr' ? '/hr' : '/tasks'} replace />
+  return (
+    <Navigate to={role === 'hr' ? '/hr' : role === 'viewer' ? '/tasks' : '/dashboard'} replace />
+  )
 }
 
 export const routes = [
@@ -49,6 +53,7 @@ export const routes = [
     ),
     children: [
       { index: true, element: <HomeRedirect /> },
+      { path: 'dashboard', element: <DashboardPage /> },
       { path: 'tasks', element: <TaskListPage /> },
       { path: 'tasks/new', element: <NewTaskChatPage /> },
       { path: 'tasks/:taskId', element: <TaskDetailPage /> },

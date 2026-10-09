@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { cn } from '@/lib/utils'
+import { ThemeSwitch } from '@/components/ThemeSwitch'
 
 const schema = z.object({
   email: z
@@ -99,7 +100,8 @@ export default function LoginPage() {
     <main className="bg-background grid min-h-svh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <BrandPanel />
 
-      <section className="flex flex-col justify-center px-5 py-10 sm:px-10">
+      <section className="relative flex flex-col justify-center px-5 py-10 sm:px-10">
+        <ThemeSwitch className="absolute top-5 right-5 w-48" />
         <div className="mx-auto w-full max-w-[400px]">
           <div className="mb-10 flex items-center gap-2.5 lg:hidden">
             <span className="bg-primary text-primary-foreground grid size-10 place-items-center rounded-xl">

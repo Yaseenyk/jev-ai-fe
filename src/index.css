@@ -2,7 +2,6 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/figtree';
-@import '@fontsource-variable/bricolage-grotesque';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -13,7 +12,7 @@
   --color-band-review-foreground: var(--band-review-foreground);
   --color-band-hidden: var(--band-hidden);
   --color-band-hidden-foreground: var(--band-hidden-foreground);
-  --font-heading: 'Bricolage Grotesque Variable', 'Figtree Variable', sans-serif;
+  --font-heading: 'Figtree Variable', system-ui, sans-serif;
   --font-sans: 'Figtree Variable', system-ui, sans-serif;
   --color-surface: var(--surface);
   --color-priority-critical: var(--priority-critical);
@@ -61,95 +60,100 @@
 }
 
 :root {
-  /* Staffing board palette: cool paper, slate ink, Sparity green for actions. */
-  --background: #f5f7fa;
+  /* ADR 028 look: soft lavender canvas, white rounded cards, indigo-violet primary.
+     Chart colours (violet, pink, blue, grey) are for charts and rings only, never status. */
+  --background: #efedf9;
   --surface: #ffffff;
-  --foreground: #1b2333;
+  --foreground: #1c1a33;
   --card: #ffffff;
-  --card-foreground: #1b2333;
+  --card-foreground: #1c1a33;
   --popover: #ffffff;
-  --popover-foreground: #1b2333;
-  --primary: #1f6b4a;
+  --popover-foreground: #1c1a33;
+  --primary: #6551f0;
   --primary-foreground: #ffffff;
-  --band-shortlist: #e3f2ea;
-  --band-shortlist-foreground: #17573b;
+  --band-shortlist: #e3f4ec;
+  --band-shortlist-foreground: #17603f;
   --band-review: #fdf1d8;
   --band-review-foreground: #8a5a07;
-  --band-hidden: #eef1f5;
-  --band-hidden-foreground: #5f6b7e;
-  --priority-critical: #c8321f;
-  --priority-high: #d9822b;
-  --priority-medium: #5f7fb5;
-  --priority-low: #a5afbf;
-  --secondary: #eef1f5;
-  --secondary-foreground: #1b2333;
-  --muted: #eef1f5;
-  --muted-foreground: #5f6b7e;
-  --accent: #e9f3ee;
-  --accent-foreground: #17573b;
-  --destructive: #c8321f;
-  --border: #e2e7ef;
-  --input: #d5dce7;
-  --ring: #1f6b4a;
-  --chart-1: #1f6b4a;
-  --chart-2: #5f7fb5;
-  --chart-3: #d9822b;
-  --chart-4: #8a5a07;
-  --chart-5: #a5afbf;
-  --radius: 0.625rem;
+  --band-hidden: #eff0f6;
+  --band-hidden-foreground: #5f6480;
+  --priority-critical: #d6334f;
+  --priority-high: #e0822b;
+  --priority-medium: #5b7fd6;
+  --priority-low: #a7abc4;
+  --secondary: #f2f1fa;
+  --secondary-foreground: #1c1a33;
+  --muted: #f3f2fa;
+  --muted-foreground: #6b6987;
+  --accent: #efecfe;
+  --accent-foreground: #4b38d6;
+  --destructive: #d6334f;
+  --border: #ebe9f5;
+  --input: #dddaee;
+  --ring: #6551f0;
+  --chart-1: #8b5cf6;
+  --chart-2: #ec4899;
+  --chart-3: #3b82f6;
+  --chart-4: #d9dbe6;
+  --chart-5: #a78bfa;
+  --card-shadow: 0 10px 30px -18px rgb(72 56 160 / 0.28), 0 1px 2px rgb(72 56 160 / 0.06);
+  --radius: 0.75rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #1b2333;
-  --sidebar-primary: #1f6b4a;
+  --sidebar-foreground: #1c1a33;
+  --sidebar-primary: #6551f0;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e9f3ee;
-  --sidebar-accent-foreground: #17573b;
-  --sidebar-border: #e2e7ef;
-  --sidebar-ring: #1f6b4a;
+  --sidebar-accent: #f1effd;
+  --sidebar-accent-foreground: #1c1a33;
+  --sidebar-border: #ebe9f5;
+  --sidebar-ring: #6551f0;
 }
 
 .dark {
-  --surface: oklch(0.205 0 0);
-  --priority-critical: #f0705e;
-  --priority-high: #f0a35a;
-  --priority-medium: #8ea9d8;
-  --priority-low: #6b7587;
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.72 0.11 155);
-  --primary-foreground: oklch(0.17 0.02 155);
-  --band-shortlist: oklch(0.3 0.06 155);
-  --band-shortlist-foreground: oklch(0.85 0.1 155);
-  --band-review: oklch(0.32 0.06 75);
-  --band-review-foreground: oklch(0.88 0.1 85);
-  --band-hidden: oklch(0.27 0 0);
-  --band-hidden-foreground: oklch(0.72 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Neutral navy base with violet accents. Cards sit a clear step above the canvas and carry a
+     faint outline, because shadows do not show on dark. */
+  --background: #0c0e17;
+  --surface: #161926;
+  --foreground: #e9eaf3;
+  --card: #161926;
+  --card-foreground: #e9eaf3;
+  --popover: #1b1f2e;
+  --popover-foreground: #e9eaf3;
+  --primary: #7462f5;
+  --primary-foreground: #ffffff;
+  --band-shortlist: rgb(52 211 153 / 0.14);
+  --band-shortlist-foreground: #6ee7b7;
+  --band-review: rgb(251 191 36 / 0.14);
+  --band-review-foreground: #fcd34d;
+  --band-hidden: rgb(148 163 184 / 0.14);
+  --band-hidden-foreground: #b6bfcf;
+  --priority-critical: #fb7185;
+  --priority-high: #fbbf24;
+  --priority-medium: #93b4f5;
+  --priority-low: #7c8499;
+  --secondary: #1f2333;
+  --secondary-foreground: #e9eaf3;
+  --muted: #1e2231;
+  --muted-foreground: #9aa1b6;
+  --accent: rgb(116 98 245 / 0.16);
+  --accent-foreground: #c9c1ff;
+  --destructive: #fb7185;
+  --border: #262b3d;
+  --input: #30364b;
+  --ring: #8b7cff;
+  --chart-1: #a78bfa;
+  --chart-2: #f472b6;
+  --chart-3: #60a5fa;
+  --chart-4: #2b3044;
+  --chart-5: #c4b5fd;
+  --card-shadow: 0 0 0 1px rgb(255 255 255 / 0.05), 0 12px 32px -18px rgb(0 0 0 / 0.8);
+  --sidebar: #161926;
+  --sidebar-foreground: #e9eaf3;
+  --sidebar-primary: #7462f5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgb(116 98 245 / 0.16);
+  --sidebar-accent-foreground: #e9eaf3;
+  --sidebar-border: #262b3d;
+  --sidebar-ring: #8b7cff;
 }
 
 @layer base {
@@ -158,6 +162,13 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Screens build cards from bg-surface + border (and shadcn's Card); one soft shadow lifts
+     them off the lavender canvas so every page gets the new look without per-screen edits. */
+  [data-slot='card'],
+  .bg-surface.border,
+  .bg-card.border {
+    box-shadow: var(--card-shadow);
   }
   html {
     @apply font-sans antialiased;
@@ -180,7 +191,13 @@
   h2,
   h3 {
     font-family: var(--font-heading);
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+  }
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
   @media (prefers-reduced-motion: reduce) {
     *,
