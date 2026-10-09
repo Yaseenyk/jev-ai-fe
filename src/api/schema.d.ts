@@ -4928,7 +4928,7 @@ export interface components {
         };
         /**
          * SkillAliasesIn
-         * @description Other names for an existing skill, e.g. "RESTful APIs" for REST API Design (ADR 029).
+         * @description Other names for an existing skill, e.g. "RESTful APIs" for REST API Design (ADR 030).
          */
         SkillAliasesIn: {
             /** Aliases */
