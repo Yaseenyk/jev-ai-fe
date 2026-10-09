@@ -26,13 +26,25 @@ import TaskListPage from '@/features/tasks/TaskListPage'
 import CareerPage from '@/features/planning/CareerPage'
 import DashboardPage from '@/features/dashboard/DashboardPage'
 import { FromRequestPage, PeopleSearchPage } from '@/features/workforce/Pages'
+import { HelpPage, MyProfilePage, SavingsPage, SetupPage } from '@/features/workforce/MorePages'
 
 /** HR start on their own queue; viewers, who cannot see bench cost, on the task board; everyone
  * else on the dashboard (ADR 028). */
 function HomeRedirect() {
   const role = useAuth().user?.role
   return (
-    <Navigate to={role === 'hr' ? '/hr' : role === 'viewer' ? '/tasks' : '/dashboard'} replace />
+    <Navigate
+      to={
+        role === 'hr'
+          ? '/hr'
+          : role === 'viewer'
+            ? '/tasks'
+            : role === 'employee'
+              ? '/me'
+              : '/dashboard'
+      }
+      replace
+    />
   )
 }
 
@@ -59,6 +71,10 @@ export const routes = [
       { path: 'tasks/new', element: <NewTaskChatPage /> },
       { path: 'tasks/from-request', element: <FromRequestPage /> },
       { path: 'people/search', element: <PeopleSearchPage /> },
+      { path: 'reports', element: <SavingsPage /> },
+      { path: 'setup', element: <SetupPage /> },
+      { path: 'me', element: <MyProfilePage /> },
+      { path: 'help', element: <HelpPage /> },
       { path: 'tasks/:taskId', element: <TaskDetailPage /> },
       { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },

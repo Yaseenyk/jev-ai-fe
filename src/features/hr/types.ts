@@ -114,7 +114,7 @@ export interface EmployeeProjectCreate {
   outcome: ProjectOutcome
 }
 
-export type ImportKind = 'clients' | 'employees' | 'employee_skills'
+export type ImportKind = 'clients' | 'employees' | 'employee_skills' | 'timesheets'
 
 export interface ImportPreview {
   preview_id: string

@@ -6,19 +6,28 @@ import type {
   CapacityReport,
   CourseIn,
   CourseRead,
+  DealIn,
+  DealRead,
+  DealStatus,
+  DemandForecast,
+  Digest,
   InterpretedSearch,
   InterviewPlan,
   KeyPersonReport,
   LearningOverview,
   LearningStatus,
+  MyProfile,
   OpportunityReport,
   PeopleFilters,
   PeopleSearchResult,
   PreferencesIn,
   PreferencesRead,
   RfpDrafts,
+  SavingsReport,
+  SetupStatus,
   TeamIn,
   TeamPlan,
+  WorkingOn,
 } from '@/api/types'
 
 const post = (body: unknown) => ({ method: 'POST', body: JSON.stringify(body) })
@@ -143,5 +152,90 @@ export function useUpdateAssignment() {
       void qc.invalidateQueries({ queryKey: ['learning'] })
       void qc.invalidateQueries({ queryKey: ['employees'] })
     },
+  })
+}
+
+// --- ADR 032 ---------------------------------------------------------------------------------
+export function useDeleteCourse() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => apiFetch<undefined>(`/courses/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['courses'] })
+      void qc.invalidateQueries({ queryKey: ['learning'] })
+    },
+  })
+}
+
+export const useDeals = () =>
+  useQuery({ queryKey: ['deals'], queryFn: () => apiFetch<DealRead[]>('/planning/deals') })
+
+export const useDemand = () =>
+  useQuery({
+    queryKey: ['deals', 'demand'],
+    queryFn: () => apiFetch<DemandForecast>('/planning/demand'),
+  })
+
+export function useAddDeal() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: DealIn) => apiFetch<DealRead>('/planning/deals', post(body)),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['deals'] }),
+  })
+}
+
+export function useUpdateDeal() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string; win_pct?: number; status?: DealStatus }) =>
+      apiFetch<DealRead>(`/planning/deals/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['deals'] }),
+  })
+}
+
+export function useDeleteDeal() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => apiFetch<undefined>(`/planning/deals/${id}`, { method: 'DELETE' }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['deals'] }),
+  })
+}
+
+export const useWorkingOn = (employeeId: string) =>
+  useQuery({
+    queryKey: ['employees', employeeId, 'working-on'],
+    queryFn: () => apiFetch<WorkingOn>(`/employees/${employeeId}/working-on`),
+  })
+
+export const useSavings = (month: string) =>
+  useQuery({
+    queryKey: ['reports', 'savings', month],
+    queryFn: () => apiFetch<SavingsReport>(`/reports/savings?month=${month}`),
+  })
+
+export const useSetup = () =>
+  useQuery({ queryKey: ['setup'], queryFn: () => apiFetch<SetupStatus>('/setup') })
+
+export const useDigest = () =>
+  useQuery({ queryKey: ['me', 'digest'], queryFn: () => apiFetch<Digest>('/me/digest') })
+
+export const useMyProfile = () =>
+  useQuery({ queryKey: ['me', 'profile'], queryFn: () => apiFetch<MyProfile>('/me/profile') })
+
+export function useRequestSkill() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { skill_id: string; proficiency: number }) =>
+      apiFetch<undefined>('/me/skill-requests', post(body)),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['me', 'profile'] }),
+  })
+}
+
+export function useSaveMyPreferences() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: PreferencesIn) =>
+      apiFetch<PreferencesRead>('/me/preferences', { method: 'PUT', body: JSON.stringify(body) }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['me', 'profile'] }),
   })
 }
