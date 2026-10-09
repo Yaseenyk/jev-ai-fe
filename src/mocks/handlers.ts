@@ -129,6 +129,7 @@ export function createHandlers(db: Db, session?: Storage) {
     account(MOCK_USER_ID, 'manager1@srtm.local', 'Resource Manager 1', 'resource_manager'),
     account('demo-hr', 'hr@srtm.local', 'HR Partner', 'hr'),
     account('demo-viewer', 'viewer@srtm.local', 'Viewer', 'viewer'),
+    account('demo-employee', 'employee@srtm.local', 'Asha (employee)', 'employee'),
   ]
   let clients: Client[] = [...new Set(db.tasks.map((t) => t.client_code))].sort().map((code) => ({
     code,

@@ -2,6 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import {
   Building2,
   CalendarRange,
+  LifeBuoy,
+  ListChecks,
+  PiggyBank,
+  UserRound,
   FileUp,
   Gauge,
   Inbox,
@@ -64,6 +68,13 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         label: 'Dashboard',
         icon: Gauge,
         isActive: (p) => p === '/dashboard',
+        plannersOnly: true,
+      },
+      {
+        to: '/reports',
+        label: 'Savings',
+        icon: PiggyBank,
+        isActive: (p) => p.startsWith('/reports'),
         plannersOnly: true,
       },
     ],
@@ -152,6 +163,19 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         isActive: (p) => p.startsWith('/admin'),
         adminOnly: true,
       },
+      {
+        to: '/setup',
+        label: 'Setup',
+        icon: ListChecks,
+        isActive: (p) => p.startsWith('/setup'),
+        peopleManagersOnly: true,
+      },
+      {
+        to: '/help',
+        label: 'Help',
+        icon: LifeBuoy,
+        isActive: (p) => p.startsWith('/help'),
+      },
     ],
   },
 ]
@@ -173,10 +197,23 @@ function initials(name: string) {
     .join('')
 }
 
+// An employee login has its own short menu: never screens with other people's data (ADR 032).
+const EMPLOYEE_NAV: { label: string; items: NavItem[] }[] = [
+  {
+    label: 'Me',
+    items: [
+      { to: '/me', label: 'My profile', icon: UserRound, isActive: (p) => p === '/me' },
+      { to: '/help', label: 'Help', icon: LifeBuoy, isActive: (p) => p.startsWith('/help') },
+    ],
+  },
+]
+
 function useNavGroups() {
   const canEdit = useCanEdit()
-  const isAdmin = useAuth().user?.role === 'admin'
+  const role = useAuth().user?.role
+  const isAdmin = role === 'admin'
   const managesPeople = useManagesPeople()
+  if (role === 'employee') return EMPLOYEE_NAV
   return NAV_GROUPS.map((g) => ({
     ...g,
     items: g.items.filter(
@@ -197,6 +234,7 @@ function useBadges(): Record<Badge, number | undefined> {
     queryKey: ['nav', 'open-tasks'],
     queryFn: () => apiFetch<Page<Task>>('/tasks?status=open&limit=1'),
     staleTime: 60_000,
+    enabled: useAuth().user?.role !== 'employee',
   })
   const requests = useHiringRequests(undefined, managesPeople)
   return {

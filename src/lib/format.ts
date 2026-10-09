@@ -83,4 +83,5 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   resource_manager: 'Resource manager',
   hr: 'HR',
   viewer: 'Viewer',
+  employee: 'Employee (own profile)',
 }

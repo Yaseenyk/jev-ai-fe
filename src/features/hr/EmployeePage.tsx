@@ -73,6 +73,7 @@ import { LEVEL_TITLES, date, domainLabel, humanize, levelLabel, locationLabel } 
 import { useUnits } from '@/features/org/api'
 import { SkillSuggestionsPanel } from '@/features/planning/QualityPanels'
 import { LearningPanel, PreferencesPanel } from '@/features/workforce/Panels'
+import { WorkingOnPanel } from '@/features/workforce/MorePages'
 
 const LOCATIONS = ['hyderabad', 'bengaluru', 'pune', 'chennai', 'remote_india', 'usa', 'uk']
 const COST_BANDS = ['A', 'B', 'C', 'D', 'E']
@@ -135,6 +136,7 @@ export default function EmployeePage() {
         <PreferencesPanel employeeId={e.id} />
         <LearningPanel employeeId={e.id} />
       </div>
+      <WorkingOnPanel employeeId={e.id} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-6">

@@ -18,6 +18,7 @@ import {
   useBuildTeam,
   useCapacity,
   useCourses,
+  useDeleteCourse,
   useKeyPersonRisk,
   useLearningOverview,
   useOpportunity,
@@ -509,6 +510,7 @@ export function LearningTab() {
   const skills = useSkills()
   const add = useAddCourse()
   const update = useUpdateAssignment()
+  const remove = useDeleteCourse()
   const [form, setForm] = useState({
     name: '',
     provider: '',
@@ -644,9 +646,19 @@ export function LearningTab() {
                   <span className="font-medium">{c.name}</span>{' '}
                   <span className="text-muted-foreground">· {c.provider}</span>
                 </span>
-                <span className="text-muted-foreground text-xs">
+                <span className="text-muted-foreground flex items-center gap-1 text-xs">
                   {c.skill_name} up to {c.reaches_level}/5 · {c.hours} h · {usd(c.cost_usd)} ·{' '}
                   {c.learners} learning
+                  {canAdd && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label={`Remove course ${c.name}`}
+                      onClick={() => remove.mutate(c.id)}
+                    >
+                      <X aria-hidden />
+                    </Button>
+                  )}
                 </span>
               </li>
             ))}

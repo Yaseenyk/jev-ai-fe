@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
-import type { UserAdmin, UserRole, UserWithPassword } from '@/api/types'
+import { apiFetch } from '@/api/client'
+import type { Page, UserAdmin, UserRole, UserWithPassword } from '@/api/types'
 import { type Column, DataTable, Pagination } from '@/components/DataTable'
 import { FilterBar, FilterSelect, SortSelect } from '@/components/FilterBar'
 import { ErrorState } from '@/components/QueryStates'
@@ -40,6 +41,7 @@ const ROLE_HELP: Record<UserRole, string> = {
   resource_manager: 'Creates tasks, runs matching, decides on people',
   hr: 'Employees, clients, candidates and hiring requests',
   viewer: 'Can look, cannot change anything',
+  employee: 'Sees and updates only their own profile, learning and preferences',
 }
 
 const STATUSES = [
@@ -345,6 +347,7 @@ const schema = z.object({
   email: z.email('Enter a valid email').trim(),
   display_name: z.string().trim().min(1, 'Enter a name').max(100),
   role: z.enum(ROLES),
+  employee_code: z.string().trim().optional(),
 })
 type Values = z.infer<typeof schema>
 
@@ -358,11 +361,25 @@ function AddPersonDialog({
   const create = useCreateUser()
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { email: '', display_name: '', role: 'resource_manager' },
+    defaultValues: { email: '', display_name: '', role: 'resource_manager', employee_code: '' },
   })
   const errors = form.formState.errors
   const role = useWatch({ control: form.control, name: 'role' })
-  const submit = form.handleSubmit((v) => create.mutate(v, { onSuccess: onCreated }))
+  const submit = form.handleSubmit(async ({ employee_code, ...v }) => {
+    let employee_id: string | null = null
+    if (v.role === 'employee') {
+      const code = (employee_code ?? '').toUpperCase()
+      const found = await apiFetch<Page<{ id: string; employee_code: string }>>(
+        `/employees?q=${encodeURIComponent(code)}&limit=5`,
+      )
+      employee_id = found.items.find((e) => e.employee_code.toUpperCase() === code)?.id ?? null
+      if (!employee_id) {
+        form.setError('employee_code', { message: `No employee with code ${code}` })
+        return
+      }
+    }
+    create.mutate({ ...v, employee_id }, { onSuccess: onCreated })
+  })
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -417,6 +434,19 @@ function AddPersonDialog({
             />
             <p className="text-muted-foreground text-xs">{ROLE_HELP[role]}</p>
           </div>
+          {role === 'employee' && (
+            <div className="space-y-1.5">
+              <Label htmlFor="new-employee">Employee code</Label>
+              <Input
+                id="new-employee"
+                placeholder="e.g. SPY-00048"
+                {...form.register('employee_code')}
+              />
+              {errors.employee_code && (
+                <p className="text-destructive text-sm">{errors.employee_code.message}</p>
+              )}
+            </div>
+          )}
         </div>
         {create.isError && <ErrorState error={create.error} />}
         <DialogFooter>

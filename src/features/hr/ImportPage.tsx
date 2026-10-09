@@ -47,6 +47,12 @@ const KINDS: Record<ImportKind, { label: string; help: string; template: string 
     help: 'Adds or updates one skill per row for an existing employee.',
     template: 'employee_code,skill,proficiency,years,last_used\nSPY-00001,SQL,4,3,2026-09-01\n',
   },
+  timesheets: {
+    label: 'Timesheets',
+    help: 'Hours and what people worked on, per day (CSV or Excel). People by employee_code or by name; a day imported again replaces what was there. Shows on each person’s page as “Working on now”.',
+    template:
+      'Name,Date,Hours,Description\nAsha Rao,10/1/2026,8,Built the Databricks pipeline for claims\n',
+  },
 }
 
 export default function ImportPage() {
@@ -106,13 +112,13 @@ export default function ImportPage() {
           </Field>
           <Field
             id="csv"
-            label="CSV file"
+            label={kind === 'timesheets' ? 'CSV or Excel file' : 'CSV file'}
             help="Use the template so the columns are named the way we expect."
           >
             <Input
               id="csv"
               type="file"
-              accept=".csv,text/csv"
+              accept={kind === 'timesheets' ? '.csv,text/csv,.xlsx' : '.csv,text/csv'}
               className="cursor-pointer"
               onChange={(e) => {
                 setFile(e.target.files?.[0] ?? null)

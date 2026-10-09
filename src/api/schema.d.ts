@@ -1377,6 +1377,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/employees/{employee_id}/working-on": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Working On
+         * @description From imported timesheets: hours, days and skills mentioned in the last 14 days.
+         */
+        get: operations["working_on_api_v1_employees__employee_id__working_on_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/eval/reports": {
         parameters: {
             query?: never;
@@ -1611,7 +1631,7 @@ export interface paths {
         put?: never;
         /**
          * Preview Import
-         * @description Check every row of a CSV file; nothing is saved.
+         * @description Check every row of a CSV file (or an Excel timesheet); nothing is saved.
          */
         post: operations["preview_import_api_v1_imports_preview_post"];
         delete?: never;
@@ -1759,6 +1779,83 @@ export interface paths {
         get: operations["shortlist_api_v1_match_runs__run_id__shortlist_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/digest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Digest
+         * @description This week's summary for the signed-in user (sent in-app every Monday).
+         */
+        get: operations["my_digest_api_v1_me_digest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save Preferences
+         * @description What work you would like; shown to managers next to a match, never scored.
+         */
+        put: operations["save_preferences_api_v1_me_preferences_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profile */
+        get: operations["profile_api_v1_me_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/skill-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Skill
+         * @description Tell HR you have a skill at a level; HR confirms it on your profile.
+         */
+        post: operations["request_skill_api_v1_me_skill_requests_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1939,6 +2036,62 @@ export interface paths {
         };
         /** Capacity */
         get: operations["capacity_api_v1_planning_capacity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/deals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Deals */
+        get: operations["list_deals_api_v1_planning_deals_get"];
+        put?: never;
+        /** Add Deal */
+        post: operations["add_deal_api_v1_planning_deals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/deals/{deal_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Deal */
+        delete: operations["delete_deal_api_v1_planning_deals__deal_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Deal */
+        patch: operations["update_deal_api_v1_planning_deals__deal_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/planning/demand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Demand
+         * @description Skills open tasks and likely deals need in 30/60/90 days, against free people.
+         */
+        get: operations["demand_api_v1_planning_demand_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2184,6 +2337,46 @@ export interface paths {
          * @description Company projects, for adding one to an employee's history.
          */
         get: operations["list_projects_api_v1_projects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/savings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Savings
+         * @description This month against last: fills from inside, hires, days to fill, margin placed.
+         */
+        get: operations["savings_api_v1_reports_savings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Setup
+         * @description What a new company still has to do before matching is useful.
+         */
+        get: operations["setup_api_v1_setup_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3381,6 +3574,76 @@ export interface components {
             /** Trusted */
             trusted: number;
         };
+        /** DealIn */
+        DealIn: {
+            /** Client Code */
+            client_code?: string | null;
+            /** Name */
+            name: string;
+            /** Roles */
+            roles: components["schemas"]["DealRole"][];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Weeks */
+            weeks: number;
+            /** Win Pct */
+            win_pct: number;
+        };
+        /** DealRead */
+        DealRead: {
+            /** Client Code */
+            client_code?: string | null;
+            /** Expected People */
+            expected_people: number;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** People */
+            people: number;
+            /** Roles */
+            roles: components["schemas"]["DealRole"][];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            status: components["schemas"]["DealStatus"];
+            /** Weeks */
+            weeks: number;
+            /** Win Pct */
+            win_pct: number;
+        };
+        /** DealRole */
+        DealRole: {
+            /**
+             * Count
+             * @default 1
+             */
+            count: number;
+            level: components["schemas"]["Level"];
+            /** Skill Ids */
+            skill_ids: string[];
+            /** Title */
+            title: string;
+        };
+        /**
+         * DealStatus
+         * @description A sales opportunity that may need people (ADR 032).
+         * @enum {string}
+         */
+        DealStatus: "open" | "won" | "lost";
+        /** DealUpdate */
+        DealUpdate: {
+            /** Start Date */
+            start_date?: string | null;
+            status?: components["schemas"]["DealStatus"] | null;
+            /** Win Pct */
+            win_pct?: number | null;
+        };
         /** DecideBatchIn */
         DecideBatchIn: {
             /** Requests */
@@ -3516,6 +3779,36 @@ export interface components {
             question: string;
             /** Version */
             version: number;
+        };
+        /** DemandForecast */
+        DemandForecast: {
+            /** Deals Open */
+            deals_open: number;
+            /** Expected People */
+            expected_people: number;
+            /** Windows */
+            windows: components["schemas"]["DemandWindow"][];
+        };
+        /** DemandWindow */
+        DemandWindow: {
+            /** Days */
+            days: number;
+            /** Skills */
+            skills: components["schemas"]["SkillDemand"][];
+        };
+        /** Digest */
+        Digest: {
+            /** Lines */
+            lines: components["schemas"]["DigestLine"][];
+            /** Title */
+            title: string;
+        };
+        /** DigestLine */
+        DigestLine: {
+            /** Link */
+            link: string;
+            /** Text */
+            text: string;
         };
         /**
          * Domain
@@ -4348,7 +4641,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "clients" | "employees" | "employee_skills";
+            kind: "clients" | "employees" | "employee_skills" | "timesheets";
             /** Preview Id */
             preview_id: string;
             /** Rows */
@@ -4768,6 +5061,26 @@ export interface components {
             /** Recoverable Usd */
             recoverable_usd: number;
         };
+        /** MonthNumbers */
+        MonthNumbers: {
+            /** Avg Days To Fill */
+            avg_days_to_fill: number | null;
+            /** Filled Inside */
+            filled_inside: number;
+            /** Hires */
+            hires: number;
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** Tasks Filled */
+            tasks_filled: number;
+            /** Weekly Bill Placed Usd */
+            weekly_bill_placed_usd: number;
+            /** Weekly Margin Placed Usd */
+            weekly_margin_placed_usd: number;
+        };
         /** MonthTasks */
         MonthTasks: {
             /** Filled */
@@ -4779,6 +5092,42 @@ export interface components {
             month: string;
             /** Opened */
             opened: number;
+        };
+        /** MyProfile */
+        MyProfile: {
+            career: components["schemas"]["CareerView"] | null;
+            /** Designation */
+            designation: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            /** Learning */
+            learning: components["schemas"]["AssignmentRead"][];
+            /** Level */
+            level: string;
+            /** Pending Skills */
+            pending_skills: components["schemas"]["SkillSuggestionRead"][];
+            preferences: components["schemas"]["PreferencesRead"] | null;
+            /** Skills */
+            skills: components["schemas"]["MySkill"][];
+            working_on: components["schemas"]["WorkingOn"];
+        };
+        /** MySkill */
+        MySkill: {
+            /**
+             * Last Used
+             * Format: date
+             */
+            last_used: string;
+            /** Name */
+            name: string;
+            /** Proficiency */
+            proficiency: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Years */
+            years: number;
         };
         /**
          * MyUnit
@@ -4836,7 +5185,7 @@ export interface components {
          * NotificationKind
          * @enum {string}
          */
-        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit" | "model_ready" | "feedback_report" | "outcome_check";
+        NotificationKind: "request_new" | "request_sent" | "request_reviewed" | "candidate_fit" | "model_ready" | "feedback_report" | "outcome_check" | "weekly_digest";
         /** NotificationRead */
         NotificationRead: {
             /** Body */
@@ -5544,6 +5893,21 @@ export interface components {
          * @enum {string}
          */
         RunStatus: "queued" | "running" | "completed" | "failed";
+        /** SavingsReport */
+        SavingsReport: {
+            /** Bench People Now */
+            bench_people_now: number;
+            /** Hire Cost Assumed Usd */
+            hire_cost_assumed_usd: number;
+            /** Hire Cost Avoided Usd */
+            hire_cost_avoided_usd: number;
+            last_month: components["schemas"]["MonthNumbers"];
+            /** Notes */
+            notes: string[];
+            this_month: components["schemas"]["MonthNumbers"];
+            /** Weekly Idle Cost Now Usd */
+            weekly_idle_cost_now_usd: number;
+        };
         /**
          * ScarceSkill
          * @description A skill open work needs that only one or two people hold at expert level (4+).
@@ -5566,6 +5930,28 @@ export interface components {
         SearchText: {
             /** Q */
             q: string;
+        };
+        /** SetupStatus */
+        SetupStatus: {
+            /** Done */
+            done: number;
+            /** Steps */
+            steps: components["schemas"]["SetupStep"][];
+            /** Total */
+            total: number;
+        };
+        /** SetupStep */
+        SetupStep: {
+            /** Detail */
+            detail: string;
+            /** Done */
+            done: boolean;
+            /** Key */
+            key: string;
+            /** Link */
+            link: string;
+            /** Title */
+            title: string;
         };
         /** ShortlistItemRead */
         ShortlistItemRead: {
@@ -5618,6 +6004,21 @@ export interface components {
             category: components["schemas"]["SkillCategory"];
             /** Name */
             name: string;
+        };
+        /** SkillDemand */
+        SkillDemand: {
+            /** Expected From Deals */
+            expected_from_deals: number;
+            /** Free People */
+            free_people: number;
+            /** Name */
+            name: string;
+            /** Open Tasks */
+            open_tasks: number;
+            /** Shortage */
+            shortage: number;
+            /** Skill Id */
+            skill_id: string;
         };
         /** SkillGap */
         SkillGap: {
@@ -5684,6 +6085,13 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /** SkillRequest */
+        SkillRequest: {
+            /** Proficiency */
+            proficiency: number;
+            /** Skill Id */
+            skill_id: string;
         };
         /** SkillRequirementCreate */
         SkillRequirementCreate: {
@@ -6184,6 +6592,18 @@ export interface components {
             /** Shortlist Min */
             shortlist_min: number;
         };
+        /** TimesheetLine */
+        TimesheetLine: {
+            /** Description */
+            description: string;
+            /** Hours */
+            hours: number;
+            /**
+             * Work Date
+             * Format: date
+             */
+            work_date: string;
+        };
         /** TokenResponse */
         TokenResponse: {
             /** Access Token */
@@ -6223,6 +6643,8 @@ export interface components {
             display_name: string;
             /** Email */
             email: string;
+            /** Employee Id */
+            employee_id?: string | null;
             /** Id */
             id: string;
             /** Is Active */
@@ -6237,6 +6659,8 @@ export interface components {
             display_name: string;
             /** Email */
             email: string;
+            /** Employee Id */
+            employee_id?: string | null;
             role: components["schemas"]["UserRole"];
         };
         /** UserRead */
@@ -6258,11 +6682,13 @@ export interface components {
          * UserRole
          * @enum {string}
          */
-        UserRole: "admin" | "resource_manager" | "hr" | "viewer";
+        UserRole: "admin" | "resource_manager" | "hr" | "viewer" | "employee";
         /** UserUpdate */
         UserUpdate: {
             /** Display Name */
             display_name?: string | null;
+            /** Employee Id */
+            employee_id?: string | null;
             /** Is Active */
             is_active?: boolean | null;
             role?: components["schemas"]["UserRole"] | null;
@@ -6420,6 +6846,19 @@ export interface components {
          * @enum {string}
          */
         WorkMode: "onsite" | "hybrid" | "remote";
+        /** WorkingOn */
+        WorkingOn: {
+            /** Days Logged */
+            days_logged: number;
+            /** Hours Last 14 Days */
+            hours_last_14_days: number;
+            /** Last Logged */
+            last_logged: string | null;
+            /** Latest */
+            latest: components["schemas"]["TimesheetLine"][];
+            /** Skills Mentioned */
+            skills_mentioned: string[];
+        };
         /** ProfileSkill */
         app__schemas__candidates__ProfileSkill: {
             /**
@@ -9028,6 +9467,37 @@ export interface operations {
             };
         };
     };
+    working_on_api_v1_employees__employee_id__working_on_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkingOn"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_reports_api_v1_eval_reports_get: {
         parameters: {
             query?: {
@@ -9707,6 +10177,110 @@ export interface operations {
             };
         };
     };
+    my_digest_api_v1_me_digest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Digest"];
+                };
+            };
+        };
+    };
+    save_preferences_api_v1_me_preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    profile_api_v1_me_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyProfile"];
+                };
+            };
+        };
+    };
+    request_skill_api_v1_me_skill_requests_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     notifications_api_v1_notifications_get: {
         parameters: {
             query?: never;
@@ -10003,6 +10577,143 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_deals_api_v1_planning_deals_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealRead"][];
+                };
+            };
+        };
+    };
+    add_deal_api_v1_planning_deals_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_deal_api_v1_planning_deals__deal_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_deal_api_v1_planning_deals__deal_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                deal_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DealUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DealRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    demand_api_v1_planning_demand_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DemandForecast"];
                 };
             };
         };
@@ -10348,6 +11059,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectOption"][];
+                };
+            };
+        };
+    };
+    savings_api_v1_reports_savings_get: {
+        parameters: {
+            query?: {
+                month?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SavingsReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    setup_api_v1_setup_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetupStatus"];
                 };
             };
         };

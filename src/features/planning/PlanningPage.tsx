@@ -22,6 +22,7 @@ import {
   OpportunityTab,
   TeamBuilderTab,
 } from '@/features/workforce/PlanningTabs'
+import { PipelineTab } from '@/features/workforce/MorePages'
 import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
 import { useTasks } from '@/features/tasks/api'
 import { BAND_LABELS, chance, date, percent } from '@/lib/format'
@@ -53,6 +54,7 @@ export default function PlanningPage() {
           <TabsTrigger value="skills">Skill gaps</TabsTrigger>
           <TabsTrigger value="staffing">Project staffing</TabsTrigger>
           <TabsTrigger value="whatif">What-if</TabsTrigger>
+          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
           <TabsTrigger value="team">Team builder</TabsTrigger>
           <TabsTrigger value="capacity">Capacity</TabsTrigger>
           <TabsTrigger value="keypeople">Key people</TabsTrigger>
@@ -73,6 +75,9 @@ export default function PlanningPage() {
         </TabsContent>
         <TabsContent value="whatif" className="mt-4">
           <WhatIfTab />
+        </TabsContent>
+        <TabsContent value="pipeline" className="mt-4">
+          <PipelineTab />
         </TabsContent>
         <TabsContent value="team" className="mt-4">
           <TeamBuilderTab />

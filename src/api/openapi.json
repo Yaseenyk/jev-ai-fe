@@ -2539,6 +2539,226 @@
         "title": "DataQuality",
         "type": "object"
       },
+      "DealIn": {
+        "properties": {
+          "client_code": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Code"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/DealRole"
+            },
+            "maxItems": 15,
+            "minItems": 1,
+            "title": "Roles",
+            "type": "array"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "weeks": {
+            "maximum": 104.0,
+            "minimum": 1.0,
+            "title": "Weeks",
+            "type": "integer"
+          },
+          "win_pct": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Win Pct",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "win_pct",
+          "start_date",
+          "weeks",
+          "roles"
+        ],
+        "title": "DealIn",
+        "type": "object"
+      },
+      "DealRead": {
+        "properties": {
+          "client_code": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Code"
+          },
+          "expected_people": {
+            "title": "Expected People",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/DealRole"
+            },
+            "maxItems": 15,
+            "minItems": 1,
+            "title": "Roles",
+            "type": "array"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DealStatus"
+          },
+          "weeks": {
+            "maximum": 104.0,
+            "minimum": 1.0,
+            "title": "Weeks",
+            "type": "integer"
+          },
+          "win_pct": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Win Pct",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "win_pct",
+          "start_date",
+          "weeks",
+          "roles",
+          "id",
+          "status",
+          "people",
+          "expected_people"
+        ],
+        "title": "DealRead",
+        "type": "object"
+      },
+      "DealRole": {
+        "properties": {
+          "count": {
+            "default": 1,
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "skill_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Skill Ids",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "level",
+          "skill_ids"
+        ],
+        "title": "DealRole",
+        "type": "object"
+      },
+      "DealStatus": {
+        "description": "A sales opportunity that may need people (ADR 032).",
+        "enum": [
+          "open",
+          "won",
+          "lost"
+        ],
+        "title": "DealStatus",
+        "type": "string"
+      },
+      "DealUpdate": {
+        "properties": {
+          "start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DealStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "win_pct": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Pct"
+          }
+        },
+        "title": "DealUpdate",
+        "type": "object"
+      },
       "DecideBatchIn": {
         "properties": {
           "requests": {
@@ -2902,6 +3122,92 @@
           "min_confidence"
         ],
         "title": "DefinitionRead",
+        "type": "object"
+      },
+      "DemandForecast": {
+        "properties": {
+          "deals_open": {
+            "title": "Deals Open",
+            "type": "integer"
+          },
+          "expected_people": {
+            "title": "Expected People",
+            "type": "number"
+          },
+          "windows": {
+            "items": {
+              "$ref": "#/components/schemas/DemandWindow"
+            },
+            "title": "Windows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "deals_open",
+          "expected_people",
+          "windows"
+        ],
+        "title": "DemandForecast",
+        "type": "object"
+      },
+      "DemandWindow": {
+        "properties": {
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillDemand"
+            },
+            "title": "Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "days",
+          "skills"
+        ],
+        "title": "DemandWindow",
+        "type": "object"
+      },
+      "Digest": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/DigestLine"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "lines"
+        ],
+        "title": "Digest",
+        "type": "object"
+      },
+      "DigestLine": {
+        "properties": {
+          "link": {
+            "title": "Link",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "link"
+        ],
+        "title": "DigestLine",
         "type": "object"
       },
       "Domain": {
@@ -5346,7 +5652,8 @@
             "enum": [
               "clients",
               "employees",
-              "employee_skills"
+              "employee_skills",
+              "timesheets"
             ],
             "title": "Kind",
             "type": "string"
@@ -6594,6 +6901,57 @@
         "title": "MonthIdleCost",
         "type": "object"
       },
+      "MonthNumbers": {
+        "properties": {
+          "avg_days_to_fill": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Days To Fill"
+          },
+          "filled_inside": {
+            "title": "Filled Inside",
+            "type": "integer"
+          },
+          "hires": {
+            "title": "Hires",
+            "type": "integer"
+          },
+          "month": {
+            "format": "date",
+            "title": "Month",
+            "type": "string"
+          },
+          "tasks_filled": {
+            "title": "Tasks Filled",
+            "type": "integer"
+          },
+          "weekly_bill_placed_usd": {
+            "title": "Weekly Bill Placed Usd",
+            "type": "integer"
+          },
+          "weekly_margin_placed_usd": {
+            "title": "Weekly Margin Placed Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "tasks_filled",
+          "filled_inside",
+          "hires",
+          "avg_days_to_fill",
+          "weekly_bill_placed_usd",
+          "weekly_margin_placed_usd"
+        ],
+        "title": "MonthNumbers",
+        "type": "object"
+      },
       "MonthTasks": {
         "properties": {
           "filled": {
@@ -6616,6 +6974,118 @@
           "filled"
         ],
         "title": "MonthTasks",
+        "type": "object"
+      },
+      "MyProfile": {
+        "properties": {
+          "career": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CareerView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "learning": {
+            "items": {
+              "$ref": "#/components/schemas/AssignmentRead"
+            },
+            "title": "Learning",
+            "type": "array"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "pending_skills": {
+            "items": {
+              "$ref": "#/components/schemas/SkillSuggestionRead"
+            },
+            "title": "Pending Skills",
+            "type": "array"
+          },
+          "preferences": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PreferencesRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/MySkill"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "working_on": {
+            "$ref": "#/components/schemas/WorkingOn"
+          }
+        },
+        "required": [
+          "employee_id",
+          "full_name",
+          "designation",
+          "level",
+          "skills",
+          "pending_skills",
+          "learning",
+          "preferences",
+          "working_on",
+          "career"
+        ],
+        "title": "MyProfile",
+        "type": "object"
+      },
+      "MySkill": {
+        "properties": {
+          "last_used": {
+            "format": "date",
+            "title": "Last Used",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "proficiency": {
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "years": {
+            "title": "Years",
+            "type": "number"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name",
+          "proficiency",
+          "years",
+          "last_used"
+        ],
+        "title": "MySkill",
         "type": "object"
       },
       "MyUnit": {
@@ -6750,7 +7220,8 @@
           "candidate_fit",
           "model_ready",
           "feedback_report",
-          "outcome_check"
+          "outcome_check",
+          "weekly_digest"
         ],
         "title": "NotificationKind",
         "type": "string"
@@ -8783,6 +9254,50 @@
         "title": "RunStatus",
         "type": "string"
       },
+      "SavingsReport": {
+        "properties": {
+          "bench_people_now": {
+            "title": "Bench People Now",
+            "type": "integer"
+          },
+          "hire_cost_assumed_usd": {
+            "title": "Hire Cost Assumed Usd",
+            "type": "integer"
+          },
+          "hire_cost_avoided_usd": {
+            "title": "Hire Cost Avoided Usd",
+            "type": "integer"
+          },
+          "last_month": {
+            "$ref": "#/components/schemas/MonthNumbers"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "this_month": {
+            "$ref": "#/components/schemas/MonthNumbers"
+          },
+          "weekly_idle_cost_now_usd": {
+            "title": "Weekly Idle Cost Now Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "this_month",
+          "last_month",
+          "bench_people_now",
+          "weekly_idle_cost_now_usd",
+          "hire_cost_avoided_usd",
+          "hire_cost_assumed_usd",
+          "notes"
+        ],
+        "title": "SavingsReport",
+        "type": "object"
+      },
       "ScarceSkill": {
         "description": "A skill open work needs that only one or two people hold at expert level (4+).",
         "properties": {
@@ -8841,6 +9356,65 @@
           "q"
         ],
         "title": "SearchText",
+        "type": "object"
+      },
+      "SetupStatus": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "integer"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/SetupStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "done",
+          "total",
+          "steps"
+        ],
+        "title": "SetupStatus",
+        "type": "object"
+      },
+      "SetupStep": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "done": {
+            "title": "Done",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "link": {
+            "title": "Link",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "done",
+          "detail",
+          "link"
+        ],
+        "title": "SetupStep",
         "type": "object"
       },
       "ShortlistItemRead": {
@@ -9020,6 +9594,44 @@
         "title": "SkillCreate",
         "type": "object"
       },
+      "SkillDemand": {
+        "properties": {
+          "expected_from_deals": {
+            "title": "Expected From Deals",
+            "type": "number"
+          },
+          "free_people": {
+            "title": "Free People",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "open_tasks": {
+            "title": "Open Tasks",
+            "type": "integer"
+          },
+          "shortage": {
+            "title": "Shortage",
+            "type": "number"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name",
+          "open_tasks",
+          "expected_from_deals",
+          "free_people",
+          "shortage"
+        ],
+        "title": "SkillDemand",
+        "type": "object"
+      },
       "SkillGap": {
         "properties": {
           "available_now": {
@@ -9190,6 +9802,26 @@
           "name"
         ],
         "title": "SkillRef",
+        "type": "object"
+      },
+      "SkillRequest": {
+        "properties": {
+          "proficiency": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Proficiency",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id",
+          "proficiency"
+        ],
+        "title": "SkillRequest",
         "type": "object"
       },
       "SkillRequirementCreate": {
@@ -10679,6 +11311,30 @@
         "title": "ThresholdsUpdate",
         "type": "object"
       },
+      "TimesheetLine": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "hours": {
+            "title": "Hours",
+            "type": "number"
+          },
+          "work_date": {
+            "format": "date",
+            "title": "Work Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "work_date",
+          "hours",
+          "description"
+        ],
+        "title": "TimesheetLine",
+        "type": "object"
+      },
       "TokenResponse": {
         "properties": {
           "access_token": {
@@ -10748,6 +11404,17 @@
             "title": "Email",
             "type": "string"
           },
+          "employee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employee Id"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -10789,6 +11456,17 @@
             "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
             "title": "Email",
             "type": "string"
+          },
+          "employee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employee Id"
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -10839,7 +11517,8 @@
           "admin",
           "resource_manager",
           "hr",
-          "viewer"
+          "viewer",
+          "employee"
         ],
         "title": "UserRole",
         "type": "string"
@@ -10858,6 +11537,17 @@
               }
             ],
             "title": "Display Name"
+          },
+          "employee_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employee Id"
           },
           "is_active": {
             "anyOf": [
@@ -11260,6 +11950,53 @@
         ],
         "title": "WorkMode",
         "type": "string"
+      },
+      "WorkingOn": {
+        "properties": {
+          "days_logged": {
+            "title": "Days Logged",
+            "type": "integer"
+          },
+          "hours_last_14_days": {
+            "title": "Hours Last 14 Days",
+            "type": "number"
+          },
+          "last_logged": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Logged"
+          },
+          "latest": {
+            "items": {
+              "$ref": "#/components/schemas/TimesheetLine"
+            },
+            "title": "Latest",
+            "type": "array"
+          },
+          "skills_mentioned": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skills Mentioned",
+            "type": "array"
+          }
+        },
+        "required": [
+          "hours_last_14_days",
+          "days_logged",
+          "skills_mentioned",
+          "latest",
+          "last_logged"
+        ],
+        "title": "WorkingOn",
+        "type": "object"
       },
       "app__schemas__candidates__ProfileSkill": {
         "properties": {
@@ -15479,6 +16216,55 @@
         ]
       }
     },
+    "/api/v1/employees/{employee_id}/working-on": {
+      "get": {
+        "description": "From imported timesheets: hours, days and skills mentioned in the last 14 days.",
+        "operationId": "working_on_api_v1_employees__employee_id__working_on_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkingOn"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Working On",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
     "/api/v1/eval/reports": {
       "get": {
         "operationId": "list_reports_api_v1_eval_reports_get",
@@ -16129,7 +16915,7 @@
     },
     "/api/v1/imports/preview": {
       "post": {
-        "description": "Check every row of a CSV file; nothing is saved.",
+        "description": "Check every row of a CSV file (or an Excel timesheet); nothing is saved.",
         "operationId": "preview_import_api_v1_imports_preview_post",
         "requestBody": {
           "content": {
@@ -16634,6 +17420,146 @@
         ]
       }
     },
+    "/api/v1/me/digest": {
+      "get": {
+        "description": "This week's summary for the signed-in user (sent in-app every Monday).",
+        "operationId": "my_digest_api_v1_me_digest_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Digest"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "My Digest",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/me/preferences": {
+      "put": {
+        "description": "What work you would like; shown to managers next to a match, never scored.",
+        "operationId": "save_preferences_api_v1_me_preferences_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Preferences",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/profile": {
+      "get": {
+        "operationId": "profile_api_v1_me_profile_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyProfile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Profile",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/me/skill-requests": {
+      "post": {
+        "description": "Tell HR you have a skill at a level; HR confirms it on your profile.",
+        "operationId": "request_skill_api_v1_me_skill_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Request Skill",
+        "tags": [
+          "me"
+        ]
+      }
+    },
     "/api/v1/notifications": {
       "get": {
         "operationId": "notifications_api_v1_notifications_get",
@@ -17099,6 +18025,204 @@
           }
         ],
         "summary": "Capacity",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/planning/deals": {
+      "get": {
+        "operationId": "list_deals_api_v1_planning_deals_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DealRead"
+                  },
+                  "title": "Response List Deals Api V1 Planning Deals Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Deals",
+        "tags": [
+          "workforce"
+        ]
+      },
+      "post": {
+        "operationId": "add_deal_api_v1_planning_deals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DealIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DealRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Deal",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/planning/deals/{deal_id}": {
+      "delete": {
+        "operationId": "delete_deal_api_v1_planning_deals__deal_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "deal_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Deal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Deal",
+        "tags": [
+          "workforce"
+        ]
+      },
+      "patch": {
+        "operationId": "update_deal_api_v1_planning_deals__deal_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "deal_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Deal Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DealUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DealRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Deal",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/planning/demand": {
+      "get": {
+        "description": "Skills open tasks and likely deals need in 30/60/90 days, against free people.",
+        "operationId": "demand_api_v1_planning_demand_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemandForecast"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Demand",
         "tags": [
           "workforce"
         ]
@@ -17628,6 +18752,89 @@
         "summary": "List Projects",
         "tags": [
           "employees"
+        ]
+      }
+    },
+    "/api/v1/reports/savings": {
+      "get": {
+        "description": "This month against last: fills from inside, hires, days to fill, margin placed.",
+        "operationId": "savings_api_v1_reports_savings_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavingsReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Savings",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/setup": {
+      "get": {
+        "description": "What a new company still has to do before matching is useful.",
+        "operationId": "setup_api_v1_setup_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupStatus"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Setup",
+        "tags": [
+          "reports"
         ]
       }
     },

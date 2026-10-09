@@ -82,6 +82,7 @@ const IMPORT_COLUMNS: Record<ImportKind, string[]> = {
     'cost_band',
   ],
   employee_skills: ['employee_code', 'skill', 'proficiency', 'years', 'last_used'],
+  timesheets: ['date', 'hours'],
 }
 const LEVELS = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
 

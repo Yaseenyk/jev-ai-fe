@@ -5,10 +5,15 @@ import type {
   CapacityReport,
   CourseIn,
   CourseRead,
+  DealIn,
+  DealRead,
+  DemandForecast,
+  Digest,
   InterpretedSearch,
   InterviewPlan,
   KeyPersonReport,
   LearningStatus,
+  MyProfile,
   OpportunityReport,
   PeopleFilters,
   PeopleSearchResult,
@@ -16,8 +21,11 @@ import type {
   PreferencesIn,
   PreferencesRead,
   RfpDrafts,
+  SavingsReport,
+  SetupStatus,
   TeamIn,
   TeamPlan,
+  WorkingOn,
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
 import hrData from '@/mocks/data/hr.json'
@@ -49,6 +57,9 @@ export function createWorkforceHandlers(db: Db) {
   const prefs = new Map<string, PreferencesRead>()
   const courses: CourseRead[] = []
   const plans: AssignmentRead[] = []
+  const deals: DealRead[] = []
+  const myRequests: string[] = []
+  let myPrefs: PreferencesRead | null = null
   const skillName = (id: string) => db.skills.find((s) => s.id === id)?.name ?? id
   const firstSkill = db.skills[0]
 
@@ -289,6 +300,183 @@ export function createWorkforceHandlers(db: Db) {
       a.status = status
       a.completed_at = status === 'done' ? new Date().toISOString() : null
       return HttpResponse.json(a)
+    }),
+
+    // --- ADR 032 -----------------------------------------------------------------------------
+    http.delete(api('/courses/:id'), ({ params }) => {
+      const i = courses.findIndex((c) => c.id === params.id)
+      if (i >= 0) courses.splice(i, 1)
+      return new HttpResponse(null, { status: 204 })
+    }),
+    http.get(api('/planning/deals'), () => HttpResponse.json(deals)),
+    http.post(api('/planning/deals'), async ({ request }) => {
+      const body = (await request.json()) as DealIn
+      const people = body.roles.reduce((n, r) => n + r.count, 0)
+      const d: DealRead = {
+        ...body,
+        client_code: body.client_code ?? null,
+        id: crypto.randomUUID(),
+        status: 'open',
+        people,
+        expected_people: Math.round(people * body.win_pct) / 100,
+      }
+      deals.push(d)
+      return HttpResponse.json(d, { status: 201 })
+    }),
+    http.patch(api('/planning/deals/:id'), async ({ params, request }) => {
+      const d = deals.find((x) => x.id === params.id)
+      if (!d) return HttpResponse.json({ code: 'deal_not_found' }, { status: 404 })
+      Object.assign(d, (await request.json()) as Partial<DealRead>)
+      return HttpResponse.json(d)
+    }),
+    http.delete(api('/planning/deals/:id'), ({ params }) => {
+      const i = deals.findIndex((x) => x.id === params.id)
+      if (i >= 0) deals.splice(i, 1)
+      return new HttpResponse(null, { status: 204 })
+    }),
+    http.get(api('/planning/demand'), () => {
+      const live = deals.filter((d) => d.status !== 'lost')
+      const expected = new Map<string, number>()
+      for (const d of live)
+        for (const r of d.roles)
+          for (const s of r.skill_ids)
+            expected.set(
+              s,
+              (expected.get(s) ?? 0) + (r.count * (d.status === 'won' ? 100 : d.win_pct)) / 100,
+            )
+      const skills = [...expected].map(([id, n]) => ({
+        skill_id: id,
+        name: skillName(id),
+        open_tasks: 1,
+        expected_from_deals: n,
+        free_people: 1,
+        shortage: n,
+      }))
+      return HttpResponse.json<DemandForecast>({
+        deals_open: deals.filter((d) => d.status === 'open').length,
+        expected_people: live.reduce((n, d) => n + d.expected_people, 0),
+        windows: [30, 60, 90].map((days) => ({ days, skills })),
+      })
+    }),
+    http.get(api('/employees/:id/working-on'), () =>
+      HttpResponse.json<WorkingOn>({
+        hours_last_14_days: 72,
+        days_logged: 9,
+        skills_mentioned: ['Databricks', 'Python'],
+        latest: [
+          {
+            work_date: '2026-10-08',
+            hours: 8,
+            description: 'Claims pipeline on Databricks; Python data checks.',
+          },
+        ],
+        last_logged: '2026-10-08',
+      }),
+    ),
+    http.get(api('/reports/savings'), () => {
+      const month = (m: string, n: number) => ({
+        month: m,
+        tasks_filled: n,
+        filled_inside: n - 1,
+        hires: 1,
+        avg_days_to_fill: 6.5,
+        weekly_bill_placed_usd: 2100 * (n - 1),
+        weekly_margin_placed_usd: 800 * (n - 1),
+      })
+      return HttpResponse.json<SavingsReport>({
+        this_month: month('2026-10-01', 4),
+        last_month: month('2026-09-01', 2),
+        bench_people_now: 41,
+        weekly_idle_cost_now_usd: 38500,
+        hire_cost_avoided_usd: 12000,
+        hire_cost_assumed_usd: 4000,
+        notes: ['Bench and idle cost are the figures for today.'],
+      })
+    }),
+    http.get(api('/setup'), () =>
+      HttpResponse.json<SetupStatus>({
+        done: 2,
+        total: 3,
+        steps: [
+          {
+            key: 'employees',
+            title: 'Import your employees',
+            done: true,
+            detail: '720 employees',
+            link: '/import',
+          },
+          {
+            key: 'units',
+            title: 'Set up business units',
+            done: true,
+            detail: 'Units and heads',
+            link: '/company?tab=units',
+          },
+          {
+            key: 'rates',
+            title: 'Enter your rate card',
+            done: false,
+            detail: 'Real rates make margins real.',
+            link: '/admin?tab=rate-card',
+          },
+        ],
+      }),
+    ),
+    http.get(api('/me/digest'), () =>
+      HttpResponse.json<Digest>({
+        title: 'Your week',
+        lines: [{ text: '3 open tasks; 1 not matched yet', link: '/tasks' }],
+      }),
+    ),
+    http.get(api('/me/profile'), () => {
+      const e = employees[0] as MockEmployee
+      return HttpResponse.json<MyProfile>({
+        employee_id: e.id,
+        full_name: e.full_name,
+        designation: e.designation,
+        level: e.level,
+        skills: db.skills.slice(0, 3).map((s, i) => ({
+          skill_id: s.id,
+          name: s.name,
+          proficiency: 4 - i,
+          years: 3,
+          last_used: '2026-09-01',
+        })),
+        pending_skills: myRequests.map((r) => ({
+          id: r,
+          skill_id: r,
+          skill_name: skillName(r),
+          source: 'Self-reported',
+          evidence_date: '2026-10-09',
+        })),
+        learning: [],
+        preferences: myPrefs,
+        working_on: {
+          hours_last_14_days: 0,
+          days_logged: 0,
+          skills_mentioned: [],
+          latest: [],
+          last_logged: null,
+        },
+        career: null,
+      })
+    }),
+    http.post(api('/me/skill-requests'), async ({ request }) => {
+      const { skill_id } = (await request.json()) as { skill_id: string }
+      myRequests.push(skill_id)
+      return new HttpResponse(null, { status: 204 })
+    }),
+    http.put(api('/me/preferences'), async ({ request }) => {
+      const body = (await request.json()) as PreferencesIn
+      myPrefs = {
+        domains: body.domains ?? [],
+        skill_ids: body.skill_ids ?? [],
+        skill_names: (body.skill_ids ?? []).map(skillName),
+        locations: body.locations ?? [],
+        consent_at: new Date().toISOString(),
+        recorded_by: 'me',
+      }
+      return HttpResponse.json(myPrefs)
     }),
   ]
 }
