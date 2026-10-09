@@ -7554,6 +7554,25 @@
         "title": "ShortlistItemRead",
         "type": "object"
       },
+      "SkillAliasesIn": {
+        "description": "Other names for an existing skill, e.g. \"RESTful APIs\" for REST API Design (ADR 029).",
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "title": "Aliases",
+            "type": "array"
+          }
+        },
+        "required": [
+          "aliases"
+        ],
+        "title": "SkillAliasesIn",
+        "type": "object"
+      },
       "SkillCategory": {
         "enum": [
           "language",
@@ -15293,6 +15312,65 @@
           }
         ],
         "summary": "Add Skill",
+        "tags": [
+          "reference"
+        ]
+      }
+    },
+    "/api/v1/skills/{skill_id}/aliases": {
+      "post": {
+        "description": "Add other names for a skill, so resumes, imports and task text that use them map to it.\n404 `skill_not_found`; 409 `skill_exists` when a name is another skill's name or alias.",
+        "operationId": "add_aliases_api_v1_skills__skill_id__aliases_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "skill_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Skill Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillAliasesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Aliases",
         "tags": [
           "reference"
         ]

@@ -1973,6 +1973,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/skills/{skill_id}/aliases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Aliases
+         * @description Add other names for a skill, so resumes, imports and task text that use them map to it.
+         *     404 `skill_not_found`; 409 `skill_exists` when a name is another skill's name or alias.
+         */
+        post: operations["add_aliases_api_v1_skills__skill_id__aliases_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tasks": {
         parameters: {
             query?: never;
@@ -4810,6 +4831,14 @@ export interface components {
             /** Rank Score */
             rank_score: number;
             resume?: components["schemas"]["ResumeBacking"] | null;
+        };
+        /**
+         * SkillAliasesIn
+         * @description Other names for an existing skill, e.g. "RESTful APIs" for REST API Design (ADR 029).
+         */
+        SkillAliasesIn: {
+            /** Aliases */
+            aliases: string[];
         };
         /**
          * SkillCategory
@@ -9004,6 +9033,41 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_aliases_api_v1_skills__skill_id__aliases_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                skill_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillAliasesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
