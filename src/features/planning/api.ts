@@ -66,8 +66,11 @@ export function useRateCard() {
 export function useSaveRateCard() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (rows: RateCardLine[]) =>
-      apiFetch<RateCard>('/admin/rate-card', { method: 'PUT', body: JSON.stringify({ rows }) }),
+    mutationFn: ({ rows, target }: { rows: RateCardLine[]; target: number }) =>
+      apiFetch<RateCard>('/admin/rate-card', {
+        method: 'PUT',
+        body: JSON.stringify({ rows, margin_target_pct: target }),
+      }),
     onSuccess: (data) => qc.setQueryData(RATE_CARD, data),
   })
 }

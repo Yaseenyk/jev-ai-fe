@@ -71,6 +71,7 @@ import { ProfileStatus, ago } from '@/features/hr/EmployeesPage'
 import { useSkills } from '@/features/newTask/api'
 import { LEVEL_TITLES, date, domainLabel, humanize, levelLabel, locationLabel } from '@/lib/format'
 import { useUnits } from '@/features/org/api'
+import { SkillSuggestionsPanel } from '@/features/planning/QualityPanels'
 
 const LOCATIONS = ['hyderabad', 'bengaluru', 'pune', 'chennai', 'remote_india', 'usa', 'uk']
 const COST_BANDS = ['A', 'B', 'C', 'D', 'E']
@@ -128,6 +129,7 @@ export default function EmployeePage() {
       />
       <Attention employee={e} />
       <UnitPicker employeeId={e.id} current={e.business_unit_id ?? null} />
+      <SkillSuggestionsPanel employeeId={e.id} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-6">

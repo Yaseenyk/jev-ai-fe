@@ -23,6 +23,7 @@ import PlanningPage from '@/features/planning/PlanningPage'
 import RunPage from '@/features/runs/RunPage'
 import TaskDetailPage from '@/features/tasks/TaskDetailPage'
 import TaskListPage from '@/features/tasks/TaskListPage'
+import CareerPage from '@/features/planning/CareerPage'
 
 /** HR start on their own home; everyone else on the task board. */
 function HomeRedirect() {
@@ -56,6 +57,7 @@ export const routes = [
       { path: 'planning', element: <PlanningPage /> },
       { path: 'planning/people/:employeeId', element: <EmployeeValuePage /> },
       { path: 'planning/people/:employeeId/profile', element: <ClientProfilePage /> },
+      { path: 'planning/people/:employeeId/career', element: <CareerPage /> },
       { path: 'admin', element: <AdminPage /> },
       { path: 'company', element: <CompanyPage /> },
       { path: 'clients', element: <Navigate to="/company?tab=clients" replace /> },

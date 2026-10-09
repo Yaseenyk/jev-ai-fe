@@ -73,6 +73,7 @@ function problem(status: number, code: string, detail: string) {
 export function createPlanningHandlers(db: Db) {
   let rates = DEFAULT_RATES
   let synthetic = true
+  let target = TARGET
 
   const margin = (band: CostBand): Margin => {
     const r = rates.find((x) => x.cost_band === band) ?? {
@@ -399,16 +400,20 @@ export function createPlanningHandlers(db: Db) {
     }),
 
     http.get(api('/admin/rate-card'), () =>
-      HttpResponse.json<RateCard>({ rows: rates, margin_target_pct: TARGET, synthetic }),
+      HttpResponse.json<RateCard>({ rows: rates, margin_target_pct: target, synthetic }),
     ),
     http.put(api('/admin/rate-card'), async ({ request }) => {
-      const { rows } = (await request.json()) as { rows: RateCardLine[] }
+      const { rows, margin_target_pct } = (await request.json()) as {
+        rows: RateCardLine[]
+        margin_target_pct?: number | null
+      }
       if (new Set(rows.map((r) => r.cost_band)).size !== 5) {
         return problem(422, 'rate_card_incomplete', 'Give one row for every cost band A-E')
       }
       rates = rows
       synthetic = false
-      return HttpResponse.json<RateCard>({ rows: rates, margin_target_pct: TARGET, synthetic })
+      if (margin_target_pct != null) target = margin_target_pct
+      return HttpResponse.json<RateCard>({ rows: rates, margin_target_pct: target, synthetic })
     }),
 
     http.get(api('/admin/audit/decisions.csv'), () =>
