@@ -23,6 +23,7 @@ import {
   TeamBuilderTab,
 } from '@/features/workforce/PlanningTabs'
 import { PipelineTab } from '@/features/workforce/MorePages'
+import { BenchPlanTab } from '@/features/workforce/BenchPlanTab'
 import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
 import { useTasks } from '@/features/tasks/api'
 import { BAND_LABELS, chance, date, percent } from '@/lib/format'
@@ -50,6 +51,7 @@ export default function PlanningPage() {
       <Tabs value={f.tab} onValueChange={(tab) => set({ tab })}>
         <TabsList>
           <TabsTrigger value="bench">Bench</TabsTrigger>
+          <TabsTrigger value="benchplan">Bench plan</TabsTrigger>
           <TabsTrigger value="rolloffs">Rolling off</TabsTrigger>
           <TabsTrigger value="skills">Skill gaps</TabsTrigger>
           <TabsTrigger value="staffing">Project staffing</TabsTrigger>
@@ -63,6 +65,9 @@ export default function PlanningPage() {
         </TabsList>
         <TabsContent value="bench" className="mt-4">
           <BenchTab />
+        </TabsContent>
+        <TabsContent value="benchplan" className="mt-4">
+          <BenchPlanTab />
         </TabsContent>
         <TabsContent value="skills" className="mt-4">
           <SkillGapsTab />

@@ -587,6 +587,45 @@
         "title": "BenchPerson",
         "type": "object"
       },
+      "BenchPlan": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BenchStep"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          },
+          "steps": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Steps",
+            "type": "object"
+          },
+          "waiting": {
+            "title": "Waiting",
+            "type": "integer"
+          },
+          "weekly_idle_cost_usd": {
+            "title": "Weekly Idle Cost Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "people",
+          "weekly_idle_cost_usd",
+          "steps",
+          "waiting",
+          "items"
+        ],
+        "title": "BenchPlan",
+        "type": "object"
+      },
       "BenchReport": {
         "properties": {
           "items": {
@@ -620,6 +659,131 @@
           "offset"
         ],
         "title": "BenchReport",
+        "type": "object"
+      },
+      "BenchStep": {
+        "description": "One concrete next step for a person on (or about to join) the bench.",
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanningActionRead"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "course_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Course Id"
+          },
+          "days_on_bench": {
+            "title": "Days On Bench",
+            "type": "integer"
+          },
+          "free_from": {
+            "format": "date",
+            "title": "Free From",
+            "type": "string"
+          },
+          "free_now_pct": {
+            "title": "Free Now Pct",
+            "type": "integer"
+          },
+          "opens_tasks": {
+            "default": 0,
+            "title": "Opens Tasks",
+            "type": "integer"
+          },
+          "person": {
+            "$ref": "#/components/schemas/PersonRef"
+          },
+          "skill_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill Id"
+          },
+          "skill_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skill Name"
+          },
+          "step": {
+            "title": "Step",
+            "type": "string"
+          },
+          "target_level": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Level"
+          },
+          "task_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Code"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "weekly_idle_cost_usd": {
+            "title": "Weekly Idle Cost Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "person",
+          "free_from",
+          "free_now_pct",
+          "days_on_bench",
+          "weekly_idle_cost_usd",
+          "step",
+          "text"
+        ],
+        "title": "BenchStep",
         "type": "object"
       },
       "BenchSummary": {
@@ -17977,6 +18141,33 @@
         "summary": "Bench",
         "tags": [
           "planning"
+        ]
+      }
+    },
+    "/api/v1/planning/bench-plan": {
+      "get": {
+        "description": "One next step for everyone free now or within two weeks (ADR 033).",
+        "operationId": "bench_plan_api_v1_planning_bench_plan_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BenchPlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Bench Plan",
+        "tags": [
+          "workforce"
         ]
       }
     },

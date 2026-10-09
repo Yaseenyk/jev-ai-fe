@@ -2027,6 +2027,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/planning/bench-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Bench Plan
+         * @description One next step for everyone free now or within two weeks (ADR 033).
+         */
+        get: operations["bench_plan_api_v1_planning_bench_plan_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/planning/capacity": {
         parameters: {
             query?: never;
@@ -2917,6 +2937,21 @@ export interface components {
             /** Weekly Idle Cost Usd */
             weekly_idle_cost_usd: number;
         };
+        /** BenchPlan */
+        BenchPlan: {
+            /** Items */
+            items: components["schemas"]["BenchStep"][];
+            /** People */
+            people: number;
+            /** Steps */
+            steps: {
+                [key: string]: number;
+            };
+            /** Waiting */
+            waiting: number;
+            /** Weekly Idle Cost Usd */
+            weekly_idle_cost_usd: number;
+        };
         /** BenchReport */
         BenchReport: {
             /** Items */
@@ -2928,6 +2963,46 @@ export interface components {
             summary: components["schemas"]["BenchSummary"];
             /** Total */
             total: number;
+        };
+        /**
+         * BenchStep
+         * @description One concrete next step for a person on (or about to join) the bench.
+         */
+        BenchStep: {
+            action?: components["schemas"]["PlanningActionRead"] | null;
+            /** Course Id */
+            course_id?: string | null;
+            /** Days On Bench */
+            days_on_bench: number;
+            /**
+             * Free From
+             * Format: date
+             */
+            free_from: string;
+            /** Free Now Pct */
+            free_now_pct: number;
+            /**
+             * Opens Tasks
+             * @default 0
+             */
+            opens_tasks: number;
+            person: components["schemas"]["PersonRef"];
+            /** Skill Id */
+            skill_id?: string | null;
+            /** Skill Name */
+            skill_name?: string | null;
+            /** Step */
+            step: string;
+            /** Target Level */
+            target_level?: number | null;
+            /** Task Code */
+            task_code?: string | null;
+            /** Task Id */
+            task_id?: string | null;
+            /** Text */
+            text: string;
+            /** Weekly Idle Cost Usd */
+            weekly_idle_cost_usd: number;
         };
         /** BenchSummary */
         BenchSummary: {
@@ -10546,6 +10621,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bench_plan_api_v1_planning_bench_plan_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BenchPlan"];
                 };
             };
         };
