@@ -23,6 +23,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 
 import { apiFetch } from '@/api/client'
 import type { Page, Task } from '@/api/types'
+import { ThemeSwitch } from '@/components/ThemeSwitch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   CHANGE_PASSWORD_PATH,
@@ -285,36 +286,11 @@ function SearchBox({ className }: { className?: string }) {
   )
 }
 
-function ThemeSwitch() {
-  const { theme, setTheme } = useTheme()
-  const option = (value: 'light' | 'dark', label: string, Icon: typeof Sun) => (
-    <button
-      type="button"
-      onClick={() => setTheme(value)}
-      aria-pressed={theme === value}
-      className={cn(
-        'flex h-8 flex-1 items-center justify-center gap-1.5 rounded-lg text-xs font-medium transition-colors',
-        theme === value
-          ? 'bg-surface text-foreground shadow-sm'
-          : 'text-muted-foreground hover:text-foreground',
-      )}
-    >
-      <Icon className="size-3.5" aria-hidden /> {label}
-    </button>
-  )
-  return (
-    <div className="bg-muted flex gap-1 rounded-xl p-1" role="group" aria-label="Colour theme">
-      {option('light', 'Light', Sun)}
-      {option('dark', 'Dark', Moon)}
-    </div>
-  )
-}
-
 function PilotCard() {
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-200 via-fuchsia-100 to-pink-200 p-4 dark:from-violet-950 dark:via-fuchsia-950 dark:to-pink-950">
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-200 via-fuchsia-100 to-pink-200 p-4 dark:border dark:border-violet-400/20 dark:from-violet-500/20 dark:via-fuchsia-500/10 dark:to-pink-500/15">
       <div
-        className="absolute -top-6 -right-6 size-24 rounded-full bg-gradient-to-br from-violet-500/40 to-pink-500/30 blur-xl"
+        className="absolute -top-6 -right-6 size-24 rounded-full bg-gradient-to-br from-violet-500/40 to-pink-500/30 blur-xl dark:from-violet-400/25 dark:to-pink-400/15"
         aria-hidden
       />
       <Sparkles className="relative size-6 text-violet-600 dark:text-violet-300" aria-hidden />

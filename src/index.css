@@ -109,49 +109,51 @@
 }
 
 .dark {
-  --background: #12101f;
-  --surface: #1c1a2e;
-  --foreground: #ecebf7;
-  --card: #1c1a2e;
-  --card-foreground: #ecebf7;
-  --popover: #1f1d33;
-  --popover-foreground: #ecebf7;
-  --primary: #8c7cff;
-  --primary-foreground: #14112b;
-  --band-shortlist: oklch(0.32 0.06 155);
-  --band-shortlist-foreground: oklch(0.86 0.1 155);
-  --band-review: oklch(0.33 0.06 75);
-  --band-review-foreground: oklch(0.88 0.1 85);
-  --band-hidden: #2a2840;
-  --band-hidden-foreground: #b1afc9;
-  --priority-critical: #f2708a;
-  --priority-high: #f0a35a;
-  --priority-medium: #8fa9ee;
-  --priority-low: #6f6c8c;
-  --secondary: #26243b;
-  --secondary-foreground: #ecebf7;
-  --muted: #24223a;
-  --muted-foreground: #a3a1bd;
-  --accent: #2c2750;
-  --accent-foreground: #cfc8ff;
-  --destructive: #f2708a;
-  --border: #2b2942;
-  --input: #3a3756;
-  --ring: #8c7cff;
+  /* Neutral navy base with violet accents. Cards sit a clear step above the canvas and carry a
+     faint outline, because shadows do not show on dark. */
+  --background: #0c0e17;
+  --surface: #161926;
+  --foreground: #e9eaf3;
+  --card: #161926;
+  --card-foreground: #e9eaf3;
+  --popover: #1b1f2e;
+  --popover-foreground: #e9eaf3;
+  --primary: #7462f5;
+  --primary-foreground: #ffffff;
+  --band-shortlist: rgb(52 211 153 / 0.14);
+  --band-shortlist-foreground: #6ee7b7;
+  --band-review: rgb(251 191 36 / 0.14);
+  --band-review-foreground: #fcd34d;
+  --band-hidden: rgb(148 163 184 / 0.14);
+  --band-hidden-foreground: #b6bfcf;
+  --priority-critical: #fb7185;
+  --priority-high: #fbbf24;
+  --priority-medium: #93b4f5;
+  --priority-low: #7c8499;
+  --secondary: #1f2333;
+  --secondary-foreground: #e9eaf3;
+  --muted: #1e2231;
+  --muted-foreground: #9aa1b6;
+  --accent: rgb(116 98 245 / 0.16);
+  --accent-foreground: #c9c1ff;
+  --destructive: #fb7185;
+  --border: #262b3d;
+  --input: #30364b;
+  --ring: #8b7cff;
   --chart-1: #a78bfa;
   --chart-2: #f472b6;
   --chart-3: #60a5fa;
-  --chart-4: #3a3856;
+  --chart-4: #2b3044;
   --chart-5: #c4b5fd;
-  --card-shadow: 0 10px 30px -18px rgb(0 0 0 / 0.6);
-  --sidebar: #1c1a2e;
-  --sidebar-foreground: #ecebf7;
-  --sidebar-primary: #8c7cff;
-  --sidebar-primary-foreground: #14112b;
-  --sidebar-accent: #2a2645;
-  --sidebar-accent-foreground: #ecebf7;
-  --sidebar-border: #2b2942;
-  --sidebar-ring: #8c7cff;
+  --card-shadow: 0 0 0 1px rgb(255 255 255 / 0.05), 0 12px 32px -18px rgb(0 0 0 / 0.8);
+  --sidebar: #161926;
+  --sidebar-foreground: #e9eaf3;
+  --sidebar-primary: #7462f5;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgb(116 98 245 / 0.16);
+  --sidebar-accent-foreground: #e9eaf3;
+  --sidebar-border: #262b3d;
+  --sidebar-ring: #8b7cff;
 }
 
 @layer base {
