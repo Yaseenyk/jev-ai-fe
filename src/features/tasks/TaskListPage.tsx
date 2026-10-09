@@ -195,11 +195,16 @@ export default function TaskListPage() {
         description="Roles that need people. Open a task to run matching and review the people it recommends."
         actions={
           canEdit && (
-            <Button asChild>
-              <Link to="/tasks/new">
-                <Plus aria-hidden /> New task
-              </Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline">
+                <Link to="/tasks/from-request">From a client request</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/tasks/new">
+                  <Plus aria-hidden /> New task
+                </Link>
+              </Button>
+            </div>
           )
         }
       />

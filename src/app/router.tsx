@@ -25,6 +25,7 @@ import TaskDetailPage from '@/features/tasks/TaskDetailPage'
 import TaskListPage from '@/features/tasks/TaskListPage'
 import CareerPage from '@/features/planning/CareerPage'
 import DashboardPage from '@/features/dashboard/DashboardPage'
+import { FromRequestPage, PeopleSearchPage } from '@/features/workforce/Pages'
 
 /** HR start on their own queue; viewers, who cannot see bench cost, on the task board; everyone
  * else on the dashboard (ADR 028). */
@@ -56,6 +57,8 @@ export const routes = [
       { path: 'dashboard', element: <DashboardPage /> },
       { path: 'tasks', element: <TaskListPage /> },
       { path: 'tasks/new', element: <NewTaskChatPage /> },
+      { path: 'tasks/from-request', element: <FromRequestPage /> },
+      { path: 'people/search', element: <PeopleSearchPage /> },
       { path: 'tasks/:taskId', element: <TaskDetailPage /> },
       { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },

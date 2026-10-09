@@ -306,6 +306,31 @@
         "title": "ApiProjectRead",
         "type": "object"
       },
+      "AssignIn": {
+        "properties": {
+          "course_id": {
+            "title": "Course Id",
+            "type": "string"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          }
+        },
+        "required": [
+          "course_id"
+        ],
+        "title": "AssignIn",
+        "type": "object"
+      },
       "AssignmentOutcome": {
         "enum": [
           "successful",
@@ -315,6 +340,136 @@
         ],
         "title": "AssignmentOutcome",
         "type": "string"
+      },
+      "AssignmentRead": {
+        "properties": {
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "course": {
+            "$ref": "#/components/schemas/CourseRead"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "overdue": {
+            "title": "Overdue",
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LearningStatus"
+          }
+        },
+        "required": [
+          "id",
+          "employee_id",
+          "full_name",
+          "course",
+          "status",
+          "due_date",
+          "overdue",
+          "completed_at"
+        ],
+        "title": "AssignmentRead",
+        "type": "object"
+      },
+      "AssignmentUpdate": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/LearningStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "AssignmentUpdate",
+        "type": "object"
+      },
+      "Backup": {
+        "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "free_pct_now": {
+            "title": "Free Pct Now",
+            "type": "integer"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "proficiency": {
+            "title": "Proficiency",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "proficiency",
+          "free_pct_now"
+        ],
+        "title": "Backup",
+        "type": "object"
       },
       "Band": {
         "enum": [
@@ -1408,6 +1563,98 @@
         "title": "CandidateUpdate",
         "type": "object"
       },
+      "CapacityCell": {
+        "properties": {
+          "booked_fte": {
+            "title": "Booked Fte",
+            "type": "number"
+          },
+          "free_fte": {
+            "title": "Free Fte",
+            "type": "number"
+          },
+          "idle_cost_usd": {
+            "title": "Idle Cost Usd",
+            "type": "integer"
+          },
+          "leave_fte": {
+            "title": "Leave Fte",
+            "type": "number"
+          },
+          "month": {
+            "format": "date",
+            "title": "Month",
+            "type": "string"
+          },
+          "people": {
+            "title": "People",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "people",
+          "booked_fte",
+          "leave_fte",
+          "free_fte",
+          "idle_cost_usd"
+        ],
+        "title": "CapacityCell",
+        "type": "object"
+      },
+      "CapacityReport": {
+        "properties": {
+          "months": {
+            "items": {
+              "format": "date",
+              "type": "string"
+            },
+            "title": "Months",
+            "type": "array"
+          },
+          "open_task_fte": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Open Task Fte",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/CapacityRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "months",
+          "rows",
+          "open_task_fte"
+        ],
+        "title": "CapacityReport",
+        "type": "object"
+      },
+      "CapacityRow": {
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/CapacityCell"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "practice": {
+            "$ref": "#/components/schemas/Practice"
+          }
+        },
+        "required": [
+          "practice",
+          "cells"
+        ],
+        "title": "CapacityRow",
+        "type": "object"
+      },
       "CareerPath": {
         "description": "Learn these skills and these tasks fit: the smallest gaps that open the most work.",
         "properties": {
@@ -2029,6 +2276,141 @@
         "title": "CostBand",
         "type": "string"
       },
+      "CourseIn": {
+        "properties": {
+          "cost_usd": {
+            "default": 0,
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Cost Usd",
+            "type": "integer"
+          },
+          "hours": {
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Hours",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          },
+          "provider": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Provider",
+            "type": "string"
+          },
+          "reaches_level": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Reaches Level",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "name",
+          "provider",
+          "skill_id",
+          "reaches_level",
+          "hours"
+        ],
+        "title": "CourseIn",
+        "type": "object"
+      },
+      "CourseRead": {
+        "properties": {
+          "cost_usd": {
+            "default": 0,
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Cost Usd",
+            "type": "integer"
+          },
+          "hours": {
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Hours",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "learners": {
+            "default": 0,
+            "title": "Learners",
+            "type": "integer"
+          },
+          "name": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          },
+          "provider": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Provider",
+            "type": "string"
+          },
+          "reaches_level": {
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Reaches Level",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "skill_name": {
+            "default": "",
+            "title": "Skill Name",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "name",
+          "provider",
+          "skill_id",
+          "reaches_level",
+          "hours",
+          "id"
+        ],
+        "title": "CourseRead",
+        "type": "object"
+      },
       "Dashboard": {
         "properties": {
           "idle_cost_by_month": {
@@ -2535,6 +2917,102 @@
         ],
         "title": "Domain",
         "type": "string"
+      },
+      "DraftSkill": {
+        "properties": {
+          "must_have": {
+            "title": "Must Have",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name",
+          "must_have"
+        ],
+        "title": "DraftSkill",
+        "type": "object"
+      },
+      "DraftTask": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Domain"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "duration_weeks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Weeks"
+          },
+          "required_level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/DraftSkill"
+            },
+            "title": "Skills",
+            "type": "array"
+          },
+          "start_in_weeks": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start In Weeks"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "unmatched_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unmatched Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "title",
+          "required_level",
+          "count",
+          "duration_weeks",
+          "start_in_weeks",
+          "domain",
+          "skills",
+          "unmatched_skills"
+        ],
+        "title": "DraftTask",
+        "type": "object"
       },
       "EmployeeCreate": {
         "properties": {
@@ -5263,6 +5741,104 @@
         "title": "InterpretResponse",
         "type": "object"
       },
+      "InterpretedSearch": {
+        "properties": {
+          "filters": {
+            "$ref": "#/components/schemas/PeopleFilters"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "skill_names": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Skill Names",
+            "type": "object"
+          },
+          "unmatched_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unmatched Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "filters",
+          "skill_names",
+          "unmatched_skills",
+          "model"
+        ],
+        "title": "InterpretedSearch",
+        "type": "object"
+      },
+      "InterviewIn": {
+        "properties": {
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "InterviewIn",
+        "type": "object"
+      },
+      "InterviewPlan": {
+        "properties": {
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Gaps",
+            "type": "array"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/InterviewQuestion"
+            },
+            "title": "Questions",
+            "type": "array"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "required": [
+          "gaps",
+          "questions",
+          "source"
+        ],
+        "title": "InterviewPlan",
+        "type": "object"
+      },
+      "InterviewQuestion": {
+        "properties": {
+          "listen_for": {
+            "title": "Listen For",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "skill": {
+            "title": "Skill",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill",
+          "question",
+          "listen_for"
+        ],
+        "title": "InterviewQuestion",
+        "type": "object"
+      },
       "Judgement": {
         "description": "What the final scorer has learned to value from managers' decisions.",
         "properties": {
@@ -5304,6 +5880,82 @@
         ],
         "title": "Judgement",
         "type": "object"
+      },
+      "KeyPersonReport": {
+        "properties": {
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectRisk"
+            },
+            "title": "Projects",
+            "type": "array"
+          },
+          "scarce_skills": {
+            "items": {
+              "$ref": "#/components/schemas/ScarceSkill"
+            },
+            "title": "Scarce Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "scarce_skills",
+          "projects"
+        ],
+        "title": "KeyPersonReport",
+        "type": "object"
+      },
+      "LearningOverview": {
+        "properties": {
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/AssignmentRead"
+            },
+            "title": "Assignments",
+            "type": "array"
+          },
+          "courses": {
+            "title": "Courses",
+            "type": "integer"
+          },
+          "done_last_90_days": {
+            "title": "Done Last 90 Days",
+            "type": "integer"
+          },
+          "in_progress": {
+            "title": "In Progress",
+            "type": "integer"
+          },
+          "overdue": {
+            "title": "Overdue",
+            "type": "integer"
+          },
+          "spend_usd": {
+            "title": "Spend Usd",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "courses",
+          "in_progress",
+          "done_last_90_days",
+          "overdue",
+          "spend_usd",
+          "assignments"
+        ],
+        "title": "LearningOverview",
+        "type": "object"
+      },
+      "LearningStatus": {
+        "description": "A course assigned to a person (ADR 031).",
+        "enum": [
+          "planned",
+          "in_progress",
+          "done",
+          "dropped"
+        ],
+        "title": "LearningStatus",
+        "type": "string"
       },
       "LearningSummary": {
         "properties": {
@@ -6203,6 +6855,100 @@
         "title": "OpenTaskLine",
         "type": "object"
       },
+      "OpportunityFlag": {
+        "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "reason"
+        ],
+        "title": "OpportunityFlag",
+        "type": "object"
+      },
+      "OpportunityReport": {
+        "properties": {
+          "long_bench": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunityFlag"
+            },
+            "title": "Long Bench",
+            "type": "array"
+          },
+          "passed_over": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunityFlag"
+            },
+            "title": "Passed Over",
+            "type": "array"
+          },
+          "same_client": {
+            "items": {
+              "$ref": "#/components/schemas/OpportunityFlag"
+            },
+            "title": "Same Client",
+            "type": "array"
+          }
+        },
+        "required": [
+          "long_bench",
+          "same_client",
+          "passed_over"
+        ],
+        "title": "OpportunityReport",
+        "type": "object"
+      },
       "OptionRead": {
         "properties": {
           "description": {
@@ -6796,6 +7542,208 @@
         "title": "PathSkill",
         "type": "object"
       },
+      "PeopleFilters": {
+        "properties": {
+          "available_within_days": {
+            "anyOf": [
+              {
+                "maximum": 365.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Available Within Days"
+          },
+          "levels": {
+            "items": {
+              "$ref": "#/components/schemas/Level"
+            },
+            "title": "Levels",
+            "type": "array"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "title": "Locations",
+            "type": "array"
+          },
+          "min_free_pct": {
+            "default": 0,
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Min Free Pct",
+            "type": "integer"
+          },
+          "min_proficiency": {
+            "default": 1,
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Min Proficiency",
+            "type": "integer"
+          },
+          "practices": {
+            "items": {
+              "$ref": "#/components/schemas/Practice"
+            },
+            "title": "Practices",
+            "type": "array"
+          },
+          "skill_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Skill Ids",
+            "type": "array"
+          }
+        },
+        "title": "PeopleFilters",
+        "type": "object"
+      },
+      "PeopleSearchResult": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PersonHit"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "PeopleSearchResult",
+        "type": "object"
+      },
+      "PersonHit": {
+        "properties": {
+          "available_from": {
+            "format": "date",
+            "title": "Available From",
+            "type": "string"
+          },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "free_pct_now": {
+            "title": "Free Pct Now",
+            "type": "integer"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "matched_skills": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Matched Skills",
+            "type": "array"
+          },
+          "practice": {
+            "$ref": "#/components/schemas/Practice"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "location",
+          "practice",
+          "matched_skills",
+          "free_pct_now",
+          "available_from"
+        ],
+        "title": "PersonHit",
+        "type": "object"
+      },
+      "PersonRef": {
+        "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band"
+        ],
+        "title": "PersonRef",
+        "type": "object"
+      },
       "PlanningActionCreate": {
         "properties": {
           "due_on": {
@@ -7017,6 +7965,99 @@
         "title": "Practice",
         "type": "string"
       },
+      "PreferencesIn": {
+        "properties": {
+          "consent": {
+            "title": "Consent",
+            "type": "boolean"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/Domain"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "title": "Locations",
+            "type": "array"
+          },
+          "skill_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Skill Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "consent"
+        ],
+        "title": "PreferencesIn",
+        "type": "object"
+      },
+      "PreferencesRead": {
+        "properties": {
+          "consent_at": {
+            "format": "date-time",
+            "title": "Consent At",
+            "type": "string"
+          },
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/Domain"
+            },
+            "title": "Domains",
+            "type": "array"
+          },
+          "locations": {
+            "items": {
+              "$ref": "#/components/schemas/Location"
+            },
+            "title": "Locations",
+            "type": "array"
+          },
+          "recorded_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recorded By"
+          },
+          "skill_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skill Ids",
+            "type": "array"
+          },
+          "skill_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Skill Names",
+            "type": "array"
+          }
+        },
+        "required": [
+          "domains",
+          "skill_ids",
+          "skill_names",
+          "locations",
+          "consent_at",
+          "recorded_by"
+        ],
+        "title": "PreferencesRead",
+        "type": "object"
+      },
       "ProfileExperience": {
         "properties": {
           "domain": {
@@ -7199,6 +8240,61 @@
           "domain"
         ],
         "title": "ProjectOption",
+        "type": "object"
+      },
+      "ProjectRisk": {
+        "description": "Someone on running work who is the only one on that work with some of its skills.",
+        "properties": {
+          "backups": {
+            "items": {
+              "$ref": "#/components/schemas/Backup"
+            },
+            "title": "Backups",
+            "type": "array"
+          },
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "ends_on": {
+            "format": "date",
+            "title": "Ends On",
+            "type": "string"
+          },
+          "leave_before_end": {
+            "title": "Leave Before End",
+            "type": "boolean"
+          },
+          "person": {
+            "$ref": "#/components/schemas/PersonRef"
+          },
+          "project": {
+            "title": "Project",
+            "type": "string"
+          },
+          "severity": {
+            "title": "Severity",
+            "type": "string"
+          },
+          "sole_skills": {
+            "items": {
+              "$ref": "#/components/schemas/SoleSkill"
+            },
+            "title": "Sole Skills",
+            "type": "array"
+          }
+        },
+        "required": [
+          "project",
+          "client_code",
+          "ends_on",
+          "person",
+          "sole_skills",
+          "leave_before_end",
+          "severity",
+          "backups"
+        ],
+        "title": "ProjectRisk",
         "type": "object"
       },
       "ProposedPerson": {
@@ -7438,6 +8534,50 @@
         "title": "ResumeBacking",
         "type": "object"
       },
+      "RfpDrafts": {
+        "properties": {
+          "drafts": {
+            "items": {
+              "$ref": "#/components/schemas/DraftTask"
+            },
+            "title": "Drafts",
+            "type": "array"
+          },
+          "model": {
+            "title": "Model",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "drafts",
+          "notes",
+          "model"
+        ],
+        "title": "RfpDrafts",
+        "type": "object"
+      },
+      "RfpText": {
+        "properties": {
+          "text": {
+            "maxLength": 20000,
+            "minLength": 20,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "RfpText",
+        "type": "object"
+      },
       "Ring": {
         "description": "One headline share: `value` is None when there is too little data to say.",
         "properties": {
@@ -7643,6 +8783,66 @@
         "title": "RunStatus",
         "type": "string"
       },
+      "ScarceSkill": {
+        "description": "A skill open work needs that only one or two people hold at expert level (4+).",
+        "properties": {
+          "backups": {
+            "items": {
+              "$ref": "#/components/schemas/Backup"
+            },
+            "title": "Backups",
+            "type": "array"
+          },
+          "courses": {
+            "title": "Courses",
+            "type": "integer"
+          },
+          "experts": {
+            "items": {
+              "$ref": "#/components/schemas/PersonRef"
+            },
+            "title": "Experts",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "open_tasks": {
+            "title": "Open Tasks",
+            "type": "integer"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name",
+          "experts",
+          "open_tasks",
+          "backups",
+          "courses"
+        ],
+        "title": "ScarceSkill",
+        "type": "object"
+      },
+      "SearchText": {
+        "properties": {
+          "q": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Q",
+            "type": "string"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "title": "SearchText",
+        "type": "object"
+      },
       "ShortlistItemRead": {
         "properties": {
           "band": {
@@ -7731,6 +8931,14 @@
                 "type": "null"
               }
             ]
+          },
+          "wants": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Wants",
+            "type": "array"
           }
         },
         "required": [
@@ -8076,6 +9284,24 @@
           "evidence_date"
         ],
         "title": "SkillSuggestionRead",
+        "type": "object"
+      },
+      "SoleSkill": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name"
+        ],
+        "title": "SoleSkill",
         "type": "object"
       },
       "StaffedTask": {
@@ -8976,6 +10202,280 @@
           "best_internal_score"
         ],
         "title": "TaskWithoutFit",
+        "type": "object"
+      },
+      "TeamGap": {
+        "properties": {
+          "missing": {
+            "title": "Missing",
+            "type": "integer"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "missing",
+          "reason"
+        ],
+        "title": "TeamGap",
+        "type": "object"
+      },
+      "TeamIn": {
+        "properties": {
+          "allocation_pct": {
+            "default": 100,
+            "maximum": 100.0,
+            "minimum": 10.0,
+            "title": "Allocation Pct",
+            "type": "integer"
+          },
+          "client_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Code"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/TeamRole"
+            },
+            "maxItems": 10,
+            "minItems": 1,
+            "title": "Roles",
+            "type": "array"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "weekly_budget_usd": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weekly Budget Usd"
+          }
+        },
+        "required": [
+          "roles",
+          "start_date"
+        ],
+        "title": "TeamIn",
+        "type": "object"
+      },
+      "TeamMember": {
+        "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "fit": {
+            "title": "Fit",
+            "type": "number"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "weekly_bill_usd": {
+            "title": "Weekly Bill Usd",
+            "type": "integer"
+          },
+          "weekly_cost_usd": {
+            "title": "Weekly Cost Usd",
+            "type": "integer"
+          },
+          "worked_with": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Worked With",
+            "type": "array"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "role",
+          "fit",
+          "worked_with",
+          "weekly_cost_usd",
+          "weekly_bill_usd"
+        ],
+        "title": "TeamMember",
+        "type": "object"
+      },
+      "TeamPlan": {
+        "properties": {
+          "alternates": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/PersonRef"
+              },
+              "type": "array"
+            },
+            "title": "Alternates",
+            "type": "object"
+          },
+          "gaps": {
+            "items": {
+              "$ref": "#/components/schemas/TeamGap"
+            },
+            "title": "Gaps",
+            "type": "array"
+          },
+          "margin_pct": {
+            "title": "Margin Pct",
+            "type": "number"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/TeamMember"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "weekly_bill_usd": {
+            "title": "Weekly Bill Usd",
+            "type": "integer"
+          },
+          "weekly_cost_usd": {
+            "title": "Weekly Cost Usd",
+            "type": "integer"
+          },
+          "within_budget": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Within Budget"
+          }
+        },
+        "required": [
+          "members",
+          "gaps",
+          "alternates",
+          "weekly_cost_usd",
+          "weekly_bill_usd",
+          "margin_pct",
+          "within_budget"
+        ],
+        "title": "TeamPlan",
+        "type": "object"
+      },
+      "TeamRole": {
+        "properties": {
+          "count": {
+            "default": 1,
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "skills": {
+            "items": {
+              "$ref": "#/components/schemas/TeamSkill"
+            },
+            "maxItems": 12,
+            "minItems": 1,
+            "title": "Skills",
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "level",
+          "skills"
+        ],
+        "title": "TeamRole",
+        "type": "object"
+      },
+      "TeamSkill": {
+        "properties": {
+          "min_proficiency": {
+            "default": 3,
+            "maximum": 5.0,
+            "minimum": 1.0,
+            "title": "Min Proficiency",
+            "type": "integer"
+          },
+          "must_have": {
+            "default": true,
+            "title": "Must Have",
+            "type": "boolean"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "skill_id"
+        ],
+        "title": "TeamSkill",
         "type": "object"
       },
       "ThemeRead": {
@@ -11732,6 +13232,64 @@
         ]
       }
     },
+    "/api/v1/candidates/{candidate_id}/interview-questions": {
+      "post": {
+        "operationId": "interview_questions_api_v1_candidates__candidate_id__interview_questions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "candidate_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Candidate Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterviewPlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Interview Questions",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
     "/api/v1/candidates/{candidate_id}/matches": {
       "get": {
         "description": "Open tasks this candidate fits, best first.",
@@ -11963,6 +13521,149 @@
         "summary": "Update Client",
         "tags": [
           "clients"
+        ]
+      }
+    },
+    "/api/v1/courses": {
+      "get": {
+        "operationId": "list_courses_api_v1_courses_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skill_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Skill Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CourseRead"
+                  },
+                  "title": "Response List Courses Api V1 Courses Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Courses",
+        "tags": [
+          "workforce"
+        ]
+      },
+      "post": {
+        "operationId": "add_course_api_v1_courses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Course",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/courses/{course_id}": {
+      "delete": {
+        "operationId": "delete_course_api_v1_courses__course_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "course_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Course Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Course",
+        "tags": [
+          "workforce"
         ]
       }
     },
@@ -12758,6 +14459,114 @@
         ]
       }
     },
+    "/api/v1/employees/{employee_id}/learning": {
+      "get": {
+        "operationId": "employee_learning_api_v1_employees__employee_id__learning_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssignmentRead"
+                  },
+                  "title": "Response Employee Learning Api V1 Employees  Employee Id  Learning Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Employee Learning",
+        "tags": [
+          "workforce"
+        ]
+      },
+      "post": {
+        "operationId": "assign_course_api_v1_employees__employee_id__learning_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Assign Course",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
     "/api/v1/employees/{employee_id}/leaves": {
       "post": {
         "operationId": "add_leave_api_v1_employees__employee_id__leaves_post",
@@ -12863,6 +14672,157 @@
         "summary": "Remove Leave",
         "tags": [
           "employees"
+        ]
+      }
+    },
+    "/api/v1/employees/{employee_id}/preferences": {
+      "delete": {
+        "operationId": "delete_preferences_api_v1_employees__employee_id__preferences_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Preferences",
+        "tags": [
+          "workforce"
+        ]
+      },
+      "get": {
+        "operationId": "get_preferences_api_v1_employees__employee_id__preferences_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/PreferencesRead"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Preferences Api V1 Employees  Employee Id  Preferences Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Preferences",
+        "tags": [
+          "workforce"
+        ]
+      },
+      "put": {
+        "operationId": "save_preferences_api_v1_employees__employee_id__preferences_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "employee_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Employee Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Preferences",
+        "tags": [
+          "workforce"
         ]
       }
     },
@@ -14312,6 +16272,91 @@
         ]
       }
     },
+    "/api/v1/learning": {
+      "get": {
+        "operationId": "learning_overview_api_v1_learning_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LearningOverview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Learning Overview",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/learning/{assignment_id}": {
+      "patch": {
+        "description": "Done suggests the course's skill on the profile for HR to accept at a level.",
+        "operationId": "update_assignment_api_v1_learning__assignment_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "assignment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Assignment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssignmentRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Assignment",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
     "/api/v1/match-runs": {
       "get": {
         "operationId": "all_runs_api_v1_match_runs_get",
@@ -14738,6 +16783,98 @@
         ]
       }
     },
+    "/api/v1/people-search": {
+      "post": {
+        "operationId": "search_people_api_v1_people_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PeopleFilters"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeopleSearchResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Search People",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/people-search/interpret": {
+      "post": {
+        "operationId": "interpret_search_api_v1_people_search_interpret_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchText"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterpretedSearch"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Interpret Search",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
     "/api/v1/planning/actions": {
       "post": {
         "description": "`hold` (needs `task_id`) or `upskill` (needs `skill_id`). Recorded only: nothing is\nassigned. 422 `task_required` / `skill_required`, 404 `employee_not_found`.",
@@ -14914,6 +17051,110 @@
         "summary": "Bench",
         "tags": [
           "planning"
+        ]
+      }
+    },
+    "/api/v1/planning/capacity": {
+      "get": {
+        "operationId": "capacity_api_v1_planning_capacity_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "months",
+            "required": false,
+            "schema": {
+              "default": 6,
+              "maximum": 12,
+              "minimum": 1,
+              "title": "Months",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapacityReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Capacity",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/planning/key-person-risk": {
+      "get": {
+        "description": "Skills open work needs that one or two experts hold, and people who alone carry skills on\nrunning work, each with the closest backups.",
+        "operationId": "key_person_risk_api_v1_planning_key_person_risk_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyPersonReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Key Person Risk",
+        "tags": [
+          "workforce"
+        ]
+      }
+    },
+    "/api/v1/planning/opportunity": {
+      "get": {
+        "description": "Long bench, one client for most of two years, recommended often but never accepted.",
+        "operationId": "opportunity_api_v1_planning_opportunity_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpportunityReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Opportunity",
+        "tags": [
+          "workforce"
         ]
       }
     },
@@ -15262,6 +17503,53 @@
         "summary": "Staffing",
         "tags": [
           "planning"
+        ]
+      }
+    },
+    "/api/v1/planning/team": {
+      "post": {
+        "description": "A proposed team, role by role, within the budget. Nothing is assigned.",
+        "operationId": "build_team_api_v1_planning_team_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamPlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Build Team",
+        "tags": [
+          "workforce"
         ]
       }
     },
@@ -15769,6 +18057,53 @@
         "summary": "Create Task",
         "tags": [
           "tasks"
+        ]
+      }
+    },
+    "/api/v1/tasks/from-request": {
+      "post": {
+        "description": "Draft tasks for every role a client's request asks for. Nothing is saved.",
+        "operationId": "tasks_from_request_api_v1_tasks_from_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RfpText"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RfpDrafts"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Tasks From Request",
+        "tags": [
+          "workforce"
         ]
       }
     },

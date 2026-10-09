@@ -22,6 +22,7 @@ import {
 } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { UnitBadge } from '@/features/org/UnitBadge'
+import { WantsBadges } from '@/features/workforce/Panels'
 
 /** The few code-computed facts a manager scans first; the full list is in the details. */
 function keyFacts(item: ShortlistItem): [string, string][] {
@@ -119,6 +120,11 @@ export function ShortlistItemCard({
           </div>
         </div>
 
+        {item.wants.length > 0 && (
+          <div className="mx-4 mb-2">
+            <WantsBadges wants={item.wants} />
+          </div>
+        )}
         {item.resume && (
           <p
             className="text-muted-foreground mx-4 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"

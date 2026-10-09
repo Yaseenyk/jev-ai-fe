@@ -15,6 +15,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { RollOffsTab } from '@/features/planning/RollOffsTab'
 import { WhatIfTab } from '@/features/planning/WhatIfTab'
+import {
+  CapacityTab,
+  KeyPeopleTab,
+  LearningTab,
+  OpportunityTab,
+  TeamBuilderTab,
+} from '@/features/workforce/PlanningTabs'
 import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
 import { useTasks } from '@/features/tasks/api'
 import { BAND_LABELS, chance, date, percent } from '@/lib/format'
@@ -46,6 +53,11 @@ export default function PlanningPage() {
           <TabsTrigger value="skills">Skill gaps</TabsTrigger>
           <TabsTrigger value="staffing">Project staffing</TabsTrigger>
           <TabsTrigger value="whatif">What-if</TabsTrigger>
+          <TabsTrigger value="team">Team builder</TabsTrigger>
+          <TabsTrigger value="capacity">Capacity</TabsTrigger>
+          <TabsTrigger value="keypeople">Key people</TabsTrigger>
+          <TabsTrigger value="opportunity">Fair opportunity</TabsTrigger>
+          <TabsTrigger value="learning">Learning</TabsTrigger>
         </TabsList>
         <TabsContent value="bench" className="mt-4">
           <BenchTab />
@@ -61,6 +73,21 @@ export default function PlanningPage() {
         </TabsContent>
         <TabsContent value="whatif" className="mt-4">
           <WhatIfTab />
+        </TabsContent>
+        <TabsContent value="team" className="mt-4">
+          <TeamBuilderTab />
+        </TabsContent>
+        <TabsContent value="capacity" className="mt-4">
+          <CapacityTab />
+        </TabsContent>
+        <TabsContent value="keypeople" className="mt-4">
+          <KeyPeopleTab />
+        </TabsContent>
+        <TabsContent value="opportunity" className="mt-4">
+          <OpportunityTab />
+        </TabsContent>
+        <TabsContent value="learning" className="mt-4">
+          <LearningTab />
         </TabsContent>
       </Tabs>
     </div>

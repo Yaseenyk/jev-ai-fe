@@ -100,6 +100,13 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         isActive: (p) => p.startsWith('/planning'),
         plannersOnly: true,
       },
+      {
+        to: '/people/search',
+        label: 'Find people',
+        icon: Search,
+        isActive: (p) => p.startsWith('/people/search'),
+        plannersOnly: true,
+      },
     ],
   },
   {

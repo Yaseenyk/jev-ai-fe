@@ -42,6 +42,7 @@ import {
 } from '@/features/hr/ui'
 import { date, dateTime, domainLabel, levelLabel, locationLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { InterviewPanel } from '@/features/workforce/Panels'
 
 const NOT_KNOWN = 'none'
 const COST_BANDS = ['A', 'B', 'C', 'D', 'E']
@@ -142,6 +143,7 @@ export default function CandidatePage() {
               </ul>
             )}
           </Panel>
+          {matches.data && <InterviewPanel candidateId={c.id} tasks={matches.data} />}
           <Panel title="Profile (read from the resume, checked by HR)" label="Profile">
             <p className="text-sm">{c.profile.summary}</p>
             <h3 className="text-muted-foreground mt-4 mb-1.5 text-xs font-semibold">Skills</h3>
