@@ -573,6 +573,35 @@ export function createHandlers(db: Db, session?: Storage) {
         : db.skills
       return HttpResponse.json(page(hits, url))
     }),
+    http.post(api('/skills/:id/aliases'), async ({ params, request }) => {
+      const i = db.skills.findIndex((s) => s.id === params.id)
+      const skill = db.skills[i]
+      if (!skill) return problem(404, 'Not Found', 'skill_not_found', 'Skill not found')
+      const { aliases } = (await request.json()) as { aliases: string[] }
+      const wanted = aliases.map((a) => a.trim().toLowerCase()).filter(Boolean)
+      const taken = new Set(
+        db.skills
+          .filter((s) => s.id !== skill.id)
+          .flatMap((s) => [s.name.toLowerCase(), ...s.aliases]),
+      )
+      const clash = wanted.filter((n) => taken.has(n))
+      if (clash.length > 0) {
+        return problem(
+          409,
+          'Conflict',
+          'skill_exists',
+          `Already a skill or alias: ${clash.join(', ')}`,
+        )
+      }
+      const updated: Skill = {
+        ...skill,
+        aliases: [...new Set([...skill.aliases, ...wanted])]
+          .filter((a) => a !== skill.name.toLowerCase())
+          .sort(),
+      }
+      db.skills[i] = updated
+      return HttpResponse.json(updated)
+    }),
     http.post(api('/skills'), async ({ request }) => {
       const body = (await request.json()) as SkillCreate
       const name = body.name.trim()

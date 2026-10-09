@@ -108,3 +108,16 @@ test('HR searches the skills list and adds a missing skill once', async () => {
   await user.click(within(form).getByRole('button', { name: 'Add skill' }))
   expect(await within(form).findByText(/Already a skill or alias: qwik/)).toBeInTheDocument()
 })
+
+test('HR adds the other names people use for a skill', async () => {
+  await signInAs('hr@srtm.local')
+  const user = userEvent.setup()
+  renderRoute('/company?tab=skills')
+  await user.type(await screen.findByLabelText('Search skills'), 'Python')
+  const list = screen.getByRole('list', { name: 'Skills' })
+  const row = (await within(list).findByText('Python')).closest('li') as HTMLElement
+  await user.click(within(row).getByRole('button', { name: 'Add other names' }))
+  await user.type(within(row).getByRole('textbox'), 'Py3, CPython')
+  await user.click(within(row).getByRole('button', { name: 'Save names' }))
+  expect(await within(list).findByText(/also: .*cpython/)).toBeInTheDocument()
+})

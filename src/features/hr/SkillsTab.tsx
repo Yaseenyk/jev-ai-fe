@@ -127,13 +127,7 @@ export function SkillsTab() {
         {found.isError && <ErrorState error={found.error} />}
         <ul className="divide-y rounded-xl border" aria-label="Skills">
           {(found.data?.items ?? []).map((s) => (
-            <li key={s.id} className="flex flex-wrap justify-between gap-2 px-4 py-2 text-sm">
-              <span className="font-medium">{s.name}</span>
-              <span className="text-muted-foreground text-xs">
-                {humanize(s.category)}
-                {s.aliases.length > 0 && ` · also: ${s.aliases.join(', ')}`}
-              </span>
-            </li>
+            <SkillRow key={s.id} skill={s} />
           ))}
         </ul>
         {found.data && (
@@ -144,5 +138,75 @@ export function SkillsTab() {
         )}
       </div>
     </div>
+  )
+}
+
+/** One skill, with a way to add the other names people use for it (ADR 030). */
+function SkillRow({ skill }: { skill: Skill }) {
+  const qc = useQueryClient()
+  const [open, setOpen] = useState(false)
+  const [names, setNames] = useState('')
+  const add = useMutation({
+    mutationFn: () =>
+      apiFetch<Skill>(`/skills/${skill.id}/aliases`, {
+        method: 'POST',
+        body: JSON.stringify({
+          aliases: names
+            .split(',')
+            .map((a) => a.trim())
+            .filter(Boolean),
+        }),
+      }),
+    onSuccess: () => {
+      setNames('')
+      setOpen(false)
+      void qc.invalidateQueries({ queryKey: ['skills'] })
+    },
+  })
+  return (
+    <li className="space-y-2 px-4 py-2 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="font-medium">{skill.name}</span>
+        <span className="text-muted-foreground flex items-center gap-2 text-xs">
+          {humanize(skill.category)}
+          {skill.aliases.length > 0 && ` · also: ${skill.aliases.join(', ')}`}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+          >
+            Add other names
+          </Button>
+        </span>
+      </div>
+      {open && (
+        <form
+          aria-label={`Other names for ${skill.name}`}
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            add.mutate()
+          }}
+        >
+          <Input
+            aria-label={`Other names for ${skill.name} (comma separated)`}
+            className="h-8 w-72"
+            placeholder="e.g. RESTful APIs, Web API"
+            value={names}
+            onChange={(e) => setNames(e.target.value)}
+          />
+          <Button type="submit" size="sm" disabled={!names.trim() || add.isPending}>
+            Save names
+          </Button>
+          {add.isError && (
+            <div className="w-full">
+              <ErrorState error={add.error} />
+            </div>
+          )}
+        </form>
+      )}
+    </li>
   )
 }

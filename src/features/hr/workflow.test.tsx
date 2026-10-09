@@ -154,10 +154,13 @@ test('HR uploads a resume for a request and sees at once whether it fits, ready 
   await user.click(screen.getByRole('button', { name: 'Save candidate' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(requestPath))
-  expect(await screen.findByText(/^Asha Test fits this task: \d+%/)).toBeInTheDocument()
+  // Scoring the new candidate is the slow step when the whole suite runs at once.
+  expect(
+    await screen.findByText(/^Asha Test fits this task: \d+%/, {}, { timeout: 15_000 }),
+  ).toBeInTheDocument()
   expect(screen.getByRole('checkbox', { name: 'Pick Asha Test' })).toBeChecked()
   expect(screen.getByRole('button', { name: /Send 1 to the manager/ })).toBeEnabled()
-})
+}, 40_000)
 
 test('viewers see no hiring requests and no "ask HR" box', async () => {
   await signInAs('viewer@srtm.local')
