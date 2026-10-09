@@ -171,3 +171,7 @@ export type SetupStatus = Schemas['SetupStatus']
 export type Digest = Schemas['Digest']
 export type MyProfile = Schemas['MyProfile']
 export type MonthNumbers = Schemas['MonthNumbers']
+
+// Bench-to-billable plan (ADR 033)
+export type BenchPlan = Schemas['BenchPlan']
+export type BenchStep = Schemas['BenchStep']

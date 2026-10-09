@@ -1,6 +1,8 @@
 import { HttpResponse, http } from 'msw'
 
 import type {
+  BenchPlan,
+  BenchStep,
   ClientProfile,
   CostBand,
   FairnessReport,
@@ -237,6 +239,61 @@ export function createInsightHandlers(db: Db) {
         items,
       }
       return HttpResponse.json(body)
+    }),
+    // Bench-to-billable plan (ADR 033): one step per person, showing any open action taken.
+    http.get(api('/planning/bench-plan'), () => {
+      const task = db.tasks[0]
+      const skill = db.skills[0]
+      const person = (i: number) => {
+        const e = employees[(i + 3) % employees.length] as (typeof employees)[number]
+        return {
+          employee_id: e.id,
+          employee_code: e.employee_code,
+          full_name: e.full_name,
+          designation: e.designation,
+          level: e.level,
+          cost_band: e.cost_band,
+          business_unit: null,
+        }
+      }
+      const open = (id: string) =>
+        actions.find((a) => a.employee_id === id && a.status === 'open') ?? null
+      const base = (i: number) => ({
+        person: person(i),
+        free_from: inDays(0),
+        free_now_pct: 100,
+        days_on_bench: 12 + i,
+        weekly_idle_cost_usd: 1300 - i * 100,
+        opens_tasks: 0,
+      })
+      const items: BenchStep[] = [
+        {
+          ...base(0),
+          step: 'propose',
+          text: `Propose for ${task?.code ?? 'TSK-0001'}: has 2 of 2 must-have skills.`,
+          task_id: task?.id ?? null,
+          task_code: task?.code ?? null,
+          opens_tasks: 2,
+        },
+        {
+          ...base(1),
+          step: 'learn',
+          text: `Start ${skill?.name ?? 'Python'} in practice (to level 3, 16 h): open work needs it 3 times.`,
+          skill_id: skill?.id ?? null,
+          skill_name: skill?.name ?? null,
+          target_level: 3,
+          opens_tasks: 3,
+        },
+        { ...base(2), step: 'profile', text: 'Complete the profile: only 2 skills are recorded.' },
+      ].map((it) => ({ ...it, action: open(it.person.employee_id) }))
+      const acting = items.filter((i) => ['propose', 'learn', 'practise'].includes(i.step))
+      return HttpResponse.json<BenchPlan>({
+        people: items.length,
+        weekly_idle_cost_usd: items.reduce((n, i) => n + i.weekly_idle_cost_usd, 0),
+        steps: { propose: 1, learn: 1, profile: 1 },
+        waiting: acting.filter((i) => i.action === null).length,
+        items,
+      })
     }),
     http.post(api('/planning/actions'), async ({ request }) => {
       const body = (await request.json()) as PlanningActionCreate
