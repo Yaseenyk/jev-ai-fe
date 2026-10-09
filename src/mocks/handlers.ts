@@ -9,6 +9,8 @@ import type {
   FeedbackReport,
   Page,
   Problem,
+  Skill,
+  SkillCreate,
   Task,
   TaskCreate,
   ThresholdsHistory,
@@ -28,6 +30,7 @@ import type { Db } from '@/mocks/db'
 import { createHrHandlers } from '@/mocks/hr'
 import { createInsightHandlers } from '@/mocks/insights'
 import { createOrgHandlers } from '@/mocks/org'
+import { createQualityHandlers } from '@/mocks/quality'
 import { createPlanningHandlers } from '@/mocks/planning'
 
 const MOCK_USER_ID = 'demo-resource-manager'
@@ -224,6 +227,7 @@ export function createHandlers(db: Db, session?: Storage) {
     ...createPlanningHandlers(db),
     ...createInsightHandlers(db),
     ...createOrgHandlers(() => user),
+    ...createQualityHandlers(),
     http.post(api('/auth/login'), async ({ request }) => {
       const { email } = (await request.json()) as { email: string }
       signInAs(email)
@@ -559,9 +563,39 @@ export function createHandlers(db: Db, session?: Storage) {
       }),
     ),
 
-    http.get(api('/skills'), ({ request }) =>
-      HttpResponse.json(page(db.skills, new URL(request.url))),
-    ),
+    http.get(api('/skills'), ({ request }) => {
+      const url = new URL(request.url)
+      const q = url.searchParams.get('q')?.toLowerCase()
+      const hits = q
+        ? db.skills.filter(
+            (s) => s.name.toLowerCase().includes(q) || s.aliases.some((a) => a.includes(q)),
+          )
+        : db.skills
+      return HttpResponse.json(page(hits, url))
+    }),
+    http.post(api('/skills'), async ({ request }) => {
+      const body = (await request.json()) as SkillCreate
+      const name = body.name.trim()
+      const aliases = (body.aliases ?? []).map((a) => a.trim().toLowerCase()).filter(Boolean)
+      const taken = new Set(db.skills.flatMap((s) => [s.name.toLowerCase(), ...s.aliases]))
+      const clash = [name.toLowerCase(), ...aliases].filter((n) => taken.has(n))
+      if (clash.length > 0) {
+        return problem(
+          409,
+          'Conflict',
+          'skill_exists',
+          `Already a skill or alias: ${clash.join(', ')}`,
+        )
+      }
+      const skill: Skill = {
+        id: crypto.randomUUID(),
+        name,
+        category: body.category,
+        aliases,
+      }
+      db.skills.push(skill)
+      return HttpResponse.json(skill, { status: 201 })
+    }),
 
     http.post(api('/tasks'), async ({ request }) => {
       try {

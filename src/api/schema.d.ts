@@ -1961,7 +1961,12 @@ export interface paths {
         /** List Skills */
         get: operations["list_skills_api_v1_skills_get"];
         put?: never;
-        post?: never;
+        /**
+         * Add Skill
+         * @description Add a skill the shared list is missing, for every company (ADR 027). 409 `skill_exists`
+         *     when the name or an alias is already a skill's name or alias. Audited.
+         */
+        post: operations["add_skill_api_v1_skills_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4691,6 +4696,8 @@ export interface components {
         };
         /** RateCardIn */
         RateCardIn: {
+            /** Margin Target Pct */
+            margin_target_pct?: number | null;
             /** Rows */
             rows: components["schemas"]["RateCardRow"][];
         };
@@ -4809,6 +4816,17 @@ export interface components {
          * @enum {string}
          */
         SkillCategory: "language" | "framework" | "cloud" | "data" | "ai_ml" | "devops" | "testing" | "domain" | "soft";
+        /**
+         * SkillCreate
+         * @description A skill the shared list is missing (ADR 027). Aliases are other names for it.
+         */
+        SkillCreate: {
+            /** Aliases */
+            aliases?: string[];
+            category: components["schemas"]["SkillCategory"];
+            /** Name */
+            name: string;
+        };
         /** SkillGap */
         SkillGap: {
             /** Available Now */
@@ -8958,6 +8976,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_SkillRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_skill_api_v1_skills_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SkillRead"];
                 };
             };
             /** @description Validation Error */

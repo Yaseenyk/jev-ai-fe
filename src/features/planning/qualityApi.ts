@@ -21,7 +21,7 @@ export function useDecideSuggestion(employeeId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, accept, level }: { id: string; accept: boolean; level?: number }) =>
-      apiFetch<void>(
+      apiFetch<undefined>(
         `/employees/${employeeId}/skill-suggestions/${id}/${accept ? 'accept' : 'dismiss'}`,
         {
           method: 'POST',
@@ -86,7 +86,7 @@ export function useDeleteClientRate() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ client, band }: { client: string; band: CostBand }) =>
-      apiFetch<void>(`/admin/client-rates/${client}/${band}`, { method: 'DELETE' }),
+      apiFetch<undefined>(`/admin/client-rates/${client}/${band}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: CLIENT_RATES }),
   })
 }

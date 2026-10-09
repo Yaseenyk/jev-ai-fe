@@ -23,6 +23,7 @@ export type DecisionType = Schemas['DecisionRead']['type']
 
 export type SkillRef = Schemas['SkillRef']
 export type Skill = Schemas['SkillRead']
+export type SkillCreate = Schemas['SkillCreate']
 export type SkillRequirement = Schemas['SkillRequirementRead']
 export type Task = Schemas['TaskRead']
 export type TaskCreate = Schemas['TaskCreate']

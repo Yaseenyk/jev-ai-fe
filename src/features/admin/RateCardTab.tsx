@@ -39,9 +39,10 @@ function RateCardForm({
 }) {
   const save = useSaveRateCard()
   const [draft, setDraft] = useState(rows)
+  const [goal, setGoal] = useState(target)
   const edit = (i: number, key: 'weekly_cost_usd' | 'weekly_bill_usd', v: string) =>
     setDraft((d) => d.map((r, j) => (j === i ? { ...r, [key]: Math.max(0, Number(v) || 0) } : r)))
-  const changed = JSON.stringify(draft) !== JSON.stringify(rows)
+  const changed = JSON.stringify(draft) !== JSON.stringify(rows) || goal !== target
 
   return (
     <div className="space-y-4">
@@ -51,6 +52,20 @@ function RateCardForm({
           cost and margins; a match under the {target}% margin target is flagged, never blocked.
         </p>
         {synthetic && <StatusBadge tone="attention">Example rates: enter your own</StatusBadge>}
+      </div>
+      <div className="flex items-center gap-2 text-sm">
+        <label htmlFor="margin-target">Margin target</label>
+        <Input
+          id="margin-target"
+          type="number"
+          min={0}
+          max={90}
+          aria-label="Margin target (%)"
+          className="h-8 w-20"
+          value={goal}
+          onChange={(e) => setGoal(Math.min(90, Math.max(0, Number(e.target.value) || 0)))}
+        />
+        %
       </div>
       <div className="bg-surface overflow-x-auto rounded-xl border">
         <table className="w-full text-sm" aria-label="Rate card">
@@ -92,7 +107,7 @@ function RateCardForm({
                     />
                   </td>
                   <td className="px-4 py-2">
-                    <StatusBadge tone={pct < target ? 'attention' : 'ready'}>{pct}%</StatusBadge>
+                    <StatusBadge tone={pct < goal ? 'attention' : 'ready'}>{pct}%</StatusBadge>
                   </td>
                 </tr>
               )
@@ -102,11 +117,21 @@ function RateCardForm({
       </div>
       {save.isError && <ErrorState error={save.error} />}
       <div className="flex gap-2">
-        <Button disabled={!changed || save.isPending} onClick={() => save.mutate(draft)}>
+        <Button
+          disabled={!changed || save.isPending}
+          onClick={() => save.mutate({ rows: draft, target: goal })}
+        >
           {save.isPending && <Loader2 className="animate-spin" aria-hidden />}
           Save rate card
         </Button>
-        <Button variant="outline" disabled={!changed} onClick={() => setDraft(rows)}>
+        <Button
+          variant="outline"
+          disabled={!changed}
+          onClick={() => {
+            setDraft(rows)
+            setGoal(target)
+          }}
+        >
           Undo changes
         </Button>
       </div>

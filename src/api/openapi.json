@@ -7166,6 +7166,19 @@
       },
       "RateCardIn": {
         "properties": {
+          "margin_target_pct": {
+            "anyOf": [
+              {
+                "maximum": 90.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Target Pct"
+          },
           "rows": {
             "items": {
               "$ref": "#/components/schemas/RateCardRow"
@@ -7555,6 +7568,34 @@
         ],
         "title": "SkillCategory",
         "type": "string"
+      },
+      "SkillCreate": {
+        "description": "A skill the shared list is missing (ADR 027). Aliases are other names for it.",
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Aliases",
+            "type": "array"
+          },
+          "category": {
+            "$ref": "#/components/schemas/SkillCategory"
+          },
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "category"
+        ],
+        "title": "SkillCreate",
+        "type": "object"
       },
       "SkillGap": {
         "properties": {
@@ -15207,6 +15248,51 @@
           }
         ],
         "summary": "List Skills",
+        "tags": [
+          "reference"
+        ]
+      },
+      "post": {
+        "description": "Add a skill the shared list is missing, for every company (ADR 027). 409 `skill_exists`\nwhen the name or an alias is already a skill's name or alias. Audited.",
+        "operationId": "add_skill_api_v1_skills_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SkillCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkillRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Skill",
         "tags": [
           "reference"
         ]
