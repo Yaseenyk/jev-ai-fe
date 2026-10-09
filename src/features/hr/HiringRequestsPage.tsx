@@ -26,7 +26,7 @@ const SORTS = [
 const DEFAULTS = { status: '', q: '', sort: 'newest', page: '1', size: '25' }
 
 /** New requests HR must start, and requests where the manager marked candidates fit. */
-const needsHr = (r: HiringRequestSummary) => r.status === 'new' || r.status === 'reviewed'
+export const needsHr = (r: HiringRequestSummary) => r.status === 'new' || r.status === 'reviewed'
 
 export default function HiringRequestsPage() {
   const isHr = useManagesPeople()

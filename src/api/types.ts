@@ -127,3 +127,10 @@ export type CareerView = Schemas['CareerView']
 export type DataQuality = Schemas['DataQuality']
 export type ClientRateLine = Schemas['ClientRateLine']
 export type ClientRateIn = Schemas['ClientRateIn']
+
+// Dashboard (ADR 028)
+export type Dashboard = Schemas['Dashboard']
+export type DashboardRing = Schemas['Ring']
+export type MonthTasks = Schemas['MonthTasks']
+export type MonthIdleCost = Schemas['MonthIdleCost']
+export type OpenTaskLine = Schemas['OpenTaskLine']

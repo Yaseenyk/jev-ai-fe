@@ -3,6 +3,7 @@ import { HttpResponse, http } from 'msw'
 import type {
   BenchPerson,
   BenchReport,
+  Dashboard,
   EmployeeValue,
   CostBand,
   HireOrMove,
@@ -160,7 +161,103 @@ export function createPlanningHandlers(db: Db) {
       )
   }
 
+  /** Home dashboard (ADR 028), from the same mock people and tasks as the bench. */
+  const dashboard = (): Dashboard => {
+    const month = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1))
+    const iso = (d: Date) => d.toISOString().slice(0, 10)
+    const addMonths = (d: Date, n: number) =>
+      new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + n, 1))
+    const now = month(new Date())
+    const open = db.tasks
+      .filter((t) => t.status !== 'filled' && t.status !== 'cancelled')
+      .sort((a, b) => a.start_date.localeCompare(b.start_date) || a.code.localeCompare(b.code))
+    const counts = new Map(open.map((t) => [t.id, recommended(t.id)?.items.length ?? null]))
+    const withShortlist = open.filter((t) => (counts.get(t.id) ?? 0) > 0).length
+    const ready = employees.filter((e) => e.skills.length >= 3 && e.projects.length > 0).length
+    const fits = new Set(
+      bench(365)
+        .filter((p) => p.best_tasks.length > 0)
+        .map((p) => p.employee_id),
+    )
+    const idle = Array.from({ length: 12 }, (_, i) => {
+      const start = addMonths(now, i)
+      const end = addMonths(now, i + 1)
+      let total = 0
+      let recoverable = 0
+      for (
+        let day = new Date(Math.max(start.getTime(), Date.now()));
+        day < end;
+        day = new Date(day.getTime() + 86_400_000)
+      ) {
+        const today = iso(day)
+        for (const e of employees) {
+          const free = e.available_from <= today ? 100 : 100 - e.current_allocation_pct
+          const cost =
+            ((rates.find((r) => r.cost_band === e.cost_band)?.weekly_cost_usd ?? 0) / 7) *
+            (free / 100)
+          total += cost
+          if (fits.has(e.id)) recoverable += cost
+        }
+      }
+      return {
+        month: iso(start),
+        idle_cost_usd: Math.round(total),
+        recoverable_usd: Math.round(recoverable),
+      }
+    })
+    return {
+      rings: [
+        {
+          key: 'agreement',
+          label: 'Managers agree with the model',
+          value: null,
+          numerator: 0,
+          denominator: 0,
+          note: 'Shown from 10 decisions (0 so far)',
+        },
+        {
+          key: 'profiles',
+          label: 'Profiles ready for matching',
+          value: employees.length ? ready / employees.length : null,
+          numerator: ready,
+          denominator: employees.length,
+          note: `${ready} of ${employees.length} people`,
+        },
+        {
+          key: 'shortlisted',
+          label: 'Open tasks with a shortlist',
+          value: open.length ? withShortlist / open.length : null,
+          numerator: withShortlist,
+          denominator: open.length,
+          note: `${withShortlist} of ${open.length} open tasks`,
+        },
+      ],
+      // The mock has no creation dates, so tasks count in the month they start.
+      tasks_by_month: Array.from({ length: 6 }, (_, i) => {
+        const m = iso(addMonths(now, i - 5)).slice(0, 7)
+        return {
+          month: `${m}-01`,
+          opened: db.tasks.filter((t) => t.start_date.startsWith(m)).length,
+          filled: db.tasks.filter((t) => t.status === 'filled' && t.start_date.startsWith(m))
+            .length,
+        }
+      }),
+      open_tasks: open.slice(0, 5).map((t) => ({
+        task_id: t.id,
+        code: t.code,
+        title: t.title,
+        client_code: t.client_code,
+        start_date: t.start_date,
+        status: t.status,
+        recommended: counts.get(t.id) ?? null,
+      })),
+      open_tasks_total: open.length,
+      idle_cost_by_month: idle,
+    }
+  }
+
   return [
+    http.get(api('/dashboard'), () => HttpResponse.json(dashboard())),
     http.get(api('/planning/bench'), ({ request }) => {
       const url = new URL(request.url)
       const horizon = Number(url.searchParams.get('horizon_days') ?? 90)
