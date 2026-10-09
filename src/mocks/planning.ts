@@ -179,28 +179,26 @@ export function createPlanningHandlers(db: Db) {
         .filter((p) => p.best_tasks.length > 0)
         .map((p) => p.employee_id),
     )
+    // Per person and month: days before they are fully free cost their spare share, days after
+    // cost all of it (a seventh of the weekly cost a day), as the real endpoint does day by day.
+    const DAY = 86_400_000
+    const weekly = new Map(rates.map((r) => [r.cost_band, r.weekly_cost_usd]))
     const idle = Array.from({ length: 12 }, (_, i) => {
-      const start = addMonths(now, i)
-      const end = addMonths(now, i + 1)
+      const start = Math.max(addMonths(now, i).getTime(), Date.now())
+      const end = addMonths(now, i + 1).getTime()
       let total = 0
       let recoverable = 0
-      for (
-        let day = new Date(Math.max(start.getTime(), Date.now()));
-        day < end;
-        day = new Date(day.getTime() + 86_400_000)
-      ) {
-        const today = iso(day)
-        for (const e of employees) {
-          const free = e.available_from <= today ? 100 : 100 - e.current_allocation_pct
-          const cost =
-            ((rates.find((r) => r.cost_band === e.cost_band)?.weekly_cost_usd ?? 0) / 7) *
-            (free / 100)
-          total += cost
-          if (fits.has(e.id)) recoverable += cost
-        }
+      for (const e of employees) {
+        const free = Date.parse(e.available_from)
+        const partDays = Math.max(0, Math.min(end, free) - start) / DAY
+        const fullDays = Math.max(0, end - Math.max(start, free)) / DAY
+        const perDay = (weekly.get(e.cost_band) ?? 0) / 7
+        const cost = perDay * (partDays * ((100 - e.current_allocation_pct) / 100) + fullDays)
+        total += cost
+        if (fits.has(e.id)) recoverable += cost
       }
       return {
-        month: iso(start),
+        month: iso(addMonths(now, i)),
         idle_cost_usd: Math.round(total),
         recoverable_usd: Math.round(recoverable),
       }
