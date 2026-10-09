@@ -31,6 +31,7 @@ import { createHrHandlers } from '@/mocks/hr'
 import { createInsightHandlers } from '@/mocks/insights'
 import { createOrgHandlers } from '@/mocks/org'
 import { createQualityHandlers } from '@/mocks/quality'
+import { createWorkforceHandlers } from '@/mocks/workforce'
 import { createPlanningHandlers } from '@/mocks/planning'
 
 const MOCK_USER_ID = 'demo-resource-manager'
@@ -223,6 +224,7 @@ export function createHandlers(db: Db, session?: Storage) {
   }
 
   return [
+    ...createWorkforceHandlers(db),
     ...createHrHandlers(db, () => user),
     ...createPlanningHandlers(db),
     ...createInsightHandlers(db),

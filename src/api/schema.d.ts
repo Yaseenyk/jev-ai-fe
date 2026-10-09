@@ -727,6 +727,23 @@ export interface paths {
         patch: operations["update_candidate_api_v1_candidates__candidate_id__patch"];
         trace?: never;
     };
+    "/api/v1/candidates/{candidate_id}/interview-questions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Interview Questions */
+        post: operations["interview_questions_api_v1_candidates__candidate_id__interview_questions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/candidates/{candidate_id}/matches": {
         parameters: {
             query?: never;
@@ -809,6 +826,41 @@ export interface paths {
          * @description Change a client's details or deactivate it (not offered for new tasks). Audited.
          */
         patch: operations["update_client_api_v1_clients__code__patch"];
+        trace?: never;
+    };
+    "/api/v1/courses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Courses */
+        get: operations["list_courses_api_v1_courses_get"];
+        put?: never;
+        /** Add Course */
+        post: operations["add_course_api_v1_courses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/courses/{course_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Course */
+        delete: operations["delete_course_api_v1_courses__course_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/dashboard": {
@@ -1056,6 +1108,24 @@ export interface paths {
         patch: operations["update_employee_api_v1_employees__employee_id__patch"];
         trace?: never;
     };
+    "/api/v1/employees/{employee_id}/learning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Employee Learning */
+        get: operations["employee_learning_api_v1_employees__employee_id__learning_get"];
+        put?: never;
+        /** Assign Course */
+        post: operations["assign_course_api_v1_employees__employee_id__learning_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/employees/{employee_id}/leaves": {
         parameters: {
             query?: never;
@@ -1085,6 +1155,25 @@ export interface paths {
         post?: never;
         /** Remove Leave */
         delete: operations["remove_leave_api_v1_employees__employee_id__leaves__leave_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/employees/{employee_id}/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Preferences */
+        get: operations["get_preferences_api_v1_employees__employee_id__preferences_get"];
+        /** Save Preferences */
+        put: operations["save_preferences_api_v1_employees__employee_id__preferences_put"];
+        post?: never;
+        /** Delete Preferences */
+        delete: operations["delete_preferences_api_v1_employees__employee_id__preferences_delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1571,6 +1660,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/learning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Learning Overview */
+        get: operations["learning_overview_api_v1_learning_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/learning/{assignment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Assignment
+         * @description Done suggests the course's skill on the profile for HR to accept at a level.
+         */
+        patch: operations["update_assignment_api_v1_learning__assignment_id__patch"];
+        trace?: never;
+    };
     "/api/v1/match-runs": {
         parameters: {
             query?: never;
@@ -1710,6 +1836,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/people-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search People */
+        post: operations["search_people_api_v1_people_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/people-search/interpret": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Interpret Search */
+        post: operations["interpret_search_api_v1_people_search_interpret_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/planning/actions": {
         parameters: {
             query?: never;
@@ -1762,6 +1922,64 @@ export interface paths {
          *     step, cost band allowed, capacity when the task starts).
          */
         get: operations["bench_api_v1_planning_bench_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/capacity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Capacity */
+        get: operations["capacity_api_v1_planning_capacity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/key-person-risk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Key Person Risk
+         * @description Skills open work needs that one or two experts hold, and people who alone carry skills on
+         *     running work, each with the closest backups.
+         */
+        get: operations["key_person_risk_api_v1_planning_key_person_risk_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/planning/opportunity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Opportunity
+         * @description Long bench, one client for most of two years, recommended often but never accepted.
+         */
+        get: operations["opportunity_api_v1_planning_opportunity_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1914,6 +2132,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/planning/team": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Build Team
+         * @description A proposed team, role by role, within the budget. Nothing is assigned.
+         */
+        post: operations["build_team_api_v1_planning_team_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/planning/what-if": {
         parameters: {
             query?: never;
@@ -2026,6 +2264,26 @@ export interface paths {
         put?: never;
         /** Create Task */
         post: operations["create_task_api_v1_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/from-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Tasks From Request
+         * @description Draft tasks for every role a client's request asks for. Nothing is saved.
+         */
+        post: operations["tasks_from_request_api_v1_tasks_from_request_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2371,11 +2629,57 @@ export interface components {
             /** Store Inputs */
             store_inputs: boolean;
         };
+        /** AssignIn */
+        AssignIn: {
+            /** Course Id */
+            course_id: string;
+            /** Due Date */
+            due_date?: string | null;
+        };
         /**
          * AssignmentOutcome
          * @enum {string}
          */
         AssignmentOutcome: "successful" | "early_release" | "escalated" | "ongoing";
+        /** AssignmentRead */
+        AssignmentRead: {
+            /** Completed At */
+            completed_at: string | null;
+            course: components["schemas"]["CourseRead"];
+            /** Due Date */
+            due_date: string | null;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            /** Id */
+            id: string;
+            /** Overdue */
+            overdue: boolean;
+            status: components["schemas"]["LearningStatus"];
+        };
+        /** AssignmentUpdate */
+        AssignmentUpdate: {
+            status: components["schemas"]["LearningStatus"];
+        };
+        /** Backup */
+        Backup: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Free Pct Now */
+            free_pct_now: number;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            /** Proficiency */
+            proficiency: number;
+        };
         /**
          * Band
          * @enum {string}
@@ -2729,6 +3033,39 @@ export interface components {
             profile?: components["schemas"]["CandidateProfile-Input"] | null;
             status?: components["schemas"]["CandidateStatus"] | null;
         };
+        /** CapacityCell */
+        CapacityCell: {
+            /** Booked Fte */
+            booked_fte: number;
+            /** Free Fte */
+            free_fte: number;
+            /** Idle Cost Usd */
+            idle_cost_usd: number;
+            /** Leave Fte */
+            leave_fte: number;
+            /**
+             * Month
+             * Format: date
+             */
+            month: string;
+            /** People */
+            people: number;
+        };
+        /** CapacityReport */
+        CapacityReport: {
+            /** Months */
+            months: string[];
+            /** Open Task Fte */
+            open_task_fte: number[];
+            /** Rows */
+            rows: components["schemas"]["CapacityRow"][];
+        };
+        /** CapacityRow */
+        CapacityRow: {
+            /** Cells */
+            cells: components["schemas"]["CapacityCell"][];
+            practice: components["schemas"]["Practice"];
+        };
         /**
          * CareerPath
          * @description Learn these skills and these tasks fit: the smallest gaps that open the most work.
@@ -2946,6 +3283,58 @@ export interface components {
          * @enum {string}
          */
         CostBand: "A" | "B" | "C" | "D" | "E";
+        /** CourseIn */
+        CourseIn: {
+            /**
+             * Cost Usd
+             * @default 0
+             */
+            cost_usd: number;
+            /** Hours */
+            hours: number;
+            /** Name */
+            name: string;
+            /** Provider */
+            provider: string;
+            /** Reaches Level */
+            reaches_level: number;
+            /** Skill Id */
+            skill_id: string;
+            /** Url */
+            url?: string | null;
+        };
+        /** CourseRead */
+        CourseRead: {
+            /**
+             * Cost Usd
+             * @default 0
+             */
+            cost_usd: number;
+            /** Hours */
+            hours: number;
+            /** Id */
+            id: string;
+            /**
+             * Learners
+             * @default 0
+             */
+            learners: number;
+            /** Name */
+            name: string;
+            /** Provider */
+            provider: string;
+            /** Reaches Level */
+            reaches_level: number;
+            /** Skill Id */
+            skill_id: string;
+            /**
+             * Skill Name
+             * @default
+             */
+            skill_name: string;
+            /** Url */
+            url?: string | null;
+        };
         /** Dashboard */
         Dashboard: {
             /** Idle Cost By Month */
@@ -3133,6 +3522,32 @@ export interface components {
          * @enum {string}
          */
         Domain: "bfsi" | "healthcare" | "retail" | "manufacturing" | "public_sector" | "education" | "telecom" | "logistics";
+        /** DraftSkill */
+        DraftSkill: {
+            /** Must Have */
+            must_have: boolean;
+            /** Name */
+            name: string;
+            /** Skill Id */
+            skill_id: string;
+        };
+        /** DraftTask */
+        DraftTask: {
+            /** Count */
+            count: number;
+            domain: components["schemas"]["Domain"] | null;
+            /** Duration Weeks */
+            duration_weeks: number | null;
+            required_level: components["schemas"]["Level"];
+            /** Skills */
+            skills: components["schemas"]["DraftSkill"][];
+            /** Start In Weeks */
+            start_in_weeks: number | null;
+            /** Title */
+            title: string;
+            /** Unmatched Skills */
+            unmatched_skills: string[];
+        };
         /** EmployeeCreate */
         EmployeeCreate: {
             /** Available From */
@@ -4047,6 +4462,41 @@ export interface components {
             unmatched_skills: string[];
             work_mode: components["schemas"]["WorkMode"] | null;
         };
+        /** InterpretedSearch */
+        InterpretedSearch: {
+            filters: components["schemas"]["PeopleFilters"];
+            /** Model */
+            model: string;
+            /** Skill Names */
+            skill_names: {
+                [key: string]: string;
+            };
+            /** Unmatched Skills */
+            unmatched_skills: string[];
+        };
+        /** InterviewIn */
+        InterviewIn: {
+            /** Task Id */
+            task_id: string;
+        };
+        /** InterviewPlan */
+        InterviewPlan: {
+            /** Gaps */
+            gaps: string[];
+            /** Questions */
+            questions: components["schemas"]["InterviewQuestion"][];
+            /** Source */
+            source: string;
+        };
+        /** InterviewQuestion */
+        InterviewQuestion: {
+            /** Listen For */
+            listen_for: string;
+            /** Question */
+            question: string;
+            /** Skill */
+            skill: string;
+        };
         /**
          * Judgement
          * @description What the final scorer has learned to value from managers' decisions.
@@ -4063,6 +4513,34 @@ export interface components {
             /** Trained On */
             trained_on: string | null;
         };
+        /** KeyPersonReport */
+        KeyPersonReport: {
+            /** Projects */
+            projects: components["schemas"]["ProjectRisk"][];
+            /** Scarce Skills */
+            scarce_skills: components["schemas"]["ScarceSkill"][];
+        };
+        /** LearningOverview */
+        LearningOverview: {
+            /** Assignments */
+            assignments: components["schemas"]["AssignmentRead"][];
+            /** Courses */
+            courses: number;
+            /** Done Last 90 Days */
+            done_last_90_days: number;
+            /** In Progress */
+            in_progress: number;
+            /** Overdue */
+            overdue: number;
+            /** Spend Usd */
+            spend_usd: number;
+        };
+        /**
+         * LearningStatus
+         * @description A course assigned to a person (ADR 031).
+         * @enum {string}
+         */
+        LearningStatus: "planned" | "in_progress" | "done" | "dropped";
         /** LearningSummary */
         LearningSummary: {
             /** Accepted */
@@ -4397,6 +4875,33 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** OpportunityFlag */
+        OpportunityFlag: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Days */
+            days?: number | null;
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            /** Reason */
+            reason: string;
+        };
+        /** OpportunityReport */
+        OpportunityReport: {
+            /** Long Bench */
+            long_bench: components["schemas"]["OpportunityFlag"][];
+            /** Passed Over */
+            passed_over: components["schemas"]["OpportunityFlag"][];
+            /** Same Client */
+            same_client: components["schemas"]["OpportunityFlag"][];
+        };
         /** OptionRead */
         OptionRead: {
             /** Description */
@@ -4610,6 +5115,75 @@ export interface components {
             /** Skill Id */
             skill_id: string;
         };
+        /** PeopleFilters */
+        PeopleFilters: {
+            /** Available Within Days */
+            available_within_days?: number | null;
+            /** Levels */
+            levels?: components["schemas"]["Level"][];
+            /** Locations */
+            locations?: components["schemas"]["Location"][];
+            /**
+             * Min Free Pct
+             * @default 0
+             */
+            min_free_pct: number;
+            /**
+             * Min Proficiency
+             * @default 1
+             */
+            min_proficiency: number;
+            /** Practices */
+            practices?: components["schemas"]["Practice"][];
+            /** Skill Ids */
+            skill_ids?: string[];
+        };
+        /** PeopleSearchResult */
+        PeopleSearchResult: {
+            /** Items */
+            items: components["schemas"]["PersonHit"][];
+            /** Total */
+            total: number;
+        };
+        /** PersonHit */
+        PersonHit: {
+            /**
+             * Available From
+             * Format: date
+             */
+            available_from: string;
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Free Pct Now */
+            free_pct_now: number;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            location: components["schemas"]["Location"];
+            /** Matched Skills */
+            matched_skills: string[];
+            practice: components["schemas"]["Practice"];
+        };
+        /** PersonRef */
+        PersonRef: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+        };
         /** PlanningActionCreate */
         PlanningActionCreate: {
             /** Due On */
@@ -4676,6 +5250,35 @@ export interface components {
          * @enum {string}
          */
         Practice: "data_analytics" | "cloud" | "app_dev" | "ai_ml" | "qa" | "devops";
+        /** PreferencesIn */
+        PreferencesIn: {
+            /** Consent */
+            consent: boolean;
+            /** Domains */
+            domains?: components["schemas"]["Domain"][];
+            /** Locations */
+            locations?: components["schemas"]["Location"][];
+            /** Skill Ids */
+            skill_ids?: string[];
+        };
+        /** PreferencesRead */
+        PreferencesRead: {
+            /**
+             * Consent At
+             * Format: date-time
+             */
+            consent_at: string;
+            /** Domains */
+            domains: components["schemas"]["Domain"][];
+            /** Locations */
+            locations: components["schemas"]["Location"][];
+            /** Recorded By */
+            recorded_by: string | null;
+            /** Skill Ids */
+            skill_ids: string[];
+            /** Skill Names */
+            skill_names: string[];
+        };
         /** ProfileExperience */
         ProfileExperience: {
             /** Domain */
@@ -4752,6 +5355,30 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+        };
+        /**
+         * ProjectRisk
+         * @description Someone on running work who is the only one on that work with some of its skills.
+         */
+        ProjectRisk: {
+            /** Backups */
+            backups: components["schemas"]["Backup"][];
+            /** Client Code */
+            client_code: string;
+            /**
+             * Ends On
+             * Format: date
+             */
+            ends_on: string;
+            /** Leave Before End */
+            leave_before_end: boolean;
+            person: components["schemas"]["PersonRef"];
+            /** Project */
+            project: string;
+            /** Severity */
+            severity: string;
+            /** Sole Skills */
+            sole_skills: components["schemas"]["SoleSkill"][];
         };
         /** ProposedPerson */
         ProposedPerson: {
@@ -4835,6 +5462,20 @@ export interface components {
              */
             uploaded_at: string;
         };
+        /** RfpDrafts */
+        RfpDrafts: {
+            /** Drafts */
+            drafts: components["schemas"]["DraftTask"][];
+            /** Model */
+            model: string;
+            /** Notes */
+            notes: string[];
+        };
+        /** RfpText */
+        RfpText: {
+            /** Text */
+            text: string;
+        };
         /**
          * Ring
          * @description One headline share: `value` is None when there is too little data to say.
@@ -4903,6 +5544,29 @@ export interface components {
          * @enum {string}
          */
         RunStatus: "queued" | "running" | "completed" | "failed";
+        /**
+         * ScarceSkill
+         * @description A skill open work needs that only one or two people hold at expert level (4+).
+         */
+        ScarceSkill: {
+            /** Backups */
+            backups: components["schemas"]["Backup"][];
+            /** Courses */
+            courses: number;
+            /** Experts */
+            experts: components["schemas"]["PersonRef"][];
+            /** Name */
+            name: string;
+            /** Open Tasks */
+            open_tasks: number;
+            /** Skill Id */
+            skill_id: string;
+        };
+        /** SearchText */
+        SearchText: {
+            /** Q */
+            q: string;
+        };
         /** ShortlistItemRead */
         ShortlistItemRead: {
             band: components["schemas"]["Band"];
@@ -4925,6 +5589,11 @@ export interface components {
             /** Rank Score */
             rank_score: number;
             resume?: components["schemas"]["ResumeBacking"] | null;
+            /**
+             * Wants
+             * @default []
+             */
+            wants: string[];
         };
         /**
          * SkillAliasesIn
@@ -5056,6 +5725,13 @@ export interface components {
             skill_name: string;
             /** Source */
             source: string;
+        };
+        /** SoleSkill */
+        SoleSkill: {
+            /** Name */
+            name: string;
+            /** Skill Id */
+            skill_id: string;
         };
         /** StaffedTask */
         StaffedTask: {
@@ -5336,6 +6012,105 @@ export interface components {
             task_id: string;
             /** Title */
             title: string;
+        };
+        /** TeamGap */
+        TeamGap: {
+            /** Missing */
+            missing: number;
+            /** Reason */
+            reason: string;
+            /** Role */
+            role: string;
+        };
+        /** TeamIn */
+        TeamIn: {
+            /**
+             * Allocation Pct
+             * @default 100
+             */
+            allocation_pct: number;
+            /** Client Code */
+            client_code?: string | null;
+            /** Roles */
+            roles: components["schemas"]["TeamRole"][];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Weekly Budget Usd */
+            weekly_budget_usd?: number | null;
+        };
+        /** TeamMember */
+        TeamMember: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Fit */
+            fit: number;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            /** Role */
+            role: string;
+            /** Weekly Bill Usd */
+            weekly_bill_usd: number;
+            /** Weekly Cost Usd */
+            weekly_cost_usd: number;
+            /** Worked With */
+            worked_with: string[];
+        };
+        /** TeamPlan */
+        TeamPlan: {
+            /** Alternates */
+            alternates: {
+                [key: string]: components["schemas"]["PersonRef"][];
+            };
+            /** Gaps */
+            gaps: components["schemas"]["TeamGap"][];
+            /** Margin Pct */
+            margin_pct: number;
+            /** Members */
+            members: components["schemas"]["TeamMember"][];
+            /** Weekly Bill Usd */
+            weekly_bill_usd: number;
+            /** Weekly Cost Usd */
+            weekly_cost_usd: number;
+            /** Within Budget */
+            within_budget: boolean | null;
+        };
+        /** TeamRole */
+        TeamRole: {
+            /**
+             * Count
+             * @default 1
+             */
+            count: number;
+            level: components["schemas"]["Level"];
+            /** Skills */
+            skills: components["schemas"]["TeamSkill"][];
+            /** Title */
+            title: string;
+        };
+        /** TeamSkill */
+        TeamSkill: {
+            /**
+             * Min Proficiency
+             * @default 3
+             */
+            min_proficiency: number;
+            /**
+             * Must Have
+             * @default true
+             */
+            must_have: boolean;
+            /** Skill Id */
+            skill_id: string;
         };
         /** ThemeRead */
         ThemeRead: {
@@ -6917,6 +7692,41 @@ export interface operations {
             };
         };
     };
+    interview_questions_api_v1_candidates__candidate_id__interview_questions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InterviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterviewPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     candidate_matches_api_v1_candidates__candidate_id__matches_get: {
         parameters: {
             query?: never;
@@ -7055,6 +7865,99 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ClientRead"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_courses_api_v1_courses_get: {
+        parameters: {
+            query?: {
+                skill_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CourseRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_course_api_v1_courses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CourseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CourseRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_course_api_v1_courses__course_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -7509,6 +8412,72 @@ export interface operations {
             };
         };
     };
+    employee_learning_api_v1_employees__employee_id__learning_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_course_api_v1_employees__employee_id__learning_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_leave_api_v1_employees__employee_id__leaves_post: {
         parameters: {
             query?: never;
@@ -7551,6 +8520,101 @@ export interface operations {
             path: {
                 employee_id: string;
                 leave_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_preferences_api_v1_employees__employee_id__preferences_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesRead"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_preferences_api_v1_employees__employee_id__preferences_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_preferences_api_v1_employees__employee_id__preferences_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                employee_id: string;
             };
             cookie?: never;
         };
@@ -8455,6 +9519,61 @@ export interface operations {
             };
         };
     };
+    learning_overview_api_v1_learning_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LearningOverview"];
+                };
+            };
+        };
+    };
+    update_assignment_api_v1_learning__assignment_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     all_runs_api_v1_match_runs_get: {
         parameters: {
             query?: {
@@ -8690,6 +9809,72 @@ export interface operations {
             };
         };
     };
+    search_people_api_v1_people_search_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PeopleFilters"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PeopleSearchResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    interpret_search_api_v1_people_search_interpret_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchText"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterpretedSearch"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_action_api_v1_planning_actions_post: {
         parameters: {
             query?: never;
@@ -8787,6 +9972,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    capacity_api_v1_planning_capacity_get: {
+        parameters: {
+            query?: {
+                months?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CapacityReport"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    key_person_risk_api_v1_planning_key_person_risk_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeyPersonReport"];
+                };
+            };
+        };
+    };
+    opportunity_api_v1_planning_opportunity_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityReport"];
                 };
             };
         };
@@ -8997,6 +10253,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StaffingPlan"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    build_team_api_v1_planning_team_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamPlan"];
                 };
             };
             /** @description Validation Error */
@@ -9256,6 +10545,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TaskRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    tasks_from_request_api_v1_tasks_from_request_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RfpText"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RfpDrafts"];
                 };
             };
             /** @description Validation Error */

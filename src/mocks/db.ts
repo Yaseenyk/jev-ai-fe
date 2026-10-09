@@ -60,13 +60,16 @@ export function createDb(now: () => number = Date.now) {
   function shortlist(runId: string): ShortlistItem[] | undefined {
     const state = runs.get(runId)
     if (!state) return undefined
-    return state.recorded.shortlist.map((item) => {
+    return state.recorded.shortlist.map((item, i) => {
       const id = itemId(runId, item.employee.id)
+      // Recorded runs predate preferences (ADR 031); the second person shows how they look.
+      const recorded = (item as Partial<ShortlistItem>).wants
       return {
         ...item,
         id,
         employee: { ...item.employee, business_unit: unitFor(item.employee.id) },
         feedback: feedback.get(id) ?? null,
+        wants: recorded ?? (i === 1 ? ['Wants this kind of work'] : []),
       }
     })
   }
