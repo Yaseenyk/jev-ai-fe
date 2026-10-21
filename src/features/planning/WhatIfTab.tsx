@@ -13,6 +13,7 @@ import { MarginBadge, usd } from '@/features/planning/PlanningPage'
 import { useWhatIf } from '@/features/planning/insightsApi'
 import { percent } from '@/lib/format'
 import { UnitBadge } from '@/features/org/UnitBadge'
+import { showBilling } from '@/lib/features'
 
 const LEVELS: Level[] = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
 const BANDS: CostBand[] = ['A', 'B', 'C', 'D', 'E']
@@ -53,7 +54,7 @@ export function WhatIfTab() {
         title: r.title.trim(),
         people: r.people,
         required_level: r.level,
-        max_cost_band: r.band,
+        max_cost_band: showBilling() ? r.band : 'E',
         allocation_pct: 100,
         skills: r.skills.map((id) => ({ skill_id: id, min_proficiency: 3, must_have: true })),
       })),
@@ -138,19 +139,21 @@ export function WhatIfTab() {
                   ))}
                 </select>
               </label>
-              <label className="text-xs">
-                Up to band{' '}
-                <select
-                  className={SELECT}
-                  aria-label={`Role ${i + 1} band`}
-                  value={r.band}
-                  onChange={(e) => edit(i, { band: e.target.value as CostBand })}
-                >
-                  {BANDS.map((b) => (
-                    <option key={b}>{b}</option>
-                  ))}
-                </select>
-              </label>
+              {showBilling() && (
+                <label className="text-xs">
+                  Up to band{' '}
+                  <select
+                    className={SELECT}
+                    aria-label={`Role ${i + 1} band`}
+                    value={r.band}
+                    onChange={(e) => edit(i, { band: e.target.value as CostBand })}
+                  >
+                    {BANDS.map((b) => (
+                      <option key={b}>{b}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
             </div>
             <div className="space-y-1">
               <select
@@ -229,18 +232,22 @@ export function WhatIfTab() {
                   {whatIf.data.staffed} of {whatIf.data.wanted}
                 </dd>
               </div>
-              <div className="bg-surface rounded-xl border p-4">
-                <dt className="text-muted-foreground text-sm">Billing per week</dt>
-                <dd className="mt-1 text-2xl font-semibold tabular-nums">
-                  {usd(whatIf.data.weekly_revenue_usd)}
-                </dd>
-              </div>
-              <div className="bg-surface rounded-xl border p-4">
-                <dt className="text-muted-foreground text-sm">Margin per week</dt>
-                <dd className="mt-1 text-2xl font-semibold tabular-nums">
-                  {usd(whatIf.data.weekly_margin_usd)}
-                </dd>
-              </div>
+              {showBilling() && (
+                <div className="bg-surface rounded-xl border p-4">
+                  <dt className="text-muted-foreground text-sm">Billing per week</dt>
+                  <dd className="mt-1 text-2xl font-semibold tabular-nums">
+                    {usd(whatIf.data.weekly_revenue_usd)}
+                  </dd>
+                </div>
+              )}
+              {showBilling() && (
+                <div className="bg-surface rounded-xl border p-4">
+                  <dt className="text-muted-foreground text-sm">Margin per week</dt>
+                  <dd className="mt-1 text-2xl font-semibold tabular-nums">
+                    {usd(whatIf.data.weekly_margin_usd)}
+                  </dd>
+                </div>
+              )}
             </dl>
             <ul className="space-y-3">
               {whatIf.data.roles.map((r, i) => (
@@ -264,7 +271,7 @@ export function WhatIfTab() {
                           {p.level} · {percent(p.must_have_coverage)} of must-haves
                         </span>
                         <UnitBadge unit={p.business_unit} />
-                        <MarginBadge margin={p.margin} />
+                        {showBilling() && <MarginBadge margin={p.margin} />}
                       </li>
                     ))}
                   </ul>

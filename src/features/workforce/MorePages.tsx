@@ -27,6 +27,7 @@ import {
   useWorkingOn,
 } from '@/features/workforce/api'
 import { date, domainLabel } from '@/lib/format'
+import { showBilling } from '@/lib/features'
 
 const SELECT = 'border-input bg-background h-9 rounded-md border px-2 text-sm'
 const LEVELS: Level[] = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
@@ -361,7 +362,7 @@ export function SavingsPage() {
   const role = useAuth().user?.role
   const [month, setMonth] = useState(monthInput())
   const q = useSavings(`${month}-01`)
-  if (role === 'viewer' || role === 'employee') return <Navigate to="/" replace />
+  if (role === 'viewer' || role === 'employee' || !showBilling()) return <Navigate to="/" replace />
   return (
     <div className="space-y-6">
       <PageHeader

@@ -12,6 +12,7 @@ import type {
   WorkMode,
 } from '@/api/types'
 import { LEVEL_TITLES, domainLabel, locationLabel } from '@/lib/format'
+import { showBilling } from '@/lib/features'
 
 /** Everything the chat collects. Undefined = not answered yet. */
 export interface Draft {
@@ -227,6 +228,7 @@ export function steps(clients: string[]): Step[] {
     {
       id: 'max_cost_band',
       kind: 'choice',
+      skip: () => !showBilling(),
       prompt: () => "What's the highest cost band you can take?",
       options: () =>
         ['A', 'B', 'C', 'D', 'E'].map((b, i) => ({
@@ -376,7 +378,8 @@ export function toTaskCreate(d: Draft): TaskCreate {
     start_date: required('start_date'),
     duration_weeks: required('duration_weeks'),
     allocation_pct_required: required('allocation_pct_required'),
-    max_cost_band: required('max_cost_band'),
+    // With billing hidden the band is not asked: no budget limit (band E).
+    max_cost_band: showBilling() ? required('max_cost_band') : (d.max_cost_band ?? 'E'),
     clearance_required: d.clearance === 'client' ? clientCode : null,
     priority: required('priority'),
     requirements: [

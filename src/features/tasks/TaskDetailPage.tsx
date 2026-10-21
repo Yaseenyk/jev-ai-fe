@@ -44,6 +44,7 @@ import { type CloseAs, CloseTaskDialog } from '@/features/tasks/CloseTaskDialog'
 import { useChangeTaskStatus, useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
 import { cn } from '@/lib/utils'
 import { date, dateTime, domainLabel, humanize, levelLabel, locationLabel } from '@/lib/format'
+import { showBilling } from '@/lib/features'
 
 export default function TaskDetailPage() {
   const { taskId = '' } = useParams()
@@ -102,7 +103,7 @@ function TaskDetail({ task }: { task: Task }) {
         : 'Any',
     ],
     ['Client timezone', task.client_timezone],
-    ['Max cost band', task.max_cost_band],
+    ...(showBilling() ? [['Max cost band', task.max_cost_band] as [string, string]] : []),
     ['Client clearance', task.clearance_required ?? 'Not needed'],
   ]
 

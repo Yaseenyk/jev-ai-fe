@@ -11,6 +11,7 @@ import { usd } from '@/features/planning/PlanningPage'
 import { TaskStatusBadge } from '@/features/tasks/PriorityBadge'
 import { date as formatDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { showBilling } from '@/lib/features'
 
 const CARD = 'bg-surface min-w-0 rounded-2xl p-5 shadow-(--card-shadow)'
 
@@ -442,7 +443,8 @@ export default function DashboardPage() {
           <Skeleton className="h-80 rounded-2xl" />
         )}
       </div>
-      {d ? <IdleCost rows={d.idle_cost_by_month} /> : <Skeleton className="h-96 rounded-2xl" />}
+      {showBilling() &&
+        (d ? <IdleCost rows={d.idle_cost_by_month} /> : <Skeleton className="h-96 rounded-2xl" />)}
     </div>
   )
 }

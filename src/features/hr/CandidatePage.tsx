@@ -43,6 +43,7 @@ import {
 import { date, dateTime, domainLabel, levelLabel, locationLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { InterviewPanel } from '@/features/workforce/Panels'
+import { showBilling } from '@/lib/features'
 
 const NOT_KNOWN = 'none'
 const COST_BANDS = ['A', 'B', 'C', 'D', 'E']
@@ -194,31 +195,38 @@ export default function CandidatePage() {
                     />
                   ),
                 },
-                {
-                  label: 'Expected pay band',
-                  value: (
-                    <Select
-                      value={c.profile.cost_band ?? NOT_KNOWN}
-                      onValueChange={(band) =>
-                        update.mutate({
-                          profile: { ...c.profile, cost_band: band === NOT_KNOWN ? null : band },
-                        })
-                      }
-                    >
-                      <SelectTrigger className="h-8 w-full" aria-label="Expected pay band">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={NOT_KNOWN}>Not known yet</SelectItem>
-                        {COST_BANDS.map((b) => (
-                          <SelectItem key={b} value={b}>
-                            Band {b}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ),
-                },
+                ...(showBilling()
+                  ? [
+                      {
+                        label: 'Expected pay band',
+                        value: (
+                          <Select
+                            value={c.profile.cost_band ?? NOT_KNOWN}
+                            onValueChange={(band) =>
+                              update.mutate({
+                                profile: {
+                                  ...c.profile,
+                                  cost_band: band === NOT_KNOWN ? null : band,
+                                },
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-8 w-full" aria-label="Expected pay band">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={NOT_KNOWN}>Not known yet</SelectItem>
+                              {COST_BANDS.map((b) => (
+                                <SelectItem key={b} value={b}>
+                                  Band {b}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ),
+                      },
+                    ]
+                  : []),
               ]}
             />
           </Panel>

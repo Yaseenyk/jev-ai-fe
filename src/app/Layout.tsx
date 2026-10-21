@@ -43,6 +43,7 @@ import { ROLE_LABELS } from '@/lib/format'
 import { env } from '@/lib/env'
 import { useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
+import { showBilling } from '@/lib/features'
 
 type Badge = 'openTasks' | 'requests'
 
@@ -216,15 +217,20 @@ function useNavGroups() {
   if (role === 'employee') return EMPLOYEE_NAV
   return NAV_GROUPS.map((g) => ({
     ...g,
-    items: g.items.filter(
-      (item) =>
-        (canEdit || !item.editorsOnly) &&
-        (isAdmin || !item.adminOnly) &&
-        (managesPeople || !item.peopleManagersOnly) &&
-        (managesPeople || canEdit || !item.requestsOnly) &&
-        (managesPeople || canEdit || !item.plannersOnly),
-    ),
-  })).filter((g) => g.items.length > 0)
+    items: g.items.filter((item) => showBilling() || item.to !== '/reports'),
+  }))
+    .map((g) => ({
+      ...g,
+      items: g.items.filter(
+        (item) =>
+          (canEdit || !item.editorsOnly) &&
+          (isAdmin || !item.adminOnly) &&
+          (managesPeople || !item.peopleManagersOnly) &&
+          (managesPeople || canEdit || !item.requestsOnly) &&
+          (managesPeople || canEdit || !item.plannersOnly),
+      ),
+    }))
+    .filter((g) => g.items.length > 0)
 }
 
 /** Counts next to navigation items: open tasks, and requests waiting for HR (HR only). */

@@ -34,6 +34,7 @@ import { Panel, SkillChip } from '@/features/hr/ui'
 import { useTask } from '@/features/tasks/api'
 import { LEVEL_TITLES, locationLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { showBilling } from '@/lib/features'
 
 const isScan = (error: Error) =>
   error instanceof ApiError && error.problem?.code === 'scanned_needs_consent'
@@ -281,7 +282,7 @@ function ReviewForm({
   const toAsk = [
     ...(asked.includes('notice_days') ? ['notice period'] : []),
     ...(asked.includes('location') ? ['where they live or want to work'] : []),
-    ...(!profile.cost_band ? ['expected pay band'] : []),
+    ...(!profile.cost_band && showBilling() ? ['expected pay band'] : []),
   ]
   const set = <K extends keyof CandidateProfile>(key: K, value: CandidateProfile[K]) =>
     setProfile((p) => ({ ...p, [key]: value }))
@@ -520,28 +521,30 @@ function ReviewForm({
               onChange={(e) => setNotice(e.target.value)}
             />
           </Field>
-          <Field
-            id="p-band"
-            label="Expected pay band"
-            help="Ask the candidate. Never read from the resume. Until it is entered, the budget is not checked and the match says so."
-          >
-            <Select
-              value={profile.cost_band ?? 'none'}
-              onValueChange={(v) => set('cost_band', v === 'none' ? null : v)}
+          {showBilling() && (
+            <Field
+              id="p-band"
+              label="Expected pay band"
+              help="Ask the candidate. Never read from the resume. Until it is entered, the budget is not checked and the match says so."
             >
-              <SelectTrigger id="p-band">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Not known yet</SelectItem>
-                {['A', 'B', 'C', 'D', 'E'].map((b) => (
-                  <SelectItem key={b} value={b}>
-                    Band {b}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+              <Select
+                value={profile.cost_band ?? 'none'}
+                onValueChange={(v) => set('cost_band', v === 'none' ? null : v)}
+              >
+                <SelectTrigger id="p-band">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Not known yet</SelectItem>
+                  {['A', 'B', 'C', 'D', 'E'].map((b) => (
+                    <SelectItem key={b} value={b}>
+                      Band {b}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
         </div>
         <div className="mt-4 space-y-1.5">
           <p className="text-sm font-medium">Skills (matched to our skills list)</p>

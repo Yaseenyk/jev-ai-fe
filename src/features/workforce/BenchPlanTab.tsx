@@ -12,6 +12,7 @@ import { UnitBadge } from '@/features/org/UnitBadge'
 import { usd } from '@/features/planning/PlanningPage'
 import { useCreateAction, useUpdateAction } from '@/features/planning/insightsApi'
 import { date } from '@/lib/format'
+import { showBilling } from '@/lib/features'
 
 const STEP: Record<string, { label: string; tone: Tone }> = {
   propose: { label: 'Propose', tone: 'ready' },
@@ -88,7 +89,9 @@ function StepRow({ s }: { s: BenchStep }) {
                 ? `${s.days_on_bench} days on the bench`
                 : 'free now'
               : `free from ${date(s.free_from)}`}
-            {s.weekly_idle_cost_usd > 0 && ` · ${usd(s.weekly_idle_cost_usd)} idle a week`}
+            {showBilling() &&
+              s.weekly_idle_cost_usd > 0 &&
+              ` · ${usd(s.weekly_idle_cost_usd)} idle a week`}
           </span>
           <UnitBadge unit={s.person.business_unit} />
         </div>
@@ -176,7 +179,9 @@ export function BenchPlanTab() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2" aria-label="Bench plan summary">
         <StatusBadge tone="neutral">{p.people} people</StatusBadge>
-        <StatusBadge tone="attention">{usd(p.weekly_idle_cost_usd)} idle a week</StatusBadge>
+        {showBilling() && (
+          <StatusBadge tone="attention">{usd(p.weekly_idle_cost_usd)} idle a week</StatusBadge>
+        )}
         <StatusBadge tone={p.waiting > 0 ? 'attention' : 'ready'}>
           {p.waiting} steps waiting
         </StatusBadge>
@@ -188,8 +193,8 @@ export function BenchPlanTab() {
       </div>
       <p className="text-muted-foreground max-w-3xl text-sm">
         Everyone free now or within two weeks gets one next step: a task to propose them for, a
-        course or skill that open work needs, or a profile to complete. Most idle cost first. Taking
-        a step holds the person or plans the upskilling; nothing is assigned.
+        course or skill that open work needs, or a profile to complete. Taking a step holds the
+        person or plans the upskilling; nothing is assigned.
       </p>
       {p.items.length === 0 ? (
         <EmptyState title="Nobody is on the bench">

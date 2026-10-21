@@ -12,6 +12,7 @@ import { usd } from '@/features/planning/PlanningPage'
 import { useCreateAction, useRollOffs, useUpdateAction } from '@/features/planning/insightsApi'
 import { date, percent } from '@/lib/format'
 import { UnitBadge } from '@/features/org/UnitBadge'
+import { showBilling } from '@/lib/features'
 
 const WINDOWS = [
   { value: '30', label: '30 days' },
@@ -48,11 +49,13 @@ export function RollOffsTab() {
           value={String(r.with_next_task)}
           hint="An open task fits them"
         />
-        <Stat
-          label="Weekly cost at risk"
-          value={usd(r.weekly_cost_at_risk_usd)}
-          hint="Nothing fits and nobody is held"
-        />
+        {showBilling() && (
+          <Stat
+            label="Weekly cost at risk"
+            value={usd(r.weekly_cost_at_risk_usd)}
+            hint="Nothing fits and nobody is held"
+          />
+        )}
       </dl>
       {r.items.length === 0 ? (
         <EmptyState title="Nobody rolls off in this period" />
@@ -102,7 +105,7 @@ function RollOffCard({ p }: { p: RollOff }) {
         {p.current_project
           ? `Now on ${p.current_project} (${p.current_client ?? ''}), ${p.current_allocation_pct}%`
           : `${p.current_allocation_pct}% allocated`}{' '}
-        · {usd(p.weekly_cost_usd)} a week if idle
+        {showBilling() && `· ${usd(p.weekly_cost_usd)} a week if idle`}
       </p>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-2">

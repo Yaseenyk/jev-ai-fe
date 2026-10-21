@@ -74,6 +74,7 @@ import { useUnits } from '@/features/org/api'
 import { SkillSuggestionsPanel } from '@/features/planning/QualityPanels'
 import { LearningPanel, PreferencesPanel } from '@/features/workforce/Panels'
 import { WorkingOnPanel } from '@/features/workforce/MorePages'
+import { showBilling } from '@/lib/features'
 
 const LOCATIONS = ['hyderabad', 'bengaluru', 'pune', 'chennai', 'remote_india', 'usa', 'uk']
 const COST_BANDS = ['A', 'B', 'C', 'D', 'E']
@@ -261,7 +262,7 @@ export default function EmployeePage() {
             <dl className="divide-y text-sm">
               <Detail label="Experience" value={`${e.years_experience} years`} />
               <Detail label="Practice" value={humanize(e.practice)} />
-              <Detail label="Cost band" value={`Band ${e.cost_band}`} />
+              {showBilling() && <Detail label="Cost band" value={`Band ${e.cost_band}`} />}
               <Detail label="Booked now" value={`${e.current_allocation_pct}%`} />
               <Detail label="Free from" value={date(e.available_from)} />
               <Detail label="Works" value={humanize(e.work_mode_preference)} />
@@ -468,20 +469,22 @@ function DetailsSheet({ employee: e, onClose }: { employee: EmployeeDetail; onCl
             </SelectContent>
           </Select>
         </Field>
-        <Field id="e-band" label="Cost band" help="Used to respect a task’s budget.">
-          <Select value={v.cost_band} onValueChange={(b) => setV({ ...v, cost_band: b })}>
-            <SelectTrigger id="e-band">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {COST_BANDS.map((b) => (
-                <SelectItem key={b} value={b}>
-                  Band {b}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
+        {showBilling() && (
+          <Field id="e-band" label="Cost band" help="Used to respect a task’s budget.">
+            <Select value={v.cost_band} onValueChange={(b) => setV({ ...v, cost_band: b })}>
+              <SelectTrigger id="e-band">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {COST_BANDS.map((b) => (
+                  <SelectItem key={b} value={b}>
+                    Band {b}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
       </FormSection>
       <FormSection title="Where and when they can work">
         <Field id="e-location" label="Location">
