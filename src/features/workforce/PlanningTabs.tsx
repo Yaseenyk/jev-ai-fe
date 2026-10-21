@@ -1,8 +1,8 @@
-import { Loader2, Plus, Users, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
-import type { LearningStatus, Level, PersonRef, TeamIn } from '@/api/types'
+import type { LearningStatus, PersonRef } from '@/api/types'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { StatusBadge } from '@/components/StatusBadge'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,6 @@ import { UnitBadge } from '@/features/org/UnitBadge'
 import { usd } from '@/features/planning/PlanningPage'
 import {
   useAddCourse,
-  useBuildTeam,
   useCapacity,
   useCourses,
   useDeleteCourse,
@@ -27,7 +26,6 @@ import {
 import { date, humanize } from '@/lib/format'
 import { showBilling } from '@/lib/features'
 
-const LEVELS: Level[] = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
 const SELECT =
   'border-input bg-background h-9 rounded-md border px-2 text-sm focus-visible:ring-2 focus-visible:outline-none'
 
@@ -148,224 +146,6 @@ export function KeyPeopleTab() {
           </ul>
         )}
       </Section>
-    </div>
-  )
-}
-
-interface RoleDraft {
-  title: string
-  level: Level
-  count: number
-  skills: string[]
-}
-
-function inDays(n: number): string {
-  return new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10)
-}
-
-/** Staff a whole team within a budget, preferring people who worked together (ADR 031). */
-export function TeamBuilderTab() {
-  const skills = useSkills()
-  const build = useBuildTeam()
-  const [start, setStart] = useState(inDays(30))
-  const [budget, setBudget] = useState('')
-  const [roles, setRoles] = useState<RoleDraft[]>([
-    { title: 'Engineer', level: 'L3', count: 2, skills: [] },
-  ])
-  const edit = (i: number, c: Partial<RoleDraft>) =>
-    setRoles((rs) => rs.map((r, j) => (j === i ? { ...r, ...c } : r)))
-  const name = (id: string) => skills.data?.find((s) => s.id === id)?.name ?? id
-  const ready = roles.every((r) => r.title.trim() && r.skills.length > 0)
-  const run = () => {
-    const body: TeamIn = {
-      start_date: start,
-      allocation_pct: 100,
-      weekly_budget_usd: budget ? Number(budget) : null,
-      client_code: null,
-      roles: roles.map((r) => ({
-        title: r.title.trim(),
-        level: r.level,
-        count: r.count,
-        skills: r.skills.map((id) => ({ skill_id: id, min_proficiency: 3, must_have: true })),
-      })),
-    }
-    build.mutate(body)
-  }
-  const plan = build.data
-  return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_1fr]">
-      <section className="bg-surface space-y-4 rounded-xl border p-4" aria-label="Team to build">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="tb-start">Starts</Label>
-            <Input
-              id="tb-start"
-              type="date"
-              value={start}
-              onChange={(e) => setStart(e.target.value)}
-            />
-          </div>
-          {showBilling() && (
-            <div className="space-y-1.5">
-              <Label htmlFor="tb-budget">Weekly budget (USD)</Label>
-              <Input
-                id="tb-budget"
-                type="number"
-                min={0}
-                placeholder="No limit"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-              />
-            </div>
-          )}
-        </div>
-        {roles.map((r, i) => (
-          <fieldset
-            key={i}
-            className="space-y-2 rounded-lg border p-3"
-            aria-label={`Team role ${i + 1}`}
-          >
-            <div className="flex items-center gap-2">
-              <Input
-                aria-label={`Team role ${i + 1} title`}
-                value={r.title}
-                onChange={(e) => edit(i, { title: e.target.value })}
-              />
-              {roles.length > 1 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label={`Remove team role ${i + 1}`}
-                  onClick={() => setRoles((rs) => rs.filter((_, j) => j !== i))}
-                >
-                  <X aria-hidden />
-                </Button>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <label>
-                People{' '}
-                <Input
-                  type="number"
-                  min={1}
-                  max={10}
-                  aria-label={`Team role ${i + 1} people`}
-                  className="inline-block h-9 w-16"
-                  value={r.count}
-                  onChange={(e) =>
-                    edit(i, { count: Math.min(10, Math.max(1, Number(e.target.value) || 1)) })
-                  }
-                />
-              </label>
-              <label>
-                Level{' '}
-                <select
-                  className={SELECT}
-                  aria-label={`Team role ${i + 1} level`}
-                  value={r.level}
-                  onChange={(e) => edit(i, { level: e.target.value as Level })}
-                >
-                  {LEVELS.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <select
-              className={`${SELECT} w-full`}
-              aria-label={`Team role ${i + 1} add skill`}
-              value=""
-              onChange={(e) => {
-                const id = e.target.value
-                if (id && !r.skills.includes(id)) edit(i, { skills: [...r.skills, id] })
-              }}
-            >
-              <option value="">Add a must-have skill…</option>
-              {(skills.data ?? []).map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-            <div className="flex flex-wrap gap-1">
-              {r.skills.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  className="bg-muted rounded-full px-2 py-0.5 text-xs"
-                  aria-label={`Remove ${name(id)}`}
-                  onClick={() => edit(i, { skills: r.skills.filter((x) => x !== id) })}
-                >
-                  {name(id)} ×
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        ))}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            disabled={roles.length >= 10}
-            onClick={() =>
-              setRoles((rs) => [...rs, { title: '', level: 'L3', count: 1, skills: [] }])
-            }
-          >
-            <Plus aria-hidden /> Add role
-          </Button>
-          <Button onClick={run} disabled={!ready || build.isPending}>
-            {build.isPending ? (
-              <Loader2 className="animate-spin" aria-hidden />
-            ) : (
-              <Users aria-hidden />
-            )}
-            Build team
-          </Button>
-        </div>
-      </section>
-      <section className="space-y-3" aria-label="Proposed team">
-        {build.isError && <ErrorState error={build.error} />}
-        {!plan ? (
-          <EmptyState title="No team yet">
-            Add the roles and skills, then build. People who have worked together before are
-            preferred. Nothing is assigned.
-          </EmptyState>
-        ) : (
-          <>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <StatusBadge tone="neutral">{plan.members.length} people</StatusBadge>
-              {showBilling() && (
-                <StatusBadge tone="neutral">{usd(plan.weekly_cost_usd)} cost a week</StatusBadge>
-              )}
-              {showBilling() && (
-                <StatusBadge tone="neutral">{usd(plan.weekly_bill_usd)} billed a week</StatusBadge>
-              )}
-              {showBilling() && <StatusBadge tone="ready">{plan.margin_pct}% margin</StatusBadge>}
-              {plan.within_budget === false && (
-                <StatusBadge tone="attention">Over budget</StatusBadge>
-              )}
-            </div>
-            <ul className="bg-surface divide-y rounded-xl border">
-              {plan.members.map((m) => (
-                <li key={m.employee_id} className="space-y-0.5 px-4 py-2.5">
-                  <p className="text-muted-foreground text-xs">{m.role}</p>
-                  <Person
-                    p={m}
-                    extra={`fit ${Math.round(m.fit * 100)}%${showBilling() ? `, ${usd(m.weekly_cost_usd)}/wk` : ''}`}
-                  />
-                  {m.worked_with.length > 0 && (
-                    <p className="text-xs">Worked with {m.worked_with.join(', ')}</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-            {plan.gaps.map((g) => (
-              <p key={g.role} className="text-sm" role="status">
-                {g.role}: {g.missing} still needed, {g.reason}.
-              </p>
-            ))}
-          </>
-        )}
-      </section>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import type { MatchRun, ShortlistItem, Task } from '@/api/types'
@@ -28,22 +28,6 @@ test('Key people shows a skill only one expert holds, with the closest backup', 
   expect(within(box).getByText('One expert')).toBeInTheDocument()
   expect(within(box).getByText(/Closest backups/)).toBeInTheDocument()
   expect(screen.getByText('Nothing running depends on one person')).toBeInTheDocument()
-})
-
-test('Team builder proposes people per role and says what is still missing', async () => {
-  const user = userEvent.setup()
-  renderRoute('/planning?tab=team')
-  const form = await screen.findByRole('region', { name: 'Team to build' })
-  const people = within(form).getByLabelText('Team role 1 people')
-  fireEvent.change(people, { target: { value: '3' } })
-  const add = within(form).getByLabelText('Team role 1 add skill')
-  await waitFor(() => expect(within(add).getAllByRole('option').length).toBeGreaterThan(1))
-  await user.selectOptions(add, (within(add).getAllByRole('option')[1] as HTMLOptionElement).value)
-  await user.click(within(form).getByRole('button', { name: 'Build team' }))
-  const team = await screen.findByRole('region', { name: 'Proposed team' })
-  expect(await within(team).findByText('2 people')).toBeInTheDocument()
-  expect(within(team).getByText(/Worked with/)).toBeInTheDocument()
-  expect(within(team).getByRole('status')).toHaveTextContent('Engineer: 1 still needed')
 })
 
 test('Capacity and fair opportunity show where people sit idle or stuck', async () => {

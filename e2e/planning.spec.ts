@@ -6,7 +6,7 @@ async function openTool(page: Page, question: RegExp) {
   await page.getByRole('link', { name: question }).click()
 }
 
-test('manager plans: bench, skill gaps, a team for two tasks, then hire or move on a task', async ({
+test('manager plans: bench, skill gaps, a team for a task, then hire or move on the task', async ({
   page,
 }) => {
   await page.goto('/tasks')
@@ -42,15 +42,21 @@ test('manager plans: bench, skill gaps, a team for two tasks, then hire or move 
     page.getByRole('table', { name: 'Skill gaps' }).getByRole('row').nth(1),
   ).toBeVisible()
 
-  await openTool(page, /Who should make up the team for a client's work\?/)
-  await page.getByRole('combobox', { name: 'Client' }).click()
-  await page.getByRole('option', { name: /CL-ZENITH/ }).click()
-  await page.getByRole('button', { name: 'Propose a team for CL-ZENITH' }).click()
-  const team = page.getByRole('region', { name: 'Proposed team' })
-  await expect(
-    team.getByRole('heading', { name: /Team for CL-ZENITH: \d+ of \d+ people found/ }),
-  ).toBeVisible()
-  await team.getByRole('link', { name: /Snowflake Data Engineer/ }).click()
+  // Staffing a task is one flow: lead, members, optional shadow, then the team's own page.
+  await page.getByRole('link', { name: 'All planning tools' }).click()
+  await page.getByRole('link', { name: /Who should be on the team for a task\?/ }).click()
+  await page.getByRole('combobox', { name: 'Task' }).click()
+  await page.getByRole('option', { name: /Snowflake Data Engineer/ }).click()
+  await page
+    .getByRole('list', { name: 'Team Lead options' })
+    .getByRole('button', { name: 'Choose as lead' })
+    .first()
+    .click()
+  await page.getByRole('button', { name: 'No shadow' }).click()
+  await page.getByRole('button', { name: 'Create team' }).click()
+  await expect(page.getByRole('heading', { name: /Team for TSK-/ })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Team Lead' })).toContainText('Leads the team')
+  await page.getByRole('link', { name: /Open task to accept people/ }).click()
 
   const card = page.getByRole('region', { name: 'Hire or move internally' })
   await expect(card.getByText('Move someone inside')).toBeVisible()

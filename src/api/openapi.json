@@ -6402,6 +6402,38 @@
         "title": "KeyPersonReport",
         "type": "object"
       },
+      "LeadOptions": {
+        "properties": {
+          "leads": {
+            "items": {
+              "$ref": "#/components/schemas/TeamCandidate"
+            },
+            "title": "Leads",
+            "type": "array"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "task": {
+            "$ref": "#/components/schemas/TeamTask"
+          }
+        },
+        "required": [
+          "task",
+          "leads",
+          "run_id"
+        ],
+        "title": "LeadOptions",
+        "type": "object"
+      },
       "LearningOverview": {
         "properties": {
           "assignments": {
@@ -6784,6 +6816,35 @@
           "filter_reason_counts"
         ],
         "title": "MatchRunRead",
+        "type": "object"
+      },
+      "MemberOptions": {
+        "properties": {
+          "alternates": {
+            "items": {
+              "$ref": "#/components/schemas/TeamCandidate"
+            },
+            "title": "Alternates",
+            "type": "array"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/TeamCandidate"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "needed": {
+            "title": "Needed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "needed",
+          "members",
+          "alternates"
+        ],
+        "title": "MemberOptions",
         "type": "object"
       },
       "ModelActivate": {
@@ -11231,6 +11292,94 @@
         "title": "TaskWithoutFit",
         "type": "object"
       },
+      "TeamCandidate": {
+        "description": "Someone the team builder suggests, with the reasons a manager can check.",
+        "properties": {
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "coverage": {
+            "title": "Coverage",
+            "type": "number"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "free_from": {
+            "format": "date",
+            "title": "Free From",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "practice": {
+            "title": "Practice",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "suggested": {
+            "default": false,
+            "title": "Suggested",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "practice",
+          "coverage",
+          "score",
+          "free_from",
+          "reasons"
+        ],
+        "title": "TeamCandidate",
+        "type": "object"
+      },
       "TeamGap": {
         "properties": {
           "missing": {
@@ -11276,7 +11425,7 @@
           },
           "roles": {
             "items": {
-              "$ref": "#/components/schemas/TeamRole"
+              "$ref": "#/components/schemas/TeamRole-Input"
             },
             "maxItems": 10,
             "minItems": 1,
@@ -11382,6 +11531,61 @@
         "title": "TeamMember",
         "type": "object"
       },
+      "TeamPerson": {
+        "properties": {
+          "allocation_pct": {
+            "title": "Allocation Pct",
+            "type": "integer"
+          },
+          "business_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BusinessUnitRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_band": {
+            "$ref": "#/components/schemas/CostBand"
+          },
+          "designation": {
+            "title": "Designation",
+            "type": "string"
+          },
+          "employee_code": {
+            "title": "Employee Code",
+            "type": "string"
+          },
+          "employee_id": {
+            "title": "Employee Id",
+            "type": "string"
+          },
+          "full_name": {
+            "title": "Full Name",
+            "type": "string"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "role": {
+            "$ref": "#/components/schemas/TeamRole-Output"
+          }
+        },
+        "required": [
+          "employee_id",
+          "employee_code",
+          "full_name",
+          "designation",
+          "level",
+          "cost_band",
+          "role",
+          "allocation_pct"
+        ],
+        "title": "TeamPerson",
+        "type": "object"
+      },
       "TeamPlan": {
         "properties": {
           "alternates": {
@@ -11444,7 +11648,72 @@
         "title": "TeamPlan",
         "type": "object"
       },
-      "TeamRole": {
+      "TeamRead": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "lead": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamPerson"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/TeamPerson"
+            },
+            "title": "Members",
+            "type": "array"
+          },
+          "shadow": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TeamPerson"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "task": {
+            "$ref": "#/components/schemas/TeamTask"
+          }
+        },
+        "required": [
+          "id",
+          "task",
+          "lead",
+          "members",
+          "shadow",
+          "created_at",
+          "created_by"
+        ],
+        "title": "TeamRead",
+        "type": "object"
+      },
+      "TeamRole-Input": {
         "properties": {
           "count": {
             "default": 1,
@@ -11480,6 +11749,54 @@
         "title": "TeamRole",
         "type": "object"
       },
+      "TeamRole-Output": {
+        "description": "A person's place in a team for a task (ADR 039).",
+        "enum": [
+          "lead",
+          "member",
+          "shadow"
+        ],
+        "title": "TeamRole",
+        "type": "string"
+      },
+      "TeamSave": {
+        "properties": {
+          "lead_id": {
+            "title": "Lead Id",
+            "type": "string"
+          },
+          "member_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 19,
+            "title": "Member Ids",
+            "type": "array"
+          },
+          "shadow_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shadow Id"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "lead_id",
+          "member_ids"
+        ],
+        "title": "TeamSave",
+        "type": "object"
+      },
       "TeamSkill": {
         "properties": {
           "min_proficiency": {
@@ -11503,6 +11820,60 @@
           "skill_id"
         ],
         "title": "TeamSkill",
+        "type": "object"
+      },
+      "TeamTask": {
+        "properties": {
+          "allocation_pct_required": {
+            "title": "Allocation Pct Required",
+            "type": "integer"
+          },
+          "client_code": {
+            "title": "Client Code",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "duration_weeks": {
+            "title": "Duration Weeks",
+            "type": "integer"
+          },
+          "headcount": {
+            "title": "Headcount",
+            "type": "integer"
+          },
+          "required_level": {
+            "title": "Required Level",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "code",
+          "title",
+          "client_code",
+          "required_level",
+          "start_date",
+          "duration_weeks",
+          "headcount",
+          "allocation_pct_required"
+        ],
+        "title": "TeamTask",
         "type": "object"
       },
       "ThemeRead": {
@@ -20536,6 +20907,379 @@
         "summary": "Suggest Candidate",
         "tags": [
           "hiring"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/team/leads": {
+      "get": {
+        "description": "Step 1 (ADR 039): up to 3 people who could lead the task, the first one suggested.",
+        "operationId": "lead_options_api_v1_tasks__task_id__team_leads_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadOptions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Lead Options",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/team/members": {
+      "get": {
+        "description": "Step 2: the members under that lead (headcount - 1) and alternates, from the task's\nlatest matching run. 409 `run_needed` when the task has no finished run.",
+        "operationId": "member_options_api_v1_tasks__task_id__team_members_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lead Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberOptions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Member Options",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/api/v1/tasks/{task_id}/team/shadows": {
+      "get": {
+        "description": "Step 3 (optional): learners to put alongside the team, never someone already in it.",
+        "operationId": "shadow_options_api_v1_tasks__task_id__team_shadows_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "team_ids",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  "maxItems": 20,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Team Ids"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamCandidate"
+                  },
+                  "title": "Response Shadow Options Api V1 Tasks  Task Id  Team Shadows Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Shadow Options",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/api/v1/teams": {
+      "get": {
+        "operationId": "list_teams_api_v1_teams_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "task_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Task Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamRead"
+                  },
+                  "title": "Response List Teams Api V1 Teams Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Teams",
+        "tags": [
+          "teams"
+        ]
+      },
+      "post": {
+        "description": "Create the task's team (replaces an earlier one). The lead plus members must equal the\ntask's headcount; the shadow is extra. Audited `team.saved`. Nobody is assigned: people\nare still accepted on the task.",
+        "operationId": "save_team_api_v1_teams_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamSave"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Team",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/api/v1/teams/{team_id}": {
+      "delete": {
+        "operationId": "delete_team_api_v1_teams__team_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Team Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Team",
+        "tags": [
+          "teams"
+        ]
+      },
+      "get": {
+        "operationId": "get_team_api_v1_teams__team_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Team Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Team",
+        "tags": [
+          "teams"
         ]
       }
     },

@@ -20,6 +20,8 @@ import NewTaskChatPage from '@/features/newTask/NewTaskChatPage'
 import ClientProfilePage from '@/features/planning/ClientProfilePage'
 import EmployeeValuePage from '@/features/planning/EmployeeValuePage'
 import PlanningPage from '@/features/planning/PlanningPage'
+import TeamBuilderPage from '@/features/teams/TeamBuilderPage'
+import { TeamPage, TeamsPage } from '@/features/teams/TeamPages'
 import RunPage from '@/features/runs/RunPage'
 import TaskDetailPage from '@/features/tasks/TaskDetailPage'
 import TaskListPage from '@/features/tasks/TaskListPage'
@@ -78,6 +80,9 @@ export const routes = [
       { path: 'tasks/:taskId', element: <TaskDetailPage /> },
       { path: 'tasks/:taskId/edit', element: <NewTaskChatPage /> },
       { path: 'runs/:runId', element: <RunPage /> },
+      { path: 'teams', element: <TeamsPage /> },
+      { path: 'teams/new', element: <TeamBuilderPage /> },
+      { path: 'teams/:teamId', element: <TeamPage /> },
       { path: 'planning', element: <PlanningPage /> },
       { path: 'planning/people/:employeeId', element: <EmployeeValuePage /> },
       { path: 'planning/people/:employeeId/profile', element: <ClientProfilePage /> },

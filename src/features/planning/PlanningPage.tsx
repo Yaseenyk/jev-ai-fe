@@ -1,30 +1,15 @@
-import { ArrowRight, Loader2, Users } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { ArrowRight } from 'lucide-react'
+import { type ReactNode } from 'react'
 import { Link, Navigate } from 'react-router'
 
-import type {
-  BenchPerson,
-  DashboardPointers,
-  Level,
-  Margin,
-  ProposedPerson,
-  SkillGap,
-  StaffedTask,
-} from '@/api/types'
+import type { BenchPerson, DashboardPointers, Level, Margin, SkillGap } from '@/api/types'
 import { type Column, DataTable, Pagination } from '@/components/DataTable'
 import { FilterBar, FilterSelect, Segmented } from '@/components/FilterBar'
 import { PageHeader } from '@/components/PageHeader'
-import { EmptyState, ErrorState } from '@/components/QueryStates'
+import { ErrorState } from '@/components/QueryStates'
 import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import { useUrlState } from '@/components/useUrlState'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { usePointers } from '@/features/dashboard/api'
@@ -35,13 +20,11 @@ import {
   KeyPeopleTab,
   LearningTab,
   OpportunityTab,
-  TeamBuilderTab,
 } from '@/features/workforce/PlanningTabs'
 import { PipelineTab } from '@/features/workforce/MorePages'
 import { BenchPlanTab } from '@/features/workforce/BenchPlanTab'
-import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/planning/api'
-import { useTasks } from '@/features/tasks/api'
-import { BAND_LABELS, LEVEL_TITLES, chance, date, percent } from '@/lib/format'
+import { useBench, useSkillGaps } from '@/features/planning/api'
+import { LEVEL_TITLES, date, percent } from '@/lib/format'
 import { UnitBadge } from '@/features/org/UnitBadge'
 import { showBilling } from '@/lib/features'
 
@@ -65,7 +48,9 @@ interface Tool {
   what: string
   steps: [string, string, string]
   number?: (p: DashboardPointers) => string
-  view: () => ReactNode
+  /** Opens its own page instead of a view inside Planning. */
+  href?: string
+  view?: () => ReactNode
 }
 
 const GROUPS = ['People without work', 'Skills', 'Staff a project', 'Look ahead']
@@ -155,34 +140,34 @@ const TOOLS: Tool[] = [
     view: () => <LearningTab />,
   },
   {
-    tab: 'staffing',
-    group: 'Staff a project',
-    title: "Staff a client's work",
-    question: "Who should make up the team for a client's work?",
-    what: 'Choose a client and get a whole team: as many people as each of its open tasks needs, the best free people first, nobody booked twice.',
-    steps: [
-      'Choose the client.',
-      'Click "Propose a team": every seat of every open task gets a person.',
-      'Swap anyone you prefer, then open each task to accept its people.',
-    ],
-    view: () => <StaffingTab />,
-  },
-  {
-    tab: 'team',
+    tab: 'teams-new',
     group: 'Staff a project',
     title: 'Build a team',
-    question: 'Who would make the best team for new work?',
-    what: 'Describe the roles and skills you need and get the best free people for each role.',
+    question: 'Who should be on the team for a task?',
+    what: 'Pick a task, choose its Team Lead from the suggestions, then the people under the lead and an optional shadow who learns alongside. The team gets its own page.',
     steps: [
-      'Add each role with its skills and level.',
-      'Set the start date and click to build the team.',
-      'Open the people to check them before you propose them.',
+      'Choose the task.',
+      'Choose the Team Lead, then the people under the lead.',
+      'Add a shadow if you like, then create the team.',
     ],
-    view: () => <TeamBuilderTab />,
+    href: '/teams/new',
+  },
+  {
+    tab: 'teams',
+    group: 'Staff a project',
+    title: 'Teams',
+    question: 'Which teams have we put together?',
+    what: 'Every team built for a task: its lead, members and shadow. Open one to see it or change it.',
+    steps: [
+      'Find the task in the list.',
+      'Open its team.',
+      'Change or delete it, or open the task to accept people.',
+    ],
+    href: '/teams',
   },
   {
     tab: 'whatif',
-    group: 'Staff a project',
+    group: 'Look ahead',
     title: 'Can we take this work?',
     question: 'Could we staff a project we might win?',
     what: 'Try a project before it exists: who would fit each role, and when they are free.',
@@ -239,6 +224,7 @@ export default function PlanningPage() {
   const [f] = useUrlState({ tab: '' })
   if (role === 'viewer') return <Navigate to="/tasks" replace />
   const tool = TOOLS.find((t) => t.tab === f.tab)
+  if (tool?.href) return <Navigate to={tool.href} replace />
   return tool ? <ToolView tool={tool} /> : <Hub />
 }
 
@@ -251,15 +237,19 @@ function Hub() {
         description="Pick what you want to find out. Every tool suggests; you decide on each task."
       />
       {GROUPS.map((group) => (
-        <section key={group} aria-labelledby={`group-${group}`} className="space-y-3">
-          <h2 id={`group-${group}`} className="text-base font-semibold">
+        <section
+          key={group}
+          aria-labelledby={`group-${group.replace(/\s+/g, '-')}`}
+          className="space-y-3"
+        >
+          <h2 id={`group-${group.replace(/\s+/g, '-')}`} className="text-base font-semibold">
             {group}
           </h2>
           <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {TOOLS.filter((t) => t.group === group).map((t) => (
               <li key={t.tab}>
                 <Link
-                  to={`/planning?tab=${t.tab}`}
+                  to={t.href ?? `/planning?tab=${t.tab}`}
                   className="bg-surface hover:border-primary/50 focus-visible:ring-ring group flex h-full flex-col gap-2 rounded-xl border p-5 transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   <span className="font-semibold">{t.question}</span>
@@ -303,7 +293,7 @@ function ToolView({ tool }: { tool: Tool }) {
           ))}
         </ol>
       </section>
-      {tool.view()}
+      {tool.view?.()}
     </div>
   )
 }
@@ -685,272 +675,5 @@ export function MarginBadge({ margin }: { margin: Margin }) {
     <StatusBadge tone={margin.below_target ? 'attention' : 'ready'}>
       {margin.margin_pct}% margin{margin.below_target ? ' (below target)' : ''}
     </StatusBadge>
-  )
-}
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .map((w) => w[0] ?? '')
-    .slice(0, 2)
-    .join('')
-    .toUpperCase()
-
-function StaffingTab() {
-  const tasks = useTasks({ q: '', priority: '', domain: '' }, 'open')
-  const staffing = useStaffing()
-  const startRuns = useStartRuns()
-  const [client, setClient] = useState('')
-  const [proposedFor, setProposedFor] = useState('')
-  // "<task id>:<seat>" -> the person picked with Swap or Add instead of the proposal
-  const [swaps, setSwaps] = useState<Record<string, string>>({})
-  const NO_RUN = 'Run matching for this task first.'
-
-  if (tasks.isPending) return <Skeleton className="h-96 w-full rounded-xl" />
-  if (tasks.isError) return <ErrorState error={tasks.error} />
-  const open = tasks.data.items
-  const counts = new Map<string, number>()
-  for (const t of open) counts.set(t.client_code, (counts.get(t.client_code) ?? 0) + t.headcount)
-  const clients = [...counts.keys()].sort()
-  const chosen = client || clients[0] || ''
-  const forClient = open.filter((t) => t.client_code === chosen).slice(0, 30)
-
-  const propose = () => {
-    startRuns.reset()
-    setSwaps({})
-    setProposedFor(chosen)
-    staffing.mutate(forClient.map((t) => t.id))
-  }
-
-  const plan = staffing.data
-  const seatsOf = (t: StaffedTask): (ProposedPerson | null)[] => {
-    const pool = [...t.people, ...t.alternates]
-    return Array.from({ length: t.headcount }, (_, i) => {
-      const id = swaps[`${t.task_id}:${i}`]
-      return (id && pool.find((p) => p.employee_id === id)) || t.people[i] || null
-    })
-  }
-  const members = plan
-    ? plan.tasks.flatMap((t) => seatsOf(t).filter((p): p is ProposedPerson => p !== null))
-    : []
-  const inTeam = new Set(members.map((p) => p.employee_id))
-  const needRun = (plan?.tasks ?? [])
-    .filter((t) => t.unfilled_reason === NO_RUN)
-    .map((t) => t.task_id)
-
-  return (
-    <div className="space-y-5">
-      <section
-        aria-label="Client to staff"
-        className="bg-surface flex flex-wrap items-end gap-4 rounded-xl border p-4"
-      >
-        <div className="space-y-1.5">
-          <label htmlFor="staff-client" className="text-sm font-medium">
-            Client
-          </label>
-          {clients.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No open tasks to staff.</p>
-          ) : (
-            <Select value={chosen} onValueChange={setClient}>
-              <SelectTrigger id="staff-client" className="w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {clients.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c} · {plural(counts.get(c) ?? 0, 'person', 'people')} needed
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-        <Button disabled={forClient.length === 0 || staffing.isPending} onClick={propose}>
-          {staffing.isPending ? (
-            <Loader2 className="animate-spin" aria-hidden />
-          ) : (
-            <Users aria-hidden />
-          )}
-          Propose a team for {chosen || 'this client'}
-        </Button>
-        {forClient.length > 0 && (
-          <p className="text-muted-foreground basis-full text-xs">
-            Roles:{' '}
-            {forClient
-              .map(
-                (t) => `${t.code} ${t.title}${t.headcount > 1 ? ` (${t.headcount} people)` : ''}`,
-              )
-              .join(' · ')}
-          </p>
-        )}
-      </section>
-
-      <section className="space-y-4" aria-label="Proposed team">
-        {staffing.isError && <ErrorState error={staffing.error} />}
-        {!plan && !staffing.isError && (
-          <EmptyState title="No team proposed yet">
-            Choose a client and click Propose a team. Each open task is a role that needs one or
-            more people; every seat gets the best free person, and nobody is booked twice.
-          </EmptyState>
-        )}
-        {plan && (
-          <>
-            <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="text-lg font-semibold">
-                Team for {proposedFor}: {members.length} of {plural(plan.seats, 'person', 'people')}{' '}
-                found
-              </h2>
-              {showBilling() && (
-                <span className="text-muted-foreground text-sm">
-                  Gross margin {usd(plan.total_weekly_margin_usd)} a week
-                </span>
-              )}
-            </div>
-            {needRun.length > 0 && (
-              <div className="bg-surface flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm">
-                <p>
-                  {startRuns.data
-                    ? `Matching started for ${startRuns.data.started} of ${startRuns.data.asked} tasks. Propose again in a minute.`
-                    : `${plural(needRun.length, 'role')} cannot be filled yet: ${needRun.length === 1 ? 'its task has' : 'their tasks have'} no finished matching run.`}
-                </p>
-                <Button
-                  variant="outline"
-                  disabled={startRuns.isPending || Boolean(startRuns.data)}
-                  onClick={() => startRuns.mutate(needRun)}
-                >
-                  {startRuns.isPending && <Loader2 className="animate-spin" aria-hidden />}
-                  Run matching for {needRun.length === 1 ? 'it' : `these ${needRun.length}`}
-                </Button>
-              </div>
-            )}
-            {startRuns.isError && <ErrorState error={startRuns.error} />}
-            <ul className="grid gap-4 lg:grid-cols-2">
-              {plan.tasks.map((t) => (
-                <RoleCard
-                  key={t.task_id}
-                  t={t}
-                  seats={seatsOf(t)}
-                  inTeam={inTeam}
-                  onPick={(seat, id) => setSwaps((s) => ({ ...s, [`${t.task_id}:${seat}`]: id }))}
-                />
-              ))}
-            </ul>
-            <p className="text-muted-foreground text-xs">
-              A proposal only. Open each task to accept or reject the people on its shortlist.
-            </p>
-          </>
-        )}
-      </section>
-    </div>
-  )
-}
-
-function RoleCard({
-  t,
-  seats,
-  inTeam,
-  onPick,
-}: {
-  t: StaffedTask
-  seats: (ProposedPerson | null)[]
-  inTeam: Set<string>
-  onPick: (seat: number, employeeId: string) => void
-}) {
-  const pool = [...t.people, ...t.alternates]
-  const filled = seats.filter((p) => p !== null).length
-  return (
-    <li
-      className="bg-surface flex flex-col gap-3 rounded-xl border p-4"
-      aria-label={`Role ${t.task_code}`}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-muted-foreground text-xs">Role · {t.task_code}</p>
-          <Link to={`/tasks/${t.task_id}`} className="font-semibold hover:underline">
-            {t.title}
-          </Link>
-        </div>
-        <StatusBadge tone={filled === t.headcount ? 'ready' : 'attention'}>
-          {filled} of {plural(t.headcount, 'person', 'people')}
-        </StatusBadge>
-      </div>
-      <ol className="space-y-2">
-        {seats.map((person, seat) => {
-          const free = pool.filter(
-            (p) => p.employee_id === person?.employee_id || !inTeam.has(p.employee_id),
-          )
-          return (
-            <li
-              key={seat}
-              className="bg-muted/40 flex flex-wrap items-center gap-3 rounded-lg p-3"
-              aria-label={`Seat ${seat + 1} of ${t.task_code}`}
-            >
-              {person ? (
-                <>
-                  <span className="bg-primary/10 text-primary grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold">
-                    {initials(person.full_name)}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <Link
-                      to={`/planning/people/${person.employee_id}`}
-                      className="block truncate font-medium hover:underline"
-                    >
-                      {person.full_name}
-                    </Link>
-                    <p className="text-muted-foreground text-xs">
-                      {person.employee_code} · {person.designation} · {person.level}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      <StatusBadge tone={person.band === 'shortlist' ? 'ready' : 'info'}>
-                        {BAND_LABELS[person.band]} · {chance(person.score)}
-                      </StatusBadge>
-                      {showBilling() && <MarginBadge margin={person.margin} />}
-                      <UnitBadge unit={person.business_unit} />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="min-w-0 flex-1 text-sm">
-                  <p className="font-medium">Seat {seat + 1}: nobody yet</p>
-                  {t.unfilled_reason && (
-                    <p className="text-muted-foreground text-xs">{t.unfilled_reason}</p>
-                  )}
-                </div>
-              )}
-              {free.length > (person ? 1 : 0) && (
-                <Select value={person?.employee_id ?? ''} onValueChange={(id) => onPick(seat, id)}>
-                  <SelectTrigger
-                    className="h-8 w-52 text-xs"
-                    aria-label={`${person ? 'Swap' : 'Add someone to'} seat ${seat + 1} of ${t.task_code}`}
-                  >
-                    <span className="text-muted-foreground mr-1">{person ? 'Swap:' : 'Add:'}</span>
-                    <SelectValue placeholder="Pick a person" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pool.map((p) => {
-                      const taken =
-                        p.employee_id !== person?.employee_id && inTeam.has(p.employee_id)
-                      return (
-                        <SelectItem key={p.employee_id} value={p.employee_id} disabled={taken}>
-                          {p.full_name} · {chance(p.score)}
-                          {taken ? ' (in team)' : ''}
-                        </SelectItem>
-                      )
-                    })}
-                  </SelectContent>
-                </Select>
-              )}
-            </li>
-          )
-        })}
-      </ol>
-      <div className="mt-auto">
-        <Button asChild size="sm" variant={filled ? 'default' : 'outline'} className="h-8">
-          <Link to={`/tasks/${t.task_id}`}>
-            {filled ? 'Open task to accept' : 'Open task to ask HR'}
-          </Link>
-        </Button>
-      </div>
-    </li>
   )
 }
