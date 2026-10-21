@@ -493,29 +493,34 @@ export function createPlanningHandlers(db: Db) {
         const task = db.tasks.find((t) => t.id === id)
         if (!task) return problem(404, 'task_not_found', `Task ${id} not found`)
         const found = recommended(id)
-        const pick = found?.items.find((i) => !used.has(i.employee.id))
-        if (pick) used.add(pick.employee.id)
+        const picks = (found?.items ?? [])
+          .filter((i) => !used.has(i.employee.id))
+          .slice(0, task.headcount)
+        for (const p of picks) used.add(p.employee.id)
         tasks.push({
           task_id: task.id,
           task_code: task.code,
           title: task.title,
-          proposed: pick ? person(pick) : null,
+          headcount: task.headcount,
+          people: picks.map(person),
           alternates: (found?.items ?? [])
-            .filter((i) => i !== pick)
-            .slice(0, 2)
+            .filter((i) => !picks.includes(i))
+            .slice(0, 3)
             .map(person),
-          unfilled_reason: pick
-            ? null
-            : !found
-              ? 'Run matching for this task first.'
-              : found.items.length === 0
-                ? 'Nobody was recommended in the latest matching run.'
-                : 'Everyone recommended is already proposed for another task in this plan.',
+          unfilled_reason:
+            picks.length >= task.headcount
+              ? null
+              : !found
+                ? 'Run matching for this task first.'
+                : found.items.length === 0
+                  ? 'Nobody was recommended in the latest matching run.'
+                  : 'Everyone recommended is already proposed for another task in this plan.',
         })
       }
-      const filled = tasks.flatMap((t) => (t.proposed ? [t.proposed] : []))
+      const filled = tasks.flatMap((t) => t.people)
       return HttpResponse.json({
         tasks,
+        seats: tasks.reduce((n, t) => n + t.headcount, 0),
         filled: filled.length,
         total_weekly_margin_usd: filled.reduce(
           (s, p) => s + p.margin.weekly_bill_usd - p.margin.weekly_cost_usd,

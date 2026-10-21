@@ -128,6 +128,7 @@ function answerText(step: Step, d: Draft, skillName: (id: string) => string, tod
 const KEY_FIELDS: (keyof Draft)[] = [
   'title',
   'client_code',
+  'headcount',
   'must_skills',
   'required_level',
   'start_date',

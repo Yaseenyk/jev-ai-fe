@@ -38,7 +38,9 @@ const data = demo as unknown as DemoData
 
 export function createDb(now: () => number = Date.now) {
   const runs = new Map<string, RunState>()
-  const tasks = [...data.tasks]
+  // Tasks saved before ADR 038 have no headcount: one person each.
+  const saved = data.tasks as (Omit<Task, 'headcount'> & { headcount?: number })[]
+  const tasks: Task[] = saved.map((t) => ({ ...t, headcount: t.headcount ?? 1 }))
   const skillsById = new Map(data.skills.map((s) => [s.id, s]))
   const feedback = new Map<string, Feedback>()
 

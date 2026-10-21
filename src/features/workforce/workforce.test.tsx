@@ -93,8 +93,9 @@ test('A client request becomes draft tasks that are created for a client', async
     client,
     (within(client).getAllByRole('option')[1] as HTMLOptionElement).value,
   )
-  await user.click(within(drafts).getByRole('button', { name: 'Create 2 tasks' }))
-  expect(await within(drafts).findByRole('status')).toHaveTextContent('Created 2 tasks')
+  // Two people for one role is one task that needs two (ADR 038).
+  await user.click(within(drafts).getByRole('button', { name: 'Create 1 task for 2 people' }))
+  expect(await within(drafts).findByRole('status')).toHaveTextContent('Created 1 task.')
 })
 
 test('HR records preferences with consent, and a manager plans a course that finishes', async () => {

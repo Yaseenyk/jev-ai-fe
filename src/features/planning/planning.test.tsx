@@ -108,7 +108,7 @@ const member = (id: string, name: string, score: number) => ({
   margin: { weekly_cost_usd: 1000, weekly_bill_usd: 1600, margin_pct: 37.5, below_target: false },
 })
 
-test("a client's open tasks get a whole team, one person per role", async () => {
+test("a client's open tasks get a whole team: every seat of every role", async () => {
   const sent: string[][] = []
   server.use(
     http.post('*/api/v1/planning/staffing', async ({ request }) => {
@@ -120,15 +120,17 @@ test("a client's open tasks get a whole team, one person per role", async () => 
             task_id: first.id,
             task_code: first.code,
             title: first.title,
-            proposed: member('a', 'Asha Rao', 0.97),
+            headcount: 3,
+            people: [member('a', 'Asha Rao', 0.97), member('d', 'Dev Menon', 0.96)],
             alternates: [member('b', 'Ben Kurian', 0.95), member('c', 'Chitra Nair', 0.9)],
-            unfilled_reason: null,
+            unfilled_reason: 'Only 2 of 3 could be filled.',
           },
           {
             task_id: second.id,
             task_code: second.code,
             title: second.title,
-            proposed: member('b', 'Ben Kurian', 0.93),
+            headcount: 1,
+            people: [member('b', 'Ben Kurian', 0.93)],
             alternates: [],
             unfilled_reason: null,
           },
@@ -136,12 +138,14 @@ test("a client's open tasks get a whole team, one person per role", async () => 
             task_id: 'swift',
             task_code: 'TSK-0099',
             title: 'Swift iOS Developer',
-            proposed: null,
+            headcount: 2,
+            people: [],
             alternates: [],
             unfilled_reason: 'Nobody was recommended in the latest matching run.',
           },
         ],
-        filled: 2,
+        seats: 6,
+        filled: 3,
         total_weekly_margin_usd: 1200,
       })
     }),
@@ -151,28 +155,37 @@ test("a client's open tasks get a whole team, one person per role", async () => 
   await user.click(await screen.findByRole('button', { name: /Propose a team for CL-/ }))
   const team = await screen.findByRole('region', { name: 'Proposed team' })
   expect(
-    await within(team).findByRole('heading', { name: /Team for CL-.*: 2 of 3 roles filled/ }),
+    await within(team).findByRole('heading', { name: /Team for CL-.*: 3 of 6 people found/ }),
   ).toBeInTheDocument()
   expect(sent[0]?.length).toBeGreaterThan(0)
   expect(within(team).getByText(/Gross margin \$1,200 a week/)).toBeInTheDocument()
 
   const role = within(team).getByRole('listitem', { name: `Role ${first.code}` })
+  expect(within(role).getByText('2 of 3 people')).toBeInTheDocument()
   expect(within(role).getByText('Asha Rao')).toBeInTheDocument()
-  // Swapping: someone already in the team cannot be picked twice.
-  await user.click(within(role).getByRole('combobox', { name: `Swap person for ${first.code}` }))
+  expect(within(role).getByText('Dev Menon')).toBeInTheDocument()
+  expect(within(role).getByText('Seat 3: nobody yet')).toBeInTheDocument()
+  // Filling the empty seat: someone already in the team cannot be picked twice.
+  await user.click(
+    within(role).getByRole('combobox', { name: `Add someone to seat 3 of ${first.code}` }),
+  )
   expect(await screen.findByRole('option', { name: /Ben Kurian.*\(in team\)/ })).toHaveAttribute(
     'aria-disabled',
     'true',
   )
   await user.click(screen.getByRole('option', { name: /Chitra Nair/ }))
   expect(await within(role).findByText('Chitra Nair')).toBeInTheDocument()
+  expect(within(role).getByText('3 of 3 people')).toBeInTheDocument()
+  expect(
+    within(team).getByRole('heading', { name: /Team for CL-.*: 4 of 6 people found/ }),
+  ).toBeInTheDocument()
   expect(within(role).getByRole('link', { name: 'Open task to accept' })).toHaveAttribute(
     'href',
     `/tasks/${first.id}`,
   )
 
   const empty = within(team).getByRole('listitem', { name: 'Role TSK-0099' })
-  expect(within(empty).getByText('Nobody proposed')).toBeInTheDocument()
+  expect(within(empty).getByText('0 of 2 people')).toBeInTheDocument()
   expect(within(empty).getByRole('link', { name: 'Open task to ask HR' })).toBeInTheDocument()
   expect(within(team).getByText(/A proposal only/)).toBeInTheDocument()
 })
@@ -224,11 +237,13 @@ test('tasks without a finished run can be matched from the plan in one click', a
             task_id: first.id,
             task_code: first.code,
             title: first.title,
-            proposed: null,
+            headcount: 1,
+            people: [],
             alternates: [],
             unfilled_reason: 'Run matching for this task first.',
           },
         ],
+        seats: 1,
         filled: 0,
         total_weekly_margin_usd: 0,
       }),

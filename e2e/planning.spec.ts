@@ -48,7 +48,7 @@ test('manager plans: bench, skill gaps, a team for two tasks, then hire or move 
   await page.getByRole('button', { name: 'Propose a team for CL-ZENITH' }).click()
   const team = page.getByRole('region', { name: 'Proposed team' })
   await expect(
-    team.getByRole('heading', { name: /Team for CL-ZENITH: \d+ of \d+ roles filled/ }),
+    team.getByRole('heading', { name: /Team for CL-ZENITH: \d+ of \d+ people found/ }),
   ).toBeVisible()
   await team.getByRole('link', { name: /Snowflake Data Engineer/ }).click()
 
