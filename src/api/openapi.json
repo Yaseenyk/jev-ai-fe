@@ -6099,6 +6099,17 @@
             ],
             "title": "Duration Weeks"
           },
+          "headcount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headcount"
+          },
           "location": {
             "anyOf": [
               {
@@ -6216,6 +6227,7 @@
           "start_in_days",
           "duration_weeks",
           "allocation_pct_required",
+          "headcount",
           "work_mode",
           "location",
           "priority",
@@ -10296,15 +10308,16 @@
             "title": "Alternates",
             "type": "array"
           },
-          "proposed": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ProposedPerson"
-              },
-              {
-                "type": "null"
-              }
-            ]
+          "headcount": {
+            "title": "Headcount",
+            "type": "integer"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/ProposedPerson"
+            },
+            "title": "People",
+            "type": "array"
           },
           "task_code": {
             "title": "Task Code",
@@ -10334,7 +10347,8 @@
           "task_id",
           "task_code",
           "title",
-          "proposed",
+          "headcount",
+          "people",
           "alternates",
           "unfilled_reason"
         ],
@@ -10367,6 +10381,10 @@
             "title": "Filled",
             "type": "integer"
           },
+          "seats": {
+            "title": "Seats",
+            "type": "integer"
+          },
           "tasks": {
             "items": {
               "$ref": "#/components/schemas/StaffedTask"
@@ -10381,6 +10399,7 @@
         },
         "required": [
           "tasks",
+          "seats",
           "filled",
           "total_weekly_margin_usd"
         ],
@@ -10582,6 +10601,13 @@
             "maximum": 104.0,
             "minimum": 1.0,
             "title": "Duration Weeks",
+            "type": "integer"
+          },
+          "headcount": {
+            "default": 1,
+            "maximum": 20.0,
+            "minimum": 1.0,
+            "title": "Headcount",
             "type": "integer"
           },
           "location_constraint": {
@@ -10816,6 +10842,10 @@
             "title": "Duration Weeks",
             "type": "integer"
           },
+          "headcount": {
+            "title": "Headcount",
+            "type": "integer"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -10883,6 +10913,7 @@
           "start_date",
           "duration_weeks",
           "allocation_pct_required",
+          "headcount",
           "max_cost_band",
           "clearance_required",
           "priority",
@@ -11020,6 +11051,19 @@
               }
             ],
             "title": "Duration Weeks"
+          },
+          "headcount": {
+            "anyOf": [
+              {
+                "maximum": 20.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Headcount"
           },
           "location_constraint": {
             "anyOf": [

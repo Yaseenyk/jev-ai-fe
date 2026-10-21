@@ -94,6 +94,7 @@ function TaskDetail({ task }: { task: Task }) {
     ['Minimum experience', `${task.min_years_experience} years`],
     ['Start date', date(task.start_date)],
     ['Duration', `${task.duration_weeks} weeks`],
+    ['People needed', String(task.headcount)],
     ['Allocation', `${task.allocation_pct_required}%`],
     ['Work mode', humanize(task.work_mode)],
     [

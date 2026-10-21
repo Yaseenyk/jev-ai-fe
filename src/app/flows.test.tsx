@@ -42,9 +42,16 @@ test('a completed run shows bands, facts, decisions and feedback actions', async
   expect(within(card).getByText('Facts from the data')).toBeInTheDocument()
   expect(within(card).getByRole('list', { name: 'Overall fit probabilities' })).toBeInTheDocument()
 
+  const accepted = screen.getByRole('status', { name: 'People accepted' })
+  expect(accepted).toHaveTextContent('Accepted 0 of 1 person needed. Accept 1 more')
   await user.click(within(card).getByRole('button', { name: /accept as candidate/i }))
   expect(await within(card).findByText('Accepted as candidate')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /assign/i })).not.toBeInTheDocument()
+  await waitFor(() =>
+    expect(screen.getByRole('status', { name: 'People accepted' })).toHaveTextContent(
+      'Accepted 1 of 1 person needed. Enough people accepted',
+    ),
+  )
 })
 
 test('rejecting requires a reason', async () => {

@@ -23,6 +23,7 @@ const NOTHING: InterpretResponse = {
   start_in_days: null,
   duration_weeks: null,
   allocation_pct_required: null,
+  headcount: null,
   work_mode: null,
   location: null,
   priority: null,
@@ -87,16 +88,18 @@ test('a full JD is read, only the missing details are asked, and matching starts
   const { router } = renderRoute('/tasks/new')
   await upload(user)
 
-  expect(await screen.findByText(/I found \d+ details\. 2 quick questions/)).toBeInTheDocument()
+  expect(await screen.findByText(/I found \d+ details\. 3 quick questions/)).toBeInTheDocument()
   expect(files).toEqual(['jd.pdf'])
   expect(screen.getByText(/Not in the skills list: Dataiku/)).toBeInTheDocument()
 
-  // Only the client and the start are missing, in that order.
-  expect(screen.getByText('Question 1 of 2')).toBeInTheDocument()
+  // Only the client, the start and how many people are missing, in that order.
+  expect(screen.getByText('Question 1 of 3')).toBeInTheDocument()
   expect(screen.getByText('Which client is this for?')).toBeInTheDocument()
   await choose(user, 'CL-ACME')
-  expect(await screen.findByText('Question 2 of 2')).toBeInTheDocument()
+  expect(await screen.findByText('Question 2 of 3')).toBeInTheDocument()
   await choose(user, 'In 2 weeks')
+  expect(await screen.findByText('How many people do you need for this role?')).toBeInTheDocument()
+  await choose(user, '2 people')
 
   expect(await screen.findByText(/That's all I need/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Edit Duration' })).toHaveTextContent('24 weeks')
@@ -107,6 +110,7 @@ test('a full JD is read, only the missing details are asked, and matching starts
   expect(task?.client_code).toBe('CL-ACME')
   expect(task?.work_mode).toBe('remote')
   expect(task?.priority).toBe('medium')
+  expect(task?.headcount).toBe(2)
   expect(task?.requirements).toEqual([
     { skill_id: SNOWFLAKE_ID, min_proficiency: 3, must_have: true },
   ])
@@ -149,6 +153,7 @@ test('an empty document gets five questions at most; the rest are defaults', asy
   await user.click(screen.getByRole('button', { name: 'Find people' }))
   await waitFor(() => expect(created).toHaveLength(1))
   expect(created[0]).toMatchObject({
+    headcount: 1,
     title: 'Snowflake engineer',
     duration_weeks: 8,
     required_level: 'L3',

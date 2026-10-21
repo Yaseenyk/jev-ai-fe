@@ -22,6 +22,7 @@ import { ShortlistItemCard } from '@/features/shortlist/ShortlistItemCard'
 import { useExcluded, useShortlist, useSubmitFeedback } from '@/features/shortlist/api'
 import { useTask } from '@/features/tasks/api'
 import { dateTime, FILTER_REASON_FIXES, FILTER_REASON_LABELS, humanize } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 const OPEN_BY_DEFAULT = 1
 
@@ -91,7 +92,7 @@ export default function RunPage() {
           </AlertDescription>
         </Alert>
       ) : (
-        <CompletedRun run={run.data} />
+        <CompletedRun run={run.data} headcount={task.data?.headcount ?? 1} />
       )}
     </div>
   )
@@ -114,7 +115,7 @@ function RunProgress({ run }: { run: MatchRun }) {
   )
 }
 
-function CompletedRun({ run }: { run: MatchRun }) {
+function CompletedRun({ run, headcount }: { run: MatchRun; headcount: number }) {
   const definitions = useDecisionDefinitions()
   const items = useShortlist(run.id, true)
   const excluded = useExcluded(run.id, true)
@@ -133,6 +134,7 @@ function CompletedRun({ run }: { run: MatchRun }) {
   }
   const recommended = [...counts.shortlist, ...counts.review]
   const decidedCount = recommended.filter((i) => i.feedback).length
+  const acceptedCount = items.data.filter((i) => i.feedback?.action === 'accept').length
   const shownBands = BANDS.filter((b) =>
     f.band === 'recommended' ? b.band !== 'hidden' : b.band === f.band,
   )
@@ -156,6 +158,24 @@ function CompletedRun({ run }: { run: MatchRun }) {
         excludedTotal={excluded.data?.total ?? null}
         ranked={items.data.length}
       />
+
+      {recommended.length > 0 && (
+        <p
+          role="status"
+          aria-label="People accepted"
+          className={cn(
+            'rounded-xl border px-4 py-3 text-sm',
+            acceptedCount >= headcount ? 'bg-band-shortlist' : 'bg-surface',
+          )}
+        >
+          <span className="font-semibold">
+            Accepted {acceptedCount} of {headcount} {headcount === 1 ? 'person' : 'people'} needed.
+          </span>{' '}
+          {acceptedCount >= headcount
+            ? 'Enough people accepted: mark the task filled when they start.'
+            : `Accept ${headcount - acceptedCount} more to fill this task.`}
+        </p>
+      )}
 
       {recommended.length === 0 && <NoInternalFit taskId={run.task_id} />}
 

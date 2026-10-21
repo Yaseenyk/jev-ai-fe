@@ -4859,6 +4859,8 @@ export interface components {
             domain: components["schemas"]["Domain"] | null;
             /** Duration Weeks */
             duration_weeks: number | null;
+            /** Headcount */
+            headcount: number | null;
             location: components["schemas"]["Location"] | null;
             /** Min Years Experience */
             min_years_experience: number | null;
@@ -6333,7 +6335,10 @@ export interface components {
         StaffedTask: {
             /** Alternates */
             alternates: components["schemas"]["ProposedPerson"][];
-            proposed: components["schemas"]["ProposedPerson"] | null;
+            /** Headcount */
+            headcount: number;
+            /** People */
+            people: components["schemas"]["ProposedPerson"][];
             /** Task Code */
             task_code: string;
             /** Task Id */
@@ -6355,6 +6360,8 @@ export interface components {
         StaffingPlan: {
             /** Filled */
             filled: number;
+            /** Seats */
+            seats: number;
             /** Tasks */
             tasks: components["schemas"]["StaffedTask"][];
             /** Total Weekly Margin Usd */
@@ -6435,6 +6442,11 @@ export interface components {
             domain: components["schemas"]["Domain"];
             /** Duration Weeks */
             duration_weeks: number;
+            /**
+             * Headcount
+             * @default 1
+             */
+            headcount: number;
             /** Location Constraint */
             location_constraint: components["schemas"]["Location"][];
             max_cost_band: components["schemas"]["CostBand"];
@@ -6520,6 +6532,8 @@ export interface components {
             domain: components["schemas"]["Domain"];
             /** Duration Weeks */
             duration_weeks: number;
+            /** Headcount */
+            headcount: number;
             /** Id */
             id: string;
             /** Location Constraint */
@@ -6579,6 +6593,8 @@ export interface components {
             domain?: components["schemas"]["Domain"] | null;
             /** Duration Weeks */
             duration_weeks?: number | null;
+            /** Headcount */
+            headcount?: number | null;
             /** Location Constraint */
             location_constraint?: components["schemas"]["Location"][] | null;
             max_cost_band?: components["schemas"]["CostBand"] | null;

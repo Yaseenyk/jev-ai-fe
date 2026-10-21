@@ -215,29 +215,32 @@ export function FromRequestPage() {
 
   const tasksFor = (d: DraftTask): TaskCreate[] => {
     const c = clients.data?.find((x) => x.code === client)
-    return Array.from({ length: d.count }, (_, i) => ({
-      title: d.count > 1 ? `${d.title} (${i + 1} of ${d.count})` : d.title,
-      description: `From a client request: ${d.title}.`,
-      client_code: client,
-      domain: d.domain ?? c?.domain ?? 'retail',
-      required_level: d.required_level,
-      min_years_experience: 0,
-      location_constraint: [],
-      work_mode: 'hybrid',
-      client_timezone: c?.timezone ?? 'Asia/Kolkata',
-      min_timezone_overlap_hours: 0,
-      start_date: inDays(d.start_in_weeks != null ? d.start_in_weeks * 7 : 14),
-      duration_weeks: d.duration_weeks ?? 12,
-      allocation_pct_required: 100,
-      max_cost_band: 'E',
-      clearance_required: null,
-      priority: 'medium',
-      requirements: d.skills.map((s) => ({
-        skill_id: s.skill_id,
-        min_proficiency: 3,
-        must_have: s.must_have,
-      })),
-    }))
+    return [
+      {
+        title: d.title,
+        headcount: d.count,
+        description: `From a client request: ${d.title}.`,
+        client_code: client,
+        domain: d.domain ?? c?.domain ?? 'retail',
+        required_level: d.required_level,
+        min_years_experience: 0,
+        location_constraint: [],
+        work_mode: 'hybrid',
+        client_timezone: c?.timezone ?? 'Asia/Kolkata',
+        min_timezone_overlap_hours: 0,
+        start_date: inDays(d.start_in_weeks != null ? d.start_in_weeks * 7 : 14),
+        duration_weeks: d.duration_weeks ?? 12,
+        allocation_pct_required: 100,
+        max_cost_band: 'E',
+        clearance_required: null,
+        priority: 'medium',
+        requirements: d.skills.map((s) => ({
+          skill_id: s.skill_id,
+          min_proficiency: 3,
+          must_have: s.must_have,
+        })),
+      },
+    ]
   }
   const ready = (drafts.data?.drafts ?? []).filter((d) => d.skills.some((s) => s.must_have))
   const createAll = async () => {
@@ -342,7 +345,8 @@ export function FromRequestPage() {
               disabled={!client || ready.length === 0 || busy}
             >
               {busy && <Loader2 className="animate-spin" aria-hidden />}
-              Create {ready.reduce((n, d) => n + d.count, 0)} tasks
+              Create {ready.length} task{ready.length === 1 ? '' : 's'} for{' '}
+              {ready.reduce((n, d) => n + d.count, 0)} people
             </Button>
           </div>
           {create.isError && <ErrorState error={create.error} />}

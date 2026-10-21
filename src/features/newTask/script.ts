@@ -29,6 +29,7 @@ export interface Draft {
   start_date?: string
   duration_weeks?: number
   allocation_pct_required?: number
+  headcount?: number
   work_mode?: WorkMode
   location?: Location | 'any'
   client_timezone?: string
@@ -177,6 +178,25 @@ export function steps(clients: string[]): Step[] {
       options: () => [4, 8, 12, 24, 52].map((w) => ({ value: String(w), label: `${w} weeks` })),
     },
     {
+      id: 'headcount',
+      kind: 'choice',
+      prompt: () => 'How many people do you need for this role?',
+      options: () => [
+        { value: '1', label: '1 person' },
+        { value: '2', label: '2 people' },
+        { value: '3', label: '3 people' },
+        { value: '5', label: '5 people' },
+      ],
+      other: {
+        label: 'Another number',
+        inputType: 'text',
+        schema: z
+          .string()
+          .trim()
+          .regex(/^(?:[1-9]|1\d|20)$/, 'Use a number from 1 to 20'),
+      },
+    },
+    {
       id: 'allocation_pct_required',
       kind: 'choice',
       prompt: () => 'Full-time or part-time on this task?',
@@ -281,7 +301,14 @@ export const STAGES: Stage[] = [
   {
     id: 'role',
     label: 'Role',
-    fields: ['title', 'client_code', 'domain', 'required_level', 'min_years_experience'],
+    fields: [
+      'title',
+      'client_code',
+      'headcount',
+      'domain',
+      'required_level',
+      'min_years_experience',
+    ],
   },
   { id: 'skills', label: 'Skills', fields: ['must_skills', 'must_min_proficiency', 'nice_skills'] },
   {
@@ -317,6 +344,7 @@ export const FIELD_LABELS: Record<keyof Draft, string> = {
   start_date: 'Start',
   duration_weeks: 'Duration',
   allocation_pct_required: 'Allocation',
+  headcount: 'People needed',
   work_mode: 'Work mode',
   location: 'Location',
   client_timezone: 'Client timezone',
@@ -337,6 +365,7 @@ export const ASK_ORDER: (keyof Draft)[] = [
   'client_code',
   'domain',
   'start_date',
+  'headcount',
   'duration_weeks',
   'required_level',
   'work_mode',
@@ -397,6 +426,7 @@ export function withDefaults(d: Draft, today: Date): Draft {
     must_min_proficiency: d.must_min_proficiency ?? 3,
     nice_skills: d.nice_skills ?? [],
     allocation_pct_required: d.allocation_pct_required ?? 100,
+    headcount: d.headcount ?? 1,
     work_mode: d.work_mode ?? 'hybrid',
     location: d.location ?? 'any',
     client_timezone: d.client_timezone ?? 'Asia/Kolkata',
@@ -413,6 +443,7 @@ const NUMERIC: (keyof Draft)[] = [
   'must_min_proficiency',
   'duration_weeks',
   'allocation_pct_required',
+  'headcount',
   'min_timezone_overlap_hours',
 ]
 
@@ -445,6 +476,7 @@ export function toTaskCreate(d: Draft): TaskCreate {
     start_date: required('start_date'),
     duration_weeks: required('duration_weeks'),
     allocation_pct_required: required('allocation_pct_required'),
+    headcount: d.headcount ?? 1,
     // With billing hidden the band is not asked: no budget limit (band E).
     max_cost_band: showBilling() ? required('max_cost_band') : (d.max_cost_band ?? 'E'),
     clearance_required: d.clearance === 'client' ? clientCode : null,
@@ -490,6 +522,7 @@ export function fromInterpretation(r: InterpretResponse, clients: string[], toda
   }
   if (r.allocation_pct_required !== null)
     d.allocation_pct_required = r.allocation_pct_required >= 75 ? 100 : 50
+  if (r.headcount !== null) d.headcount = r.headcount
   if (r.work_mode) d.work_mode = r.work_mode
   if (r.location && LOCATIONS.includes(r.location) && r.work_mode !== 'remote')
     d.location = r.location
@@ -513,6 +546,7 @@ export function fromTask(task: Task): Draft {
     start_date: task.start_date,
     duration_weeks: task.duration_weeks,
     allocation_pct_required: task.allocation_pct_required,
+    headcount: task.headcount,
     work_mode: task.work_mode,
     location: task.location_constraint[0] ?? 'any',
     client_timezone: task.client_timezone,
