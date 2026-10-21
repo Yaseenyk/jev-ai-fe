@@ -883,6 +883,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboard/pointers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard Pointers
+         * @description Short pointers to act on: decisions waiting, bench, tasks nobody inside fits, time to
+         *     fill, skill gaps, roll-offs and key-person risk. Separate from /dashboard so the page shows
+         *     its first numbers without waiting for these.
+         */
+        get: operations["dashboard_pointers_api_v1_dashboard_pointers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/data-quality": {
         parameters: {
             query?: never;
@@ -5695,6 +5717,69 @@ export interface components {
         PlanningActionUpdate: {
             status: components["schemas"]["PlanningActionStatus"];
         };
+        /** PointerSkill */
+        PointerSkill: {
+            /** Available */
+            available: number;
+            /** Name */
+            name: string;
+            /** Skill Id */
+            skill_id: string;
+            /** Status */
+            status: string;
+            /** Tasks Needing */
+            tasks_needing: number;
+        };
+        /** PointerTask */
+        PointerTask: {
+            /** Code */
+            code: string;
+            /** Detail */
+            detail: string;
+            /** Task Id */
+            task_id: string;
+            /** Title */
+            title: string;
+        };
+        /**
+         * Pointers
+         * @description Short pointers to act on (ADR 036). Each comes from a rule already used on another screen;
+         *     the full lists are on the linked screens.
+         */
+        Pointers: {
+            /** Bench Free Now */
+            bench_free_now: number;
+            /** Bench Freeing Soon */
+            bench_freeing_soon: number;
+            /** Bench With Fit */
+            bench_with_fit: number;
+            /** Days To Filled */
+            days_to_filled: number | null;
+            /** Days To First Accept */
+            days_to_first_accept: number | null;
+            /** Filled */
+            filled: number;
+            /** First Accepts */
+            first_accepts: number;
+            /** Key Person High */
+            key_person_high: number;
+            /** No Fit Tasks */
+            no_fit_tasks: components["schemas"]["PointerTask"][];
+            /** No Internal Fit */
+            no_internal_fit: number;
+            /** Rolling Off */
+            rolling_off: number;
+            /** Rolling Off Without Next */
+            rolling_off_without_next: number;
+            /** Scarce Skills */
+            scarce_skills: number;
+            /** Skill Gaps */
+            skill_gaps: components["schemas"]["PointerSkill"][];
+            /** Waiting Decision */
+            waiting_decision: number;
+            /** Waiting Tasks */
+            waiting_tasks: components["schemas"]["PointerTask"][];
+        };
         /**
          * Practice
          * @enum {string}
@@ -8526,6 +8611,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Dashboard"];
+                };
+            };
+        };
+    };
+    dashboard_pointers_api_v1_dashboard_pointers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Pointers"];
                 };
             };
         };

@@ -27,3 +27,26 @@ test('a viewer starts on the task board, without the dashboard link', async () =
   expect(router.state.location.pathname).toBe('/tasks')
   expect(screen.queryByRole('link', { name: 'Dashboard' })).not.toBeInTheDocument()
 })
+
+test('pointers show what to act on, each linking to its screen', async () => {
+  renderRoute('/dashboard')
+  const waiting = await screen.findByRole('region', { name: 'Waiting for your decision' })
+  expect(within(waiting).getAllByRole('link').length).toBeGreaterThan(1)
+  expect(within(waiting).getAllByText(/recommended, waiting 2 days/).length).toBeGreaterThan(0)
+
+  const bench = screen.getByRole('region', { name: 'Bench' })
+  expect(within(bench).getByText('12 people')).toBeInTheDocument()
+  expect(within(bench).getByRole('link', { name: 'Open Bench' })).toHaveAttribute(
+    'href',
+    '/planning?tab=bench',
+  )
+  const fill = screen.getByRole('region', { name: 'Time to fill' })
+  expect(within(fill).getByText('4 days')).toBeInTheDocument()
+  const gaps = screen.getByRole('region', { name: 'Skill gaps in the next 30 days' })
+  expect(within(gaps).getByText('Shortage')).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Rolling off in 30 days' })).toHaveTextContent(
+    '2 with no next task',
+  )
+  expect(screen.getByRole('region', { name: 'Key-person risk' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Nobody inside fits' })).toBeInTheDocument()
+})

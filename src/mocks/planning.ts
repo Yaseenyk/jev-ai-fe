@@ -4,6 +4,7 @@ import type {
   BenchPerson,
   BenchReport,
   Dashboard,
+  DashboardPointers,
   EmployeeValue,
   CostBand,
   HireOrMove,
@@ -254,7 +255,47 @@ export function createPlanningHandlers(db: Db) {
     }
   }
 
+  /** Dashboard pointers (ADR 036): tasks from the mock runs, the rest fixed demo numbers. */
+  const pointers = (): DashboardPointers => {
+    const open = db.tasks
+      .filter((t) => t.status !== 'filled' && t.status !== 'cancelled')
+      .sort((a, b) => a.start_date.localeCompare(b.start_date) || a.code.localeCompare(b.code))
+    const line = (t: (typeof open)[number], detail: string) => ({
+      task_id: t.id,
+      code: t.code,
+      title: t.title,
+      detail,
+    })
+    const matched = open.filter((t) => recommended(t.id) !== null)
+    const waiting = matched.filter((t) => (recommended(t.id)?.items.length ?? 0) > 0)
+    const noFit = matched.filter((t) => recommended(t.id)?.items.length === 0)
+    return {
+      waiting_decision: waiting.length,
+      waiting_tasks: waiting
+        .slice(0, 3)
+        .map((t) => line(t, `${recommended(t.id)?.items.length ?? 0} recommended, waiting 2 days`)),
+      bench_free_now: 12,
+      bench_freeing_soon: 4,
+      bench_with_fit: 9,
+      no_internal_fit: noFit.length,
+      no_fit_tasks: noFit.slice(0, 3).map((t) => line(t, 'HR asked')),
+      days_to_first_accept: 3.5,
+      first_accepts: 6,
+      days_to_filled: 11.2,
+      filled: 3,
+      skill_gaps: [
+        { skill_id: 'sk-go', name: 'Go', status: 'shortage', tasks_needing: 2, available: 0 },
+        { skill_id: 'sk-k8s', name: 'Kubernetes', status: 'tight', tasks_needing: 3, available: 4 },
+      ],
+      rolling_off: 7,
+      rolling_off_without_next: 2,
+      scarce_skills: 3,
+      key_person_high: 1,
+    }
+  }
+
   return [
+    http.get(api('/dashboard/pointers'), () => HttpResponse.json(pointers())),
     http.get(api('/dashboard'), () => HttpResponse.json(dashboard())),
     http.get(api('/planning/bench'), ({ request }) => {
       const url = new URL(request.url)

@@ -8602,6 +8602,179 @@
         "title": "PlanningActionUpdate",
         "type": "object"
       },
+      "PointerSkill": {
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "skill_id": {
+            "title": "Skill Id",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "tasks_needing": {
+            "title": "Tasks Needing",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "skill_id",
+          "name",
+          "status",
+          "tasks_needing",
+          "available"
+        ],
+        "title": "PointerSkill",
+        "type": "object"
+      },
+      "PointerTask": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "task_id": {
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "code",
+          "title",
+          "detail"
+        ],
+        "title": "PointerTask",
+        "type": "object"
+      },
+      "Pointers": {
+        "description": "Short pointers to act on (ADR 036). Each comes from a rule already used on another screen;\nthe full lists are on the linked screens.",
+        "properties": {
+          "bench_free_now": {
+            "title": "Bench Free Now",
+            "type": "integer"
+          },
+          "bench_freeing_soon": {
+            "title": "Bench Freeing Soon",
+            "type": "integer"
+          },
+          "bench_with_fit": {
+            "title": "Bench With Fit",
+            "type": "integer"
+          },
+          "days_to_filled": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days To Filled"
+          },
+          "days_to_first_accept": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days To First Accept"
+          },
+          "filled": {
+            "title": "Filled",
+            "type": "integer"
+          },
+          "first_accepts": {
+            "title": "First Accepts",
+            "type": "integer"
+          },
+          "key_person_high": {
+            "title": "Key Person High",
+            "type": "integer"
+          },
+          "no_fit_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/PointerTask"
+            },
+            "title": "No Fit Tasks",
+            "type": "array"
+          },
+          "no_internal_fit": {
+            "title": "No Internal Fit",
+            "type": "integer"
+          },
+          "rolling_off": {
+            "title": "Rolling Off",
+            "type": "integer"
+          },
+          "rolling_off_without_next": {
+            "title": "Rolling Off Without Next",
+            "type": "integer"
+          },
+          "scarce_skills": {
+            "title": "Scarce Skills",
+            "type": "integer"
+          },
+          "skill_gaps": {
+            "items": {
+              "$ref": "#/components/schemas/PointerSkill"
+            },
+            "title": "Skill Gaps",
+            "type": "array"
+          },
+          "waiting_decision": {
+            "title": "Waiting Decision",
+            "type": "integer"
+          },
+          "waiting_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/PointerTask"
+            },
+            "title": "Waiting Tasks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "waiting_decision",
+          "waiting_tasks",
+          "bench_free_now",
+          "bench_freeing_soon",
+          "bench_with_fit",
+          "no_internal_fit",
+          "no_fit_tasks",
+          "days_to_first_accept",
+          "first_accepts",
+          "days_to_filled",
+          "filled",
+          "skill_gaps",
+          "rolling_off",
+          "rolling_off_without_next",
+          "scarce_skills",
+          "key_person_high"
+        ],
+        "title": "Pointers",
+        "type": "object"
+      },
       "Practice": {
         "enum": [
           "data_analytics",
@@ -14604,6 +14777,33 @@
           }
         ],
         "summary": "Dashboard",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/api/v1/dashboard/pointers": {
+      "get": {
+        "description": "Short pointers to act on: decisions waiting, bench, tasks nobody inside fits, time to\nfill, skill gaps, roll-offs and key-person risk. Separate from /dashboard so the page shows\nits first numbers without waiting for these.",
+        "operationId": "dashboard_pointers_api_v1_dashboard_pointers_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pointers"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Dashboard Pointers",
         "tags": [
           "dashboard"
         ]
