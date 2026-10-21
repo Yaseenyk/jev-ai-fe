@@ -1,13 +1,17 @@
 import type { Skill } from '@/api/types'
 import { matchSkills } from '@/features/newTask/ChatInputs'
-import type { InterpretResponse } from '@/api/types'
+import type { Client, InterpretResponse } from '@/api/types'
 import {
   type Draft,
+  MAX_QUESTIONS,
   applyAnswer,
+  fromClient,
   fromInterpretation,
-  nextStep,
+  nextQuestion,
+  questionsLeft,
   steps,
   toTaskCreate,
+  withDefaults,
 } from '@/features/newTask/script'
 
 const all = steps(['CL-ACME'])
@@ -35,22 +39,61 @@ const complete: Draft = {
   priority: 'high',
 }
 
-test('questions are asked in order, starting with the role title', () => {
-  expect(nextStep(all, {})).toBe(0)
-  expect(nextStep(all, applyAnswer({}, 'title', 'Senior Data Engineer'), 0)).toBe(1)
+test('missing details are asked most important first, never more than five', () => {
+  expect(nextQuestion(all, {}, 0)).toBe(indexOf('must_skills'))
+  expect(nextQuestion(all, { must_skills: ['s1'] }, 1)).toBe(indexOf('title'))
+  expect(questionsLeft(all, {}, 0)).toBe(MAX_QUESTIONS)
+  expect(nextQuestion(all, {}, MAX_QUESTIONS)).toBeNull()
+  expect(questionsLeft(all, { must_skills: ['s1'] }, 3)).toBe(2)
 })
 
-test('location is skipped for remote work', () => {
+test('location is asked only for onsite or hybrid work', () => {
   const draft: Draft = { ...complete, location: undefined, work_mode: 'remote' }
-  expect(nextStep(all, draft, indexOf('work_mode'))).toBeNull()
-  expect(nextStep(all, { ...draft, work_mode: 'onsite' }, indexOf('work_mode'))).toBe(
-    indexOf('location'),
-  )
+  expect(nextQuestion(all, draft, 0)).toBeNull()
+  expect(nextQuestion(all, { ...draft, work_mode: 'onsite' }, 0)).toBe(indexOf('location'))
 })
 
-test('editing an earlier answer returns to the summary when nothing else is missing', () => {
-  const edited = applyAnswer(complete, 'domain', 'retail')
-  expect(nextStep(all, edited, indexOf('domain'))).toBeNull()
+test("a known client's domain and timezone are used, so the domain is not asked", () => {
+  const clients = [
+    {
+      code: 'CL-ACME',
+      name: 'Acme',
+      domain: 'retail',
+      timezone: 'Europe/London',
+      notes: '',
+      is_active: true,
+    },
+  ] as Client[]
+  const d = fromClient(
+    { must_skills: ['s1'], title: 'Data engineer', client_code: 'CL-ACME' },
+    clients,
+  )
+  expect(d.domain).toBe('retail')
+  expect(d.client_timezone).toBe('Europe/London')
+  expect(nextQuestion(all, d, 3)).toBe(indexOf('start_date'))
+  expect(fromClient({ client_code: 'CL-ACME', domain: 'bfsi' }, clients).domain).toBe('bfsi')
+})
+
+test('defaults never narrow the search, and keep what was given', () => {
+  const d = withDefaults(
+    { must_skills: ['s1'], min_years_experience: 5 },
+    new Date('2026-10-21T09:00:00Z'),
+  )
+  expect(d).toMatchObject({
+    start_date: '2026-10-21',
+    duration_weeks: 12,
+    required_level: 'L4',
+    min_years_experience: 5,
+    location: 'any',
+    min_timezone_overlap_hours: 0,
+    max_cost_band: 'E',
+    clearance: 'none',
+    priority: 'medium',
+  })
+  expect(withDefaults({}, new Date()).required_level).toBe('L3')
+  expect(
+    toTaskCreate({ ...d, title: 'Data engineer', client_code: 'CL-ACME', domain: 'bfsi' }),
+  ).toMatchObject({ location_constraint: [], clearance_required: null })
 })
 
 test('numeric answers are stored as numbers', () => {

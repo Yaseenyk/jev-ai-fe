@@ -861,6 +861,20 @@
         "title": "Body_extract_resume_api_v1_candidates_extract_post",
         "type": "object"
       },
+      "Body_interpret_task_file_api_v1_tasks_interpret_file_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_interpret_task_file_api_v1_tasks_interpret_file_post",
+        "type": "object"
+      },
       "Body_preview_import_api_v1_imports_preview_post": {
         "properties": {
           "file": {
@@ -19547,6 +19561,53 @@
           }
         ],
         "summary": "Interpret Task",
+        "tags": [
+          "tasks"
+        ]
+      }
+    },
+    "/api/v1/tasks/interpret-file": {
+      "post": {
+        "description": "Read a job description or client requirements (PDF, .docx, PNG or JPG) into task fields.\nNothing is saved and the file is not kept.",
+        "operationId": "interpret_task_file_api_v1_tasks_interpret_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_interpret_task_file_api_v1_tasks_interpret_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterpretResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Interpret Task File",
         "tags": [
           "tasks"
         ]

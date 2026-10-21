@@ -3,128 +3,164 @@ import userEvent from '@testing-library/user-event'
 
 import { HttpResponse, http } from 'msw'
 
-import type { Skill } from '@/api/types'
+import type { InterpretResponse, Skill, TaskCreate } from '@/api/types'
 
 import demo from '@/mocks/data/demo.json'
 import { server } from '@/test/setup'
 import { renderRoute } from '@/test/render'
 
-// Clicks through all ~20 questions, so it needs more than the default 5 s.
-const FULL_FLOW_TIMEOUT_MS = 20_000
-
-test(
-  'manager creates a task by answering the chat, edits an answer, and lands on the task',
-  async () => {
-    const user = userEvent.setup()
-    const { router } = renderRoute('/tasks/new')
-    const choose = async (label: string) =>
-      user.click(
-        within(await screen.findByRole('group', { name: 'Choose an answer' })).getByRole('button', {
-          name: label,
-        }),
-      )
-
-    await user.click(await screen.findByRole('button', { name: 'Answer step by step instead' }))
-    await user.type(await screen.findByRole('textbox', { name: 'Your answer' }), 'Hi')
-    await user.click(screen.getByRole('button', { name: 'Send answer' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('at least 5')
-    await user.type(
-      screen.getByRole('textbox', { name: 'Your answer' }),
-      ' there, Senior Data Engineer{Enter}',
-    )
-
-    await choose('CL-ACME')
-    await choose('BFSI')
-    await choose('L4 · Senior')
-    await choose('5+ years')
-
-    await user.type(await screen.findByRole('textbox', { name: 'Search skills' }), 'snow')
-    await user.click(
-      within(screen.getByRole('list', { name: 'Skill suggestions' })).getByRole('button', {
-        name: /Snowflake/,
-      }),
-    )
-    await user.click(screen.getByRole('button', { name: 'Done' }))
-
-    await choose('3 · Working')
-    await user.click(await screen.findByRole('button', { name: 'Skip' }))
-    await choose('In 2 weeks')
-    await choose('12 weeks')
-    await choose('Full-time (100%)')
-    await choose('Remote')
-    await choose('India (IST)')
-    await choose('2 hours')
-    await choose('Band C')
-    await choose('No')
-    await choose('High')
-    await user.click(await screen.findByRole('button', { name: 'Skip' }))
-
-    expect(await screen.findByText(/That's everything/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Edit Location' })).toHaveTextContent('Not needed')
-
-    await user.click(screen.getByRole('button', { name: 'Edit Domain' }))
-    await choose('Retail')
-    expect(await screen.findByText(/That's everything/)).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Create task' }))
-    expect(
-      await screen.findByRole('heading', { name: 'Hi there, Senior Data Engineer' }),
-    ).toBeInTheDocument()
-    expect(router.state.location.pathname).toMatch(/^\/tasks\/[0-9a-f-]{36}$/)
-    expect(screen.getByText('Retail')).toBeInTheDocument()
-    expect(screen.getByText(/Snowflake/)).toBeInTheDocument()
-  },
-  FULL_FLOW_TIMEOUT_MS,
-)
-
 const SNOWFLAKE_ID =
   (demo as unknown as { skills: Skill[] }).skills.find((sk) => sk.name === 'Snowflake')?.id ?? ''
 
-test('manager describes the role, confirms what was understood, and answers only the rest', async () => {
-  const sent: unknown[] = []
+const NOTHING: InterpretResponse = {
+  title: null,
+  client_code: null,
+  domain: null,
+  required_level: null,
+  min_years_experience: null,
+  must_skills: [],
+  nice_skills: [],
+  start_in_days: null,
+  duration_weeks: null,
+  allocation_pct_required: null,
+  work_mode: null,
+  location: null,
+  priority: null,
+  unmatched_skills: [],
+  notes: [],
+  model: 'test-llm',
+}
+
+/** Answers the file upload with `read` and records what the task was created with. */
+function backend(read: InterpretResponse) {
+  const created: TaskCreate[] = []
+  const files: string[] = []
   server.use(
-    http.post('*/api/v1/tasks/interpret', async ({ request }) => {
-      sent.push(await request.json())
-      return HttpResponse.json({
-        title: 'Senior Snowflake engineer for claims',
-        client_code: 'CL-ACME',
-        domain: 'bfsi',
-        required_level: 'L4',
-        min_years_experience: 6,
-        must_skills: [SNOWFLAKE_ID],
-        nice_skills: [],
-        start_in_days: 30,
-        duration_weeks: 26,
-        allocation_pct_required: 100,
-        work_mode: 'remote',
-        location: null,
-        priority: null,
-        unmatched_skills: ['Dataiku'],
-        notes: [],
-        model: 'test-llm',
-      })
+    http.post('*/api/v1/tasks/interpret-file', async ({ request }) => {
+      const file = (await request.formData()).get('file')
+      files.push(file instanceof File ? file.name : '')
+      return HttpResponse.json(read)
+    }),
+    http.post('*/api/v1/tasks', async ({ request }) => {
+      const body = (await request.json()) as TaskCreate
+      created.push(body)
+      return HttpResponse.json(
+        { ...body, id: '11111111-1111-4111-8111-111111111111', code: 'TSK-0099' },
+        { status: 201 },
+      )
+    }),
+    http.post('*/api/v1/tasks/:taskId/match-runs', () =>
+      HttpResponse.json({ run_id: 'run-new', status: 'queued' }, { status: 202 }),
+    ),
+  )
+  return { created, files }
+}
+
+type User = ReturnType<typeof userEvent.setup>
+
+const upload = async (user: User, name = 'jd.pdf') =>
+  user.upload(
+    await screen.findByLabelText('Job description file'),
+    new File(['%PDF-1.4'], name, { type: 'application/pdf' }),
+  )
+
+const choose = async (user: User, label: string) =>
+  user.click(
+    within(await screen.findByRole('group', { name: 'Choose an answer' })).getByRole('button', {
+      name: label,
     }),
   )
+
+test('a full JD is read, only the missing details are asked, and matching starts', async () => {
+  const { created, files } = backend({
+    ...NOTHING,
+    title: 'Senior Snowflake engineer for claims',
+    domain: 'bfsi',
+    required_level: 'L4',
+    min_years_experience: 6,
+    must_skills: [SNOWFLAKE_ID],
+    duration_weeks: 26,
+    work_mode: 'remote',
+    unmatched_skills: ['Dataiku'],
+  })
   const user = userEvent.setup()
-  renderRoute('/tasks/new')
-  await user.type(
-    await screen.findByRole('textbox', { name: 'Describe the role' }),
-    'Senior snowflake person for ACME claims, remote, next month for 6 months{Enter}',
-  )
+  const { router } = renderRoute('/tasks/new')
+  await upload(user)
 
-  expect(await screen.findByText(/Here's what I understood/)).toBeInTheDocument()
+  expect(await screen.findByText(/I found \d+ details\. 2 quick questions/)).toBeInTheDocument()
+  expect(files).toEqual(['jd.pdf'])
   expect(screen.getByText(/Not in the skills list: Dataiku/)).toBeInTheDocument()
-  expect((sent[0] as { known_clients: string[] }).known_clients).toContain('CL-ACME')
-  await user.click(screen.getByRole('button', { name: /Looks right, continue/ }))
 
-  // Only unanswered questions remain: proficiency comes next, title/client/domain are not asked.
-  expect(await screen.findByText(/What minimum proficiency/)).toBeInTheDocument()
-  expect(screen.queryByText(/What's the role title/)).not.toBeInTheDocument()
-  expect(screen.getByText(/I filled in \d+ details from that/)).toBeInTheDocument()
+  // Only the client and the start are missing, in that order.
+  expect(screen.getByText('Question 1 of 2')).toBeInTheDocument()
+  expect(screen.getByText('Which client is this for?')).toBeInTheDocument()
+  await choose(user, 'CL-ACME')
+  expect(await screen.findByText('Question 2 of 2')).toBeInTheDocument()
+  await choose(user, 'In 2 weeks')
+
+  expect(await screen.findByText(/That's all I need/)).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Edit Duration' })).toHaveTextContent('24 weeks')
+  await user.click(screen.getByRole('button', { name: 'Find people' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe('/runs/run-new'))
+  const task = created[0]
+  expect(task?.client_code).toBe('CL-ACME')
+  expect(task?.work_mode).toBe('remote')
+  expect(task?.priority).toBe('medium')
+  expect(task?.requirements).toEqual([
+    { skill_id: SNOWFLAKE_ID, min_proficiency: 3, must_have: true },
+  ])
 })
 
-test('if the description cannot be read, the chat falls back to step-by-step questions', async () => {
+test('an empty document gets five questions at most; the rest are defaults', async () => {
+  const { created } = backend(NOTHING)
+  const user = userEvent.setup()
+  renderRoute('/tasks/new')
+  await upload(user, 'requirement.png')
+
+  expect(await screen.findByText(/couldn't find the role's details/)).toBeInTheDocument()
+  expect(screen.getByText('Question 1 of 5')).toBeInTheDocument()
+  await user.type(await screen.findByRole('textbox', { name: 'Search skills' }), 'snow')
+  await user.click(
+    within(screen.getByRole('list', { name: 'Skill suggestions' })).getByRole('button', {
+      name: /Snowflake/,
+    }),
+  )
+  await user.click(screen.getByRole('button', { name: 'Done' }))
+  await user.type(
+    await screen.findByRole('textbox', { name: 'Your answer' }),
+    'Snowflake engineer{Enter}',
+  )
+  await choose(user, 'CL-ACME')
+  await choose(user, 'BFSI') // the mock clients have no domain
+  expect(await screen.findByText('Question 5 of 5')).toBeInTheDocument()
+  await choose(user, 'As soon as possible')
+
+  expect(await screen.findByText(/That's all I need/)).toBeInTheDocument()
+  expect(screen.queryByText(/Question \d of/)).not.toBeInTheDocument()
+  expect(screen.getByText(/details set by default/)).toBeInTheDocument()
+
+  // A default can still be changed, and changing it asks nothing more.
+  await user.click(screen.getByRole('button', { name: 'Edit Duration' }))
+  expect(await screen.findByText('Changing Duration')).toBeInTheDocument()
+  await choose(user, '8 weeks')
+  expect(await screen.findByText(/That's all I need/)).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Find people' }))
+  await waitFor(() => expect(created).toHaveLength(1))
+  expect(created[0]).toMatchObject({
+    title: 'Snowflake engineer',
+    duration_weeks: 8,
+    required_level: 'L3',
+    min_years_experience: 0,
+    work_mode: 'hybrid',
+    location_constraint: [],
+    allocation_pct_required: 100,
+    clearance_required: null,
+  })
+}, 15_000)
+
+test('typed text still works, and a failed read falls back to the questions', async () => {
   server.use(
     http.post('*/api/v1/tasks/interpret', () =>
       HttpResponse.json(
@@ -145,11 +181,11 @@ test('if the description cannot be read, the chat falls back to step-by-step que
     await screen.findByRole('textbox', { name: 'Describe the role' }),
     'anything{Enter}',
   )
-  expect(await screen.findByText(/couldn't read your description just now/)).toBeInTheDocument()
-  expect(screen.getByText(/What's the role title/)).toBeInTheDocument()
+  expect(await screen.findByText(/couldn't read that just now/)).toBeInTheDocument()
+  expect(screen.getByText(/Which skills are a must-have/)).toBeInTheDocument()
 })
 
-test('editing a task reopens the chat with every answer filled in, and saves changes', async () => {
+test('editing a task opens every detail filled in, and saves changes', async () => {
   const user = userEvent.setup()
   const { router } = renderRoute('/tasks')
   const [first] = await screen.findAllByRole('link', { name: /TSK-/ })
@@ -157,11 +193,9 @@ test('editing a task reopens the chat with every answer filled in, and saves cha
   await user.click(await screen.findByRole('link', { name: /Edit task/ }))
 
   expect(await screen.findByText(/You're editing TSK-/)).toBeInTheDocument()
-  expect(screen.getByText(/Change anything you like, then save/)).toBeInTheDocument()
-
-  await user.click(screen.getByRole('button', { name: 'Edit Priority' }))
-  const choices = await screen.findByRole('group', { name: 'Choose an answer' })
-  await user.click(within(choices).getByRole('button', { name: /Critical/ }))
+  await user.click(screen.getAllByRole('button', { name: 'All details' })[0] as HTMLElement)
+  await user.click(await screen.findByRole('button', { name: 'Edit Priority' }))
+  await choose(user, 'Critical')
   await user.click(await screen.findByRole('button', { name: 'Save changes' }))
 
   await waitFor(() => expect(router.state.location.pathname).toMatch(/^\/tasks\/[^/]+$/))

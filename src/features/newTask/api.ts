@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { apiFetch } from '@/api/client'
-import type { InterpretResponse, Page, Skill, Task, TaskCreate } from '@/api/types'
+import type { InterpretResponse, MatchRunCreated, Page, Skill, Task, TaskCreate } from '@/api/types'
 import { taskKeys } from '@/features/tasks/api'
 
 export function useSkills() {
@@ -38,5 +38,22 @@ export function useUpdateTask(taskId: string) {
     mutationFn: (input: TaskCreate) =>
       apiFetch<Task>(`/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(input) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: taskKeys.all }),
+  })
+}
+
+export function useInterpretFile() {
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return apiFetch<InterpretResponse>('/tasks/interpret-file', { method: 'POST', body: form })
+    },
+  })
+}
+
+export function useStartMatch() {
+  return useMutation({
+    mutationFn: (taskId: string) =>
+      apiFetch<MatchRunCreated>(`/tasks/${taskId}/match-runs`, { method: 'POST' }),
   })
 }

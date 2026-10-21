@@ -2523,6 +2523,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tasks/interpret-file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Interpret Task File
+         * @description Read a job description or client requirements (PDF, .docx, PNG or JPG) into task fields.
+         *     Nothing is saved and the file is not kept.
+         */
+        post: operations["interpret_task_file_api_v1_tasks_interpret_file_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/tasks/{task_id}": {
         parameters: {
             query?: never;
@@ -3033,6 +3054,11 @@ export interface components {
              * @default false
              */
             allow_images: boolean;
+            /** File */
+            file: string;
+        };
+        /** Body_interpret_task_file_api_v1_tasks_interpret_file_post */
+        Body_interpret_task_file_api_v1_tasks_interpret_file_post: {
             /** File */
             file: string;
         };
@@ -11458,6 +11484,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["InterpretRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InterpretResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    interpret_task_file_api_v1_tasks_interpret_file_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_interpret_task_file_api_v1_tasks_interpret_file_post"];
             };
         };
         responses: {
