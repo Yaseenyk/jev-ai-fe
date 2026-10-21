@@ -13,7 +13,7 @@ afterEach(async () => {
 })
 
 test('with billing hidden, no money or cost band shows on planning screens', async () => {
-  renderRoute('/planning')
+  renderRoute('/planning?tab=bench')
   expect((await screen.findAllByText('Free now')).length).toBeGreaterThan(0)
   expect(screen.queryByText('Idle cost per week')).not.toBeInTheDocument()
   expect(screen.queryByText('Idle cost / week')).not.toBeInTheDocument()

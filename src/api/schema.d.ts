@@ -2038,7 +2038,9 @@ export interface paths {
          * Bench
          * @description People free now or within the horizon, what idle capacity costs per week (rate card),
          *     and up to 3 open tasks each could take next (half the must-haves or more, level within one
-         *     step, cost band allowed, capacity when the task starts).
+         *     step, cost band allowed, capacity when the task starts). `q` searches name, code and
+         *     designation; `has_fit` keeps people with (or without) a task they could take; `sort` is
+         *     free (most free first), name, from (soonest fully free) or fit (best task match first).
          */
         get: operations["bench_api_v1_planning_bench_get"];
         put?: never;
@@ -10729,6 +10731,11 @@ export interface operations {
                 horizon_days?: number;
                 limit?: number;
                 offset?: number;
+                q?: string | null;
+                level?: components["schemas"]["Level"] | null;
+                has_fit?: boolean | null;
+                sort?: "free" | "name" | "from" | "fit";
+                descending?: boolean;
             };
             header?: never;
             path?: never;

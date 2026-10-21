@@ -308,6 +308,27 @@ export function createPlanningHandlers(db: Db) {
         const cut = new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10)
         return rows.filter((r) => r.free_now_pct < 100 && r.fully_free_from <= cut).length
       }
+      const q = (url.searchParams.get('q') ?? '').toLowerCase()
+      const level = url.searchParams.get('level')
+      const hasFit = url.searchParams.get('has_fit')
+      const sort = url.searchParams.get('sort') ?? 'free'
+      const fit = (r: (typeof rows)[number]) => r.best_tasks[0]?.must_have_coverage ?? -1
+      const order: Record<string, (a: (typeof rows)[number], b: (typeof rows)[number]) => number> =
+        {
+          free: (a, b) => b.free_now_pct - a.free_now_pct,
+          name: (a, b) => a.full_name.localeCompare(b.full_name),
+          from: (a, b) => a.fully_free_from.localeCompare(b.fully_free_from),
+          fit: (a, b) => fit(b) - fit(a),
+        }
+      const shown = rows
+        .filter(
+          (r) =>
+            !q || `${r.full_name} ${r.employee_code} ${r.designation}`.toLowerCase().includes(q),
+        )
+        .filter((r) => !level || r.level === level)
+        .filter((r) => !hasFit || r.best_tasks.length > 0 === (hasFit === 'true'))
+        .sort(order[sort] ?? order.free)
+      if (url.searchParams.get('descending') === 'true') shown.reverse()
       const body: BenchReport = {
         summary: {
           free_now: free.length,
@@ -317,8 +338,8 @@ export function createPlanningHandlers(db: Db) {
           freeing_60: freeing(60),
           freeing_90: freeing(90),
         },
-        items: rows.slice(offset, offset + limit),
-        total: rows.length,
+        items: shown.slice(offset, offset + limit),
+        total: shown.length,
         limit,
         offset,
       }

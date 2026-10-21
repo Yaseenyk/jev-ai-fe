@@ -20,7 +20,7 @@ test('a manager sees which people are in another unit and whom to contact', asyn
 })
 
 test('on the bench too, only people from other units are marked', async () => {
-  renderRoute('/planning')
+  renderRoute('/planning?tab=bench')
   const table = await screen.findByRole('table', { name: 'Bench' })
   expect(
     (await within(table).findAllByText('BU002 · contact Resource Manager 2')).length,

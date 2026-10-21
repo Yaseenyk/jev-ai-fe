@@ -13,14 +13,27 @@ import type {
 import { getAccessToken } from '@/features/auth/session'
 import { env } from '@/lib/env'
 
-export function useBench(horizon: number, page: number, size: number) {
+export interface BenchFilters {
+  q: string
+  level: string
+  hasFit: string
+  sort: string
+  descending: boolean
+}
+
+export function useBench(horizon: number, page: number, size: number, filters: BenchFilters) {
   const params = new URLSearchParams({
     horizon_days: String(horizon),
     limit: String(size),
     offset: String((page - 1) * size),
+    sort: filters.sort,
   })
+  if (filters.q.trim()) params.set('q', filters.q.trim())
+  if (filters.level) params.set('level', filters.level)
+  if (filters.hasFit) params.set('has_fit', filters.hasFit)
+  if (filters.descending) params.set('descending', 'true')
   return useQuery({
-    queryKey: ['planning', 'bench', horizon, page, size],
+    queryKey: ['planning', 'bench', horizon, page, size, filters],
     queryFn: () => apiFetch<BenchReport>(`/planning/bench?${params.toString()}`),
     placeholderData: keepPreviousData,
   })

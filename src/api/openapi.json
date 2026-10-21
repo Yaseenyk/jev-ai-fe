@@ -18286,7 +18286,7 @@
     },
     "/api/v1/planning/bench": {
       "get": {
-        "description": "People free now or within the horizon, what idle capacity costs per week (rate card),\nand up to 3 open tasks each could take next (half the must-haves or more, level within one\nstep, cost band allowed, capacity when the task starts).",
+        "description": "People free now or within the horizon, what idle capacity costs per week (rate card),\nand up to 3 open tasks each could take next (half the must-haves or more, level within one\nstep, cost band allowed, capacity when the task starts). `q` searches name, code and\ndesignation; `has_fit` keeps people with (or without) a task they could take; `sort` is\nfree (most free first), name, from (soonest fully free) or fit (best task match first).",
         "operationId": "bench_api_v1_planning_bench_get",
         "parameters": [
           {
@@ -18322,6 +18322,81 @@
               "minimum": 0,
               "title": "Offset",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "level",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Level"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Level"
+            }
+          },
+          {
+            "in": "query",
+            "name": "has_fit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Has Fit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "free",
+              "enum": [
+                "free",
+                "name",
+                "from",
+                "fit"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "descending",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Descending",
+              "type": "boolean"
             }
           }
         ],
