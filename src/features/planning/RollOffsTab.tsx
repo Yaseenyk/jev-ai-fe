@@ -2,7 +2,7 @@ import { GraduationCap, Pin } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { PlanningActionRead, RollOff } from '@/api/types'
-import { Segmented } from '@/components/FilterBar'
+import { FilterBar, Segmented, SortSelect } from '@/components/FilterBar'
 import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { StatusBadge } from '@/components/StatusBadge'
 import { useUrlState } from '@/components/useUrlState'
@@ -22,19 +22,32 @@ const WINDOWS = [
 
 /** People whose work ends soon, before they reach the bench (ADR 025). */
 export function RollOffsTab() {
-  const [f, set] = useUrlState({ within: '45' })
+  const [f, set] = useUrlState({ within: '45', q: '', show: 'all', order: 'date' })
   const report = useRollOffs(Number(f.within))
   if (report.isPending) return <Skeleton className="h-96 w-full rounded-xl" />
   if (report.isError) return <ErrorState error={report.error} />
   const r = report.data
+  const stuck = (p: RollOff) => p.next_tasks.length === 0
+  const needle = f.q.trim().toLowerCase()
+  const shown = r.items
+    .filter((p) => f.show === 'all' || stuck(p))
+    .filter(
+      (p) =>
+        !needle ||
+        `${p.full_name} ${p.employee_code} ${p.designation} ${p.current_project ?? ''}`
+          .toLowerCase()
+          .includes(needle),
+    )
+    .sort((a, b) =>
+      f.order === 'name'
+        ? a.full_name.localeCompare(b.full_name)
+        : a.rolls_off_on.localeCompare(b.rolls_off_on) || a.full_name.localeCompare(b.full_name),
+    )
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted-foreground max-w-2xl text-sm">
-          People whose current work ends soon. Hold them for an upcoming task, or train the one
-          skill that stands between them and the closest one, before they cost bench time.
-        </p>
+        <p className="text-muted-foreground text-sm">Work ending within:</p>
         <Segmented
           label="Ending within"
           value={f.within}
@@ -57,11 +70,44 @@ export function RollOffsTab() {
           />
         )}
       </dl>
-      {r.items.length === 0 ? (
-        <EmptyState title="Nobody rolls off in this period" />
+      <FilterBar
+        search={{
+          value: f.q,
+          onChange: (q) => set({ q }),
+          placeholder: 'Search name, job title or project',
+          label: 'Search people',
+        }}
+        filters={
+          <Segmented
+            label="Show"
+            value={f.show}
+            onChange={(show) => set({ show })}
+            options={[
+              { value: 'all', label: 'Everyone', count: r.items.length },
+              { value: 'stuck', label: 'No next task', count: r.items.filter(stuck).length },
+            ]}
+          />
+        }
+        sort={
+          <SortSelect
+            value={f.order}
+            onChange={(order) => set({ order })}
+            options={[
+              { value: 'date', label: 'Work ends soonest' },
+              { value: 'name', label: 'Name A–Z' },
+            ]}
+          />
+        }
+      />
+      {shown.length === 0 ? (
+        <EmptyState
+          title={
+            r.items.length === 0 ? 'Nobody rolls off in this period' : 'Nobody matches this view'
+          }
+        />
       ) : (
         <ul className="space-y-3">
-          {r.items.map((p) => (
+          {shown.map((p) => (
             <RollOffCard key={p.employee_id} p={p} />
           ))}
         </ul>

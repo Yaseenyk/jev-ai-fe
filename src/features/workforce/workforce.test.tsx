@@ -52,7 +52,8 @@ test('Capacity and fair opportunity show where people sit idle or stuck', async 
   const table = await screen.findByRole('table', { name: 'Capacity by practice and month' })
   expect(within(table).getByText('Data analytics')).toBeInTheDocument()
   expect(within(table).getByText('Open tasks need (FTE)')).toBeInTheDocument()
-  await user.click(screen.getByRole('tab', { name: 'Fair opportunity' }))
+  await user.click(screen.getByRole('link', { name: 'All planning tools' }))
+  await user.click(await screen.findByRole('link', { name: /Is good work shared fairly\?/ }))
   expect(await screen.findByText(/64 days on the bench/)).toBeInTheDocument()
   expect(
     screen.getByRole('region', { name: /Recommended often, never accepted \(1\)/ }),

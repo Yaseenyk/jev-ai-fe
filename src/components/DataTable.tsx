@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 
 import { EmptyState } from '@/components/QueryStates'
@@ -27,13 +27,17 @@ export interface Column<T> {
   cell: (row: T) => ReactNode
   /** Clicking the header sorts by this value (server-side sort key). */
   sortKey?: string
+  /** Clicking the header sorts the rows in the browser by this value (a list loaded whole). */
+  sortValue?: (row: T) => string | number
   align?: 'left' | 'right'
   className?: string
 }
 
 /**
  * The list view for anything longer than about 20 rows (docs/04 §6a): column headers, sortable
- * columns, the whole row opens the item, sticky header.
+ * columns, the whole row opens the item, sticky header. Sorting is on the server (`sortKey` +
+ * `onSort`) or, for a list loaded whole, in the browser (`sortValue`); clicking the sorted
+ * column again flips the order.
  */
 export function DataTable<T>({
   label,
@@ -42,6 +46,7 @@ export function DataTable<T>({
   rowKey,
   rowHref,
   sort,
+  descending,
   onSort,
   empty,
 }: {
@@ -51,11 +56,37 @@ export function DataTable<T>({
   rowKey: (row: T) => string
   rowHref?: (row: T) => string
   sort?: string
+  /** With a server sort: the current direction, so the arrow shows it. */
+  descending?: boolean
   onSort?: (key: string) => void
   empty: { title: string; body?: ReactNode }
 }) {
   const navigate = useNavigate()
+  const [local, setLocal] = useState<{ key: string; desc: boolean } | null>(null)
   if (rows.length === 0) return <EmptyState title={empty.title}>{empty.body}</EmptyState>
+  const localColumn = local && columns.find((c) => c.key === local.key && c.sortValue)
+  const shown =
+    localColumn?.sortValue && local
+      ? [...rows].sort((a, b) => {
+          const x = localColumn.sortValue?.(a) ?? ''
+          const y = localColumn.sortValue?.(b) ?? ''
+          const order =
+            typeof x === 'number' && typeof y === 'number'
+              ? x - y
+              : String(x).localeCompare(String(y))
+          return local.desc ? -order : order
+        })
+      : rows
+  const sortState = (c: Column<T>): 'ascending' | 'descending' | undefined => {
+    if (c.sortValue && local?.key === c.key) return local.desc ? 'descending' : 'ascending'
+    if (c.sortKey && sort === c.sortKey) return descending ? 'descending' : 'ascending'
+    return undefined
+  }
+  const clickSort = (c: Column<T>) => {
+    if (c.sortValue) {
+      setLocal((s) => ({ key: c.key, desc: s?.key === c.key ? !s.desc : false }))
+    } else if (c.sortKey && onSort) onSort(c.sortKey)
+  }
   return (
     <div className="bg-surface overflow-hidden rounded-xl border">
       <Table aria-label={label}>
@@ -69,17 +100,20 @@ export function DataTable<T>({
                   c.align === 'right' && 'text-right',
                   c.className,
                 )}
-                aria-sort={c.sortKey && sort === c.sortKey ? 'ascending' : undefined}
+                aria-sort={sortState(c)}
               >
-                {c.sortKey && onSort ? (
+                {c.sortValue || (c.sortKey && onSort) ? (
                   <button
                     type="button"
-                    onClick={() => onSort(c.sortKey ?? '')}
+                    onClick={() => clickSort(c)}
+                    title={`Sort by ${c.header.toLowerCase()}`}
                     className="hover:text-foreground inline-flex items-center gap-1"
                   >
                     {c.header}
-                    {sort === c.sortKey ? (
+                    {sortState(c) === 'descending' ? (
                       <ArrowDown className="size-3.5" aria-hidden />
+                    ) : sortState(c) === 'ascending' ? (
+                      <ArrowUp className="size-3.5" aria-hidden />
                     ) : (
                       <ArrowUpDown className="size-3.5 opacity-50" aria-hidden />
                     )}
@@ -92,7 +126,7 @@ export function DataTable<T>({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((row) => {
+          {shown.map((row) => {
             const href = rowHref?.(row)
             return (
               <TableRow

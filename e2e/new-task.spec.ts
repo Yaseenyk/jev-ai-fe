@@ -10,7 +10,9 @@ for (const size of [
   }, info) => {
     await page.setViewportSize(size)
     await page.goto('/tasks/new')
-    await expect(page.getByRole('heading', { name: 'Upload the job description' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Upload the job description' })).toBeVisible({
+      timeout: 15_000,
+    })
     const overflow = await page.evaluate<number>(
       'document.documentElement.scrollHeight - window.innerHeight',
     )

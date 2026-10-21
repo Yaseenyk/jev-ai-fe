@@ -40,7 +40,7 @@ export default function EmployeeValuePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        back={{ to: '/planning', label: 'Bench' }}
+        back={{ to: '/planning?tab=bench', label: 'Who is free' }}
         title={v.full_name}
         actions={
           <Link
