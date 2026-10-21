@@ -28,6 +28,7 @@ import { useBench, useSkillGaps, useStaffing, useStartRuns } from '@/features/pl
 import { useTasks } from '@/features/tasks/api'
 import { BAND_LABELS, chance, date, percent } from '@/lib/format'
 import { UnitBadge } from '@/features/org/UnitBadge'
+import { showBilling } from '@/lib/features'
 
 const HORIZONS = [
   { value: '30', label: '30 days' },
@@ -159,12 +160,18 @@ function BenchTab() {
       header: 'Fully free from',
       cell: (p) => <span className="whitespace-nowrap">{date(p.fully_free_from)}</span>,
     },
-    {
-      key: 'cost',
-      header: 'Idle cost / week',
-      align: 'right',
-      cell: (p) => <span className="tabular-nums">{usd(p.weekly_idle_cost_usd)}</span>,
-    },
+    ...(showBilling()
+      ? [
+          {
+            key: 'cost',
+            header: 'Idle cost / week',
+            align: 'right' as const,
+            cell: (p: BenchPerson) => (
+              <span className="tabular-nums">{usd(p.weekly_idle_cost_usd)}</span>
+            ),
+          },
+        ]
+      : []),
     {
       key: 'next',
       header: 'Could take next',
@@ -208,11 +215,13 @@ function BenchTab() {
           value={String(s.free_now)}
           hint={`${s.free_now_fte} full-time people`}
         />
-        <Stat
-          label="Idle cost per week"
-          value={usd(s.weekly_idle_cost_usd)}
-          hint="At the rate card's cost"
-        />
+        {showBilling() && (
+          <Stat
+            label="Idle cost per week"
+            value={usd(s.weekly_idle_cost_usd)}
+            hint="At the rate card's cost"
+          />
+        )}
         <Stat
           label="Freeing within 30 days"
           value={String(s.freeing_30)}
@@ -372,13 +381,14 @@ function PersonLine({ p }: { p: ProposedPerson }) {
         {p.full_name}
       </Link>
       <span className="text-muted-foreground text-xs">
-        {p.employee_code} · {p.level} · band {p.cost_band}
+        {p.employee_code} · {p.level}
+        {showBilling() && ` · band ${p.cost_band}`}
       </span>
       <UnitBadge unit={p.business_unit} />
       <StatusBadge tone={p.band === 'shortlist' ? 'ready' : 'info'}>
         {BAND_LABELS[p.band]} · {chance(p.score)}
       </StatusBadge>
-      <MarginBadge margin={p.margin} />
+      {showBilling() && <MarginBadge margin={p.margin} />}
     </div>
   )
 }
@@ -459,11 +469,13 @@ function StaffingTab() {
                 label="Tasks filled"
                 value={`${staffing.data.filled} of ${staffing.data.tasks.length}`}
               />
-              <Stat
-                label="Gross margin per week"
-                value={usd(staffing.data.total_weekly_margin_usd)}
-                hint="Bill rate minus cost, at each task's allocation"
-              />
+              {showBilling() && (
+                <Stat
+                  label="Gross margin per week"
+                  value={usd(staffing.data.total_weekly_margin_usd)}
+                  hint="Bill rate minus cost, at each task's allocation"
+                />
+              )}
             </dl>
             {needRun.length > 0 && (
               <div className="bg-surface flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm">

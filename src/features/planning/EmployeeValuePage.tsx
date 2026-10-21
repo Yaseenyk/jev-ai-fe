@@ -15,6 +15,7 @@ import { useEmployeeActions } from '@/features/planning/insightsApi'
 import { date, domainLabel, humanize, locationLabel, percent } from '@/lib/format'
 import { UnitBadge } from '@/features/org/UnitBadge'
 import { CareerPanel } from '@/features/planning/QualityPanels'
+import { showBilling } from '@/lib/features'
 
 const OUTCOME: Record<string, { label: string; tone: Tone }> = {
   successful: { label: 'Completed well', tone: 'ready' },
@@ -61,7 +62,8 @@ export default function EmployeeValuePage() {
         }
         meta={
           <span className="text-muted-foreground text-xs">
-            {v.employee_code} · cost band {v.cost_band}
+            {v.employee_code}
+            {showBilling() && ` · cost band ${v.cost_band}`}
             {v.business_unit && (
               <>
                 {' · '}
@@ -81,11 +83,15 @@ export default function EmployeeValuePage() {
       />
 
       <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat
-          label="Revenue billed (estimate)"
-          value={usd(v.estimated_revenue_usd)}
-          hint={`${v.billed_weeks} weeks on client work`}
-        />
+        {showBilling() ? (
+          <Stat
+            label="Revenue billed (estimate)"
+            value={usd(v.estimated_revenue_usd)}
+            hint={`${v.billed_weeks} weeks on client work`}
+          />
+        ) : (
+          <Stat label="Weeks on client work" value={String(v.billed_weeks)} hint="Up to today" />
+        )}
         <Stat
           label="Clients served"
           value={String(v.clients.length)}
@@ -100,13 +106,15 @@ export default function EmployeeValuePage() {
               .join(' · ') || 'No projects yet'
           }
         />
-        <div className="bg-surface rounded-xl border p-4">
-          <dt className="text-muted-foreground text-sm">Margin on billable work</dt>
-          <dd className="mt-1 text-2xl font-semibold tabular-nums">{v.margin.margin_pct}%</dd>
-          <dd className="mt-1">
-            <MarginBadge margin={v.margin} />
-          </dd>
-        </div>
+        {showBilling() && (
+          <div className="bg-surface rounded-xl border p-4">
+            <dt className="text-muted-foreground text-sm">Margin on billable work</dt>
+            <dd className="mt-1 text-2xl font-semibold tabular-nums">{v.margin.margin_pct}%</dd>
+            <dd className="mt-1">
+              <MarginBadge margin={v.margin} />
+            </dd>
+          </div>
+        )}
       </dl>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -196,7 +204,7 @@ export default function EmployeeValuePage() {
         </div>
 
         <aside className="space-y-6">
-          <Panel title="Revenue by client">
+          <Panel title={showBilling() ? 'Revenue by client' : 'Clients'}>
             {v.clients.length === 0 ? (
               <p className="text-muted-foreground text-sm">No client work yet.</p>
             ) : (
@@ -205,20 +213,24 @@ export default function EmployeeValuePage() {
                   <li key={c.client_code} className="text-sm">
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="font-medium">{c.client_name}</span>
-                      <span className="tabular-nums">{usd(c.estimated_revenue_usd)}</span>
+                      {showBilling() && (
+                        <span className="tabular-nums">{usd(c.estimated_revenue_usd)}</span>
+                      )}
                     </div>
-                    <div className="bg-muted mt-1 h-1.5 overflow-hidden rounded-full">
-                      <div
-                        className="bg-primary h-1.5 rounded-full"
-                        style={{
-                          width: percent(
-                            v.estimated_revenue_usd
-                              ? c.estimated_revenue_usd / v.estimated_revenue_usd
-                              : 0,
-                          ),
-                        }}
-                      />
-                    </div>
+                    {showBilling() && (
+                      <div className="bg-muted mt-1 h-1.5 overflow-hidden rounded-full">
+                        <div
+                          className="bg-primary h-1.5 rounded-full"
+                          style={{
+                            width: percent(
+                              v.estimated_revenue_usd
+                                ? c.estimated_revenue_usd / v.estimated_revenue_usd
+                                : 0,
+                            ),
+                          }}
+                        />
+                      </div>
+                    )}
                     <p className="text-muted-foreground mt-0.5 text-xs">
                       {c.projects} project{c.projects === 1 ? '' : 's'} · {c.weeks} weeks
                     </p>
@@ -226,10 +238,12 @@ export default function EmployeeValuePage() {
                 ))}
               </ul>
             )}
-            <p className="text-muted-foreground mt-4 text-xs">
-              Estimated: weeks on each project × the rate card&apos;s bill rate for band{' '}
-              {v.cost_band} ({usd(v.margin.weekly_bill_usd)} a week). Salaries are never stored.
-            </p>
+            {showBilling() && (
+              <p className="text-muted-foreground mt-4 text-xs">
+                Estimated: weeks on each project × the rate card&apos;s bill rate for band{' '}
+                {v.cost_band} ({usd(v.margin.weekly_bill_usd)} a week). Salaries are never stored.
+              </p>
+            )}
           </Panel>
 
           <Panel title={`Skills (${v.skills.length})`}>
@@ -313,7 +327,8 @@ function ProjectRow({ p }: { p: ProjectLine }) {
         </span>
       </div>
       <p className="text-muted-foreground mt-0.5 text-xs">
-        {p.role_title} · {domainLabel(p.domain)} · {usd(p.estimated_revenue_usd)} billed
+        {p.role_title} · {domainLabel(p.domain)}
+        {showBilling() && ` · ${usd(p.estimated_revenue_usd)} billed`}
       </p>
       <div className="mt-1 flex flex-wrap gap-1.5">
         <StatusBadge tone={o.tone}>{p.current ? 'Current' : o.label}</StatusBadge>

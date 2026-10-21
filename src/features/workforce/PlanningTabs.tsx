@@ -25,6 +25,7 @@ import {
   useUpdateAssignment,
 } from '@/features/workforce/api'
 import { date, humanize } from '@/lib/format'
+import { showBilling } from '@/lib/features'
 
 const LEVELS: Level[] = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6']
 const SELECT =
@@ -204,17 +205,19 @@ export function TeamBuilderTab() {
               onChange={(e) => setStart(e.target.value)}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="tb-budget">Weekly budget (USD)</Label>
-            <Input
-              id="tb-budget"
-              type="number"
-              min={0}
-              placeholder="No limit"
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-            />
-          </div>
+          {showBilling() && (
+            <div className="space-y-1.5">
+              <Label htmlFor="tb-budget">Weekly budget (USD)</Label>
+              <Input
+                id="tb-budget"
+                type="number"
+                min={0}
+                placeholder="No limit"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+              />
+            </div>
+          )}
         </div>
         {roles.map((r, i) => (
           <fieldset
@@ -330,9 +333,13 @@ export function TeamBuilderTab() {
           <>
             <div className="flex flex-wrap gap-2 text-sm">
               <StatusBadge tone="neutral">{plan.members.length} people</StatusBadge>
-              <StatusBadge tone="neutral">{usd(plan.weekly_cost_usd)} cost a week</StatusBadge>
-              <StatusBadge tone="neutral">{usd(plan.weekly_bill_usd)} billed a week</StatusBadge>
-              <StatusBadge tone="ready">{plan.margin_pct}% margin</StatusBadge>
+              {showBilling() && (
+                <StatusBadge tone="neutral">{usd(plan.weekly_cost_usd)} cost a week</StatusBadge>
+              )}
+              {showBilling() && (
+                <StatusBadge tone="neutral">{usd(plan.weekly_bill_usd)} billed a week</StatusBadge>
+              )}
+              {showBilling() && <StatusBadge tone="ready">{plan.margin_pct}% margin</StatusBadge>}
               {plan.within_budget === false && (
                 <StatusBadge tone="attention">Over budget</StatusBadge>
               )}
@@ -343,7 +350,7 @@ export function TeamBuilderTab() {
                   <p className="text-muted-foreground text-xs">{m.role}</p>
                   <Person
                     p={m}
-                    extra={`fit ${Math.round(m.fit * 100)}%, ${usd(m.weekly_cost_usd)}/wk`}
+                    extra={`fit ${Math.round(m.fit * 100)}%${showBilling() ? `, ${usd(m.weekly_cost_usd)}/wk` : ''}`}
                   />
                   {m.worked_with.length > 0 && (
                     <p className="text-xs">Worked with {m.worked_with.join(', ')}</p>
@@ -421,12 +428,14 @@ export function CapacityTab() {
                         style={{
                           background: `color-mix(in oklab, var(--primary) ${Math.round(idle * 45)}%, transparent)`,
                         }}
-                        title={`${c.people} people · ${c.booked_fte} booked · ${c.leave_fte} on leave · idle ${usd(c.idle_cost_usd)}`}
+                        title={`${c.people} people · ${c.booked_fte} booked · ${c.leave_fte} on leave`}
                       >
                         {c.free_fte}
-                        <span className="text-muted-foreground block text-[11px]">
-                          {usd(c.idle_cost_usd)}
-                        </span>
+                        {showBilling() && (
+                          <span className="text-muted-foreground block text-[11px]">
+                            {usd(c.idle_cost_usd)}
+                          </span>
+                        )}
                       </td>
                     )
                   })}

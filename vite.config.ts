@@ -21,6 +21,8 @@ export default defineConfig({
     // Page-level tests render the whole app; the default 5 s is too tight when files run in parallel.
     testTimeout: 15_000,
     exclude: [...configDefaults.exclude, 'e2e/**'],
+    // Tests cover the billing screens; billing.test.tsx checks they are hidden by default.
+    env: { VITE_SHOW_BILLING: 'true' },
     // npm run test:coverage — floor from docs/07: feature code >= 70% of lines
     coverage: {
       provider: 'v8',

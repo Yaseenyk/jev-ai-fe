@@ -16,6 +16,7 @@ import { RunsTab } from '@/features/admin/RunsTab'
 import { ThresholdsTab } from '@/features/admin/ThresholdsTab'
 import { UsersTab } from '@/features/admin/UsersTab'
 import { useAuth } from '@/features/auth/AuthProvider'
+import { showBilling } from '@/lib/features'
 
 const TABS = [
   { value: 'runs', label: 'Runs', body: <RunsTab /> },
@@ -38,7 +39,11 @@ export default function AdminPage() {
   const companies = useCompanies()
   if (user?.role !== 'admin') return <Navigate to="/tasks" replace />
   // Only the operator's admins manage companies; the API refuses everyone else.
-  const tabs = TABS.filter((t) => t.value !== 'companies' || companies.isSuccess)
+  const tabs = TABS.filter(
+    (t) =>
+      (t.value !== 'companies' || companies.isSuccess) &&
+      (t.value !== 'rate-card' || showBilling()),
+  )
   const asked = params.get('tab')
   const tab = tabs.some((t) => t.value === asked) ? (asked as string) : 'runs'
 

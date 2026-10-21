@@ -6,16 +6,19 @@ test('manager plans: bench, skill gaps, a team for two tasks, then hire or move 
   await page.goto('/tasks')
   await page.getByRole('link', { name: 'Planning' }).first().click()
   await expect(page.getByRole('heading', { name: 'Planning' })).toBeVisible()
-  await expect(page.getByText('Idle cost per week')).toBeVisible()
+  // Billing is hidden by default (ADR 034): no money on the planning screens.
+  await expect(page.getByText('Free now').first()).toBeVisible()
+  await expect(page.getByText('Idle cost per week')).toHaveCount(0)
   await expect(page.getByRole('table', { name: 'Bench' }).getByRole('row').nth(1)).toBeVisible()
 
   await page.getByRole('table', { name: 'Bench' }).getByRole('link').first().click()
-  await expect(page.getByText('Revenue billed (estimate)')).toBeVisible()
+  await expect(page.getByText('Weeks on client work')).toBeVisible()
+  await expect(page.getByText('Revenue billed (estimate)')).toHaveCount(0)
   await expect(page.getByRole('region', { name: 'Best next tasks' })).toBeVisible()
   await page.getByRole('link', { name: 'Bench' }).click()
 
   await page.getByRole('tab', { name: 'Rolling off' }).click()
-  await expect(page.getByText('Weekly cost at risk')).toBeVisible()
+  await expect(page.getByText('Weekly cost at risk')).toHaveCount(0)
   await page.getByRole('tab', { name: 'What-if' }).click()
   await expect(page.getByRole('button', { name: /Can we staff it/ })).toBeVisible()
 

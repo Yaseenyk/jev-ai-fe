@@ -45,6 +45,7 @@ import {
 import { useTask, useTasks } from '@/features/tasks/api'
 import { date } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { showBilling } from '@/lib/features'
 
 const DRAFT_KEY = 'srtm:new-task-draft'
 
@@ -837,6 +838,7 @@ function TaskPreview({
                 const i = index.get(field)
                 const s = i === undefined ? undefined : steps[i]
                 if (!s || i === undefined) return null
+                if (field === 'max_cost_band' && !showBilling()) return null
                 const skipped = s.skip?.(draft) ?? false
                 const answered = isAnswered(draft, field)
                 const isCurrent = current === i

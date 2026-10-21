@@ -23,6 +23,7 @@ import { useCreateEmployee, useDataHealth, useEmployees } from '@/features/hr/ap
 import type { DataHealth, EmployeeCreate, EmployeeSummary, HealthFilter } from '@/features/hr/types'
 import { LEVEL_TITLES, date, humanize, levelLabel, locationLabel } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { showBilling } from '@/lib/features'
 
 const LOCATIONS = ['hyderabad', 'bengaluru', 'pune', 'chennai', 'remote_india', 'usa', 'uk']
 const PRACTICES = ['app_dev', 'data_analytics', 'cloud', 'devops', 'ai_ml', 'qa']
@@ -485,13 +486,14 @@ function AddEmployeeSheet({ onClose }: { onClose: () => void }) {
       </FormSection>
       <FormSection title="Where and when they can work">
         {pick('location', 'Location', LOCATIONS, locationLabel)}
-        {pick(
-          'cost_band',
-          'Cost band',
-          COST_BANDS,
-          (b) => `Band ${b}`,
-          'Used to respect a task’s budget.',
-        )}
+        {showBilling() &&
+          pick(
+            'cost_band',
+            'Cost band',
+            COST_BANDS,
+            (b) => `Band ${b}`,
+            'Used to respect a task’s budget.',
+          )}
         <Field
           id="n-alloc"
           label="Booked now (%)"
