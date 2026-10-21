@@ -131,6 +131,7 @@ export type ClientRateIn = Schemas['ClientRateIn']
 // Dashboard (ADR 028)
 export type Dashboard = Schemas['Dashboard']
 export type DashboardRing = Schemas['Ring']
+export type DashboardPointers = Schemas['Pointers']
 export type MonthTasks = Schemas['MonthTasks']
 export type MonthIdleCost = Schemas['MonthIdleCost']
 export type OpenTaskLine = Schemas['OpenTaskLine']

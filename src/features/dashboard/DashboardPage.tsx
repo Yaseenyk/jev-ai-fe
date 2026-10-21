@@ -2,11 +2,17 @@ import { ArrowUpRight, ChevronDown, Download } from 'lucide-react'
 import { useId, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
-import type { DashboardRing, MonthIdleCost, MonthTasks, OpenTaskLine } from '@/api/types'
+import type {
+  DashboardPointers,
+  DashboardRing,
+  MonthIdleCost,
+  MonthTasks,
+  OpenTaskLine,
+} from '@/api/types'
 import { ErrorState } from '@/components/QueryStates'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useDashboard } from '@/features/dashboard/api'
+import { useDashboard, usePointers } from '@/features/dashboard/api'
 import { usd } from '@/features/planning/PlanningPage'
 import { TaskStatusBadge } from '@/features/tasks/PriorityBadge'
 import { date as formatDate } from '@/lib/format'
@@ -418,8 +424,185 @@ function TasksByMonth({ rows }: { rows: MonthTasks[] }) {
   )
 }
 
+// --- pointers (ADR 036) ------------------------------------------------------------------------
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
+const dayText = (d: number | null) =>
+  d === null ? '—' : d < 1 ? 'under a day' : plural(Math.round(d), 'day')
+
+function Pointer({
+  id,
+  title,
+  to,
+  value,
+  caption,
+  children,
+  className,
+}: {
+  id: string
+  title: string
+  to: string
+  value: ReactNode
+  caption: string
+  children?: ReactNode
+  className?: string
+}) {
+  return (
+    <section className={cn(CARD, 'flex flex-col', className)} aria-labelledby={id}>
+      <CardTitle
+        action={
+          <Link
+            to={to}
+            className="text-primary hover:bg-muted grid size-7 place-items-center rounded-lg"
+            aria-label={`Open ${title}`}
+          >
+            <ArrowUpRight className="size-4" aria-hidden />
+          </Link>
+        }
+      >
+        <span id={id} className="text-sm">
+          {title}
+        </span>
+      </CardTitle>
+      <p className="mt-2 text-2xl leading-tight font-bold">{value}</p>
+      <p className="text-muted-foreground text-xs">{caption}</p>
+      {children}
+    </section>
+  )
+}
+
+function TaskLines({ lines }: { lines: DashboardPointers['waiting_tasks'] }) {
+  if (lines.length === 0) return null
+  return (
+    <ul className="mt-3 divide-y border-t">
+      {lines.map((t) => (
+        <li key={t.task_id}>
+          <Link
+            to={`/tasks/${t.task_id}`}
+            className="hover:bg-muted/60 -mx-2 block rounded-lg px-2 py-1.5"
+          >
+            <span className="block truncate text-sm font-medium">{t.title}</span>
+            <span className="text-muted-foreground block text-xs">
+              {t.code} · {t.detail}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function Pointers({ p }: { p: DashboardPointers }) {
+  return (
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <Pointer
+        id="ptr-waiting"
+        title="Waiting for your decision"
+        to="/tasks"
+        value={p.waiting_decision}
+        caption="Open tasks with people recommended and no accept or reject yet"
+      >
+        <TaskLines lines={p.waiting_tasks} />
+      </Pointer>
+      <Pointer
+        id="ptr-nofit"
+        title="Nobody inside fits"
+        to="/hiring-requests"
+        value={p.no_internal_fit}
+        caption="Open tasks the last matching found nobody for"
+      >
+        <TaskLines lines={p.no_fit_tasks} />
+      </Pointer>
+      <Pointer
+        id="ptr-bench"
+        title="Bench"
+        to="/planning?tab=bench"
+        value={plural(p.bench_free_now, 'person', 'people')}
+        caption="Free now"
+      >
+        <dl className="mt-3 space-y-1 border-t pt-3 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Free within 14 days</dt>
+            <dd className="font-semibold tabular-nums">{p.bench_freeing_soon}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Could take an open task</dt>
+            <dd className="font-semibold tabular-nums">{p.bench_with_fit}</dd>
+          </div>
+        </dl>
+      </Pointer>
+      <Pointer
+        id="ptr-fill"
+        title="Time to fill"
+        to="/tasks"
+        value={dayText(p.days_to_first_accept)}
+        caption={`From task created to first accept (${plural(p.first_accepts, 'task')}, last 90 days)`}
+      >
+        <dl className="mt-3 space-y-1 border-t pt-3 text-sm">
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Created to filled</dt>
+            <dd className="font-semibold">{dayText(p.days_to_filled)}</dd>
+          </div>
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">Tasks filled</dt>
+            <dd className="font-semibold tabular-nums">{p.filled}</dd>
+          </div>
+        </dl>
+      </Pointer>
+      <Pointer
+        id="ptr-gaps"
+        title="Skill gaps in the next 30 days"
+        to="/planning?tab=skills"
+        value={plural(p.skill_gaps.length, 'skill')}
+        caption="Must-have skills upcoming tasks need and too few free people have"
+        className="xl:col-span-2"
+      >
+        {p.skill_gaps.length > 0 && (
+          <ul className="mt-3 divide-y border-t">
+            {p.skill_gaps.map((g) => (
+              <li
+                key={g.skill_id}
+                className="flex items-center justify-between gap-3 py-1.5 text-sm"
+              >
+                <span className="truncate font-medium">{g.name}</span>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {plural(g.tasks_needing, 'task')} need it, {g.available} free{' '}
+                  <span
+                    className={cn(
+                      'ml-1 rounded-md px-1.5 py-0.5 font-medium',
+                      g.status === 'shortage'
+                        ? 'bg-destructive/10 text-destructive'
+                        : 'bg-band-review text-band-review-foreground',
+                    )}
+                  >
+                    {g.status === 'shortage' ? 'Shortage' : 'Tight'}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Pointer>
+      <Pointer
+        id="ptr-rolloff"
+        title="Rolling off in 30 days"
+        to="/planning?tab=rolloffs"
+        value={plural(p.rolling_off, 'person', 'people')}
+        caption={`${p.rolling_off_without_next} with no next task and no hold planned`}
+      />
+      <Pointer
+        id="ptr-key"
+        title="Key-person risk"
+        to="/planning?tab=keypeople"
+        value={plural(p.key_person_high, 'person', 'people')}
+        caption={`Alone carry a skill on running work (high risk); ${plural(p.scarce_skills, 'skill')} only 1–2 experts hold`}
+      />
+    </div>
+  )
+}
+
 export default function DashboardPage() {
   const query = useDashboard()
+  const pointers = usePointers()
   if (query.isError) return <ErrorState error={query.error} onRetry={() => void query.refetch()} />
   const d = query.data
   return (
@@ -443,6 +626,18 @@ export default function DashboardPage() {
           <Skeleton className="h-80 rounded-2xl" />
         )}
       </div>
+      <h2 className="sr-only">To act on</h2>
+      {pointers.data ? (
+        <Pointers p={pointers.data} />
+      ) : pointers.isError ? (
+        <ErrorState error={pointers.error} onRetry={() => void pointers.refetch()} />
+      ) : (
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-44 rounded-2xl" />
+          ))}
+        </div>
+      )}
       {showBilling() &&
         (d ? <IdleCost rows={d.idle_cost_by_month} /> : <Skeleton className="h-96 rounded-2xl" />)}
     </div>
