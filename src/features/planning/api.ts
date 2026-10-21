@@ -8,7 +8,6 @@ import type {
   RateCard,
   RateCardLine,
   SkillGapReport,
-  StaffingPlan,
 } from '@/api/types'
 import { getAccessToken } from '@/features/auth/session'
 import { env } from '@/lib/env'
@@ -50,16 +49,6 @@ export function useSkillGaps(horizon: number) {
   return useQuery({
     queryKey: ['planning', 'skill-gaps', horizon],
     queryFn: () => apiFetch<SkillGapReport>(`/planning/skill-gaps?horizon_days=${horizon}`),
-  })
-}
-
-export function useStaffing() {
-  return useMutation({
-    mutationFn: (taskIds: string[]) =>
-      apiFetch<StaffingPlan>('/planning/staffing', {
-        method: 'POST',
-        body: JSON.stringify({ task_ids: taskIds }),
-      }),
   })
 }
 
@@ -113,20 +102,3 @@ export async function downloadAudit(since: string, until: string): Promise<void>
 }
 
 /** Starts matching for each task; returns how many started (a task already running counts). */
-export function useStartRuns() {
-  return useMutation({
-    mutationFn: async (taskIds: string[]) => {
-      let started = 0
-      for (const id of taskIds) {
-        try {
-          await apiFetch(`/tasks/${id}/match-runs`, { method: 'POST' })
-          started += 1
-        } catch (e) {
-          if (e instanceof ApiError && e.status === 409) started += 1
-          else if (!(e instanceof ApiError && e.status === 429)) throw e
-        }
-      }
-      return { started, asked: taskIds.length }
-    },
-  })
-}

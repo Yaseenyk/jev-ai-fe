@@ -2751,6 +2751,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tasks/{task_id}/team/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lead Options
+         * @description Step 1 (ADR 039): up to 3 people who could lead the task, the first one suggested.
+         */
+        get: operations["lead_options_api_v1_tasks__task_id__team_leads_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}/team/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Member Options
+         * @description Step 2: the members under that lead (headcount - 1) and alternates, from the task's
+         *     latest matching run. 409 `run_needed` when the task has no finished run.
+         */
+        get: operations["member_options_api_v1_tasks__task_id__team_members_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/tasks/{task_id}/team/shadows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shadow Options
+         * @description Step 3 (optional): learners to put alongside the team, never someone already in it.
+         */
+        get: operations["shadow_options_api_v1_tasks__task_id__team_shadows_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Teams */
+        get: operations["list_teams_api_v1_teams_get"];
+        put?: never;
+        /**
+         * Save Team
+         * @description Create the task's team (replaces an earlier one). The lead plus members must equal the
+         *     task's headcount; the shadow is extra. Audited `team.saved`. Nobody is assigned: people
+         *     are still accepted on the task.
+         */
+        post: operations["save_team_api_v1_teams_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/teams/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Team */
+        get: operations["get_team_api_v1_teams__team_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Team */
+        delete: operations["delete_team_api_v1_teams__team_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -4940,6 +5042,14 @@ export interface components {
             /** Scarce Skills */
             scarce_skills: components["schemas"]["ScarceSkill"][];
         };
+        /** LeadOptions */
+        LeadOptions: {
+            /** Leads */
+            leads: components["schemas"]["TeamCandidate"][];
+            /** Run Id */
+            run_id: string | null;
+            task: components["schemas"]["TeamTask"];
+        };
         /** LearningOverview */
         LearningOverview: {
             /** Assignments */
@@ -5085,6 +5195,15 @@ export interface components {
             thresholds_version: string;
             /** Total Cost Usd */
             total_cost_usd: number;
+        };
+        /** MemberOptions */
+        MemberOptions: {
+            /** Alternates */
+            alternates: components["schemas"]["TeamCandidate"][];
+            /** Members */
+            members: components["schemas"]["TeamCandidate"][];
+            /** Needed */
+            needed: number;
         };
         /** ModelActivate */
         ModelActivate: {
@@ -6625,6 +6744,41 @@ export interface components {
             /** Title */
             title: string;
         };
+        /**
+         * TeamCandidate
+         * @description Someone the team builder suggests, with the reasons a manager can check.
+         */
+        TeamCandidate: {
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Coverage */
+            coverage: number;
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /**
+             * Free From
+             * Format: date
+             */
+            free_from: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            /** Practice */
+            practice: string;
+            /** Reasons */
+            reasons: string[];
+            /** Score */
+            score: number | null;
+            /**
+             * Suggested
+             * @default false
+             */
+            suggested: boolean;
+        };
         /** TeamGap */
         TeamGap: {
             /** Missing */
@@ -6644,7 +6798,7 @@ export interface components {
             /** Client Code */
             client_code?: string | null;
             /** Roles */
-            roles: components["schemas"]["TeamRole"][];
+            roles: components["schemas"]["TeamRole-Input"][];
             /**
              * Start Date
              * Format: date
@@ -6677,6 +6831,23 @@ export interface components {
             /** Worked With */
             worked_with: string[];
         };
+        /** TeamPerson */
+        TeamPerson: {
+            /** Allocation Pct */
+            allocation_pct: number;
+            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
+            cost_band: components["schemas"]["CostBand"];
+            /** Designation */
+            designation: string;
+            /** Employee Code */
+            employee_code: string;
+            /** Employee Id */
+            employee_id: string;
+            /** Full Name */
+            full_name: string;
+            level: components["schemas"]["Level"];
+            role: components["schemas"]["TeamRole-Output"];
+        };
         /** TeamPlan */
         TeamPlan: {
             /** Alternates */
@@ -6696,8 +6867,25 @@ export interface components {
             /** Within Budget */
             within_budget: boolean | null;
         };
+        /** TeamRead */
+        TeamRead: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By */
+            created_by: string | null;
+            /** Id */
+            id: string;
+            lead: components["schemas"]["TeamPerson"] | null;
+            /** Members */
+            members: components["schemas"]["TeamPerson"][];
+            shadow: components["schemas"]["TeamPerson"] | null;
+            task: components["schemas"]["TeamTask"];
+        };
         /** TeamRole */
-        TeamRole: {
+        "TeamRole-Input": {
             /**
              * Count
              * @default 1
@@ -6708,6 +6896,23 @@ export interface components {
             skills: components["schemas"]["TeamSkill"][];
             /** Title */
             title: string;
+        };
+        /**
+         * TeamRole
+         * @description A person's place in a team for a task (ADR 039).
+         * @enum {string}
+         */
+        "TeamRole-Output": "lead" | "member" | "shadow";
+        /** TeamSave */
+        TeamSave: {
+            /** Lead Id */
+            lead_id: string;
+            /** Member Ids */
+            member_ids: string[];
+            /** Shadow Id */
+            shadow_id?: string | null;
+            /** Task Id */
+            task_id: string;
         };
         /** TeamSkill */
         TeamSkill: {
@@ -6723,6 +6928,30 @@ export interface components {
             must_have: boolean;
             /** Skill Id */
             skill_id: string;
+        };
+        /** TeamTask */
+        TeamTask: {
+            /** Allocation Pct Required */
+            allocation_pct_required: number;
+            /** Client Code */
+            client_code: string;
+            /** Code */
+            code: string;
+            /** Duration Weeks */
+            duration_weeks: number;
+            /** Headcount */
+            headcount: number;
+            /** Required Level */
+            required_level: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Task Id */
+            task_id: string;
+            /** Title */
+            title: string;
         };
         /** ThemeRead */
         ThemeRead: {
@@ -12016,6 +12245,227 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HiringRequestDetail"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lead_options_api_v1_tasks__task_id__team_leads_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadOptions"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    member_options_api_v1_tasks__task_id__team_members_get: {
+        parameters: {
+            query: {
+                lead_id: string;
+            };
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberOptions"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    shadow_options_api_v1_tasks__task_id__team_shadows_get: {
+        parameters: {
+            query?: {
+                team_ids?: string[] | null;
+            };
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamCandidate"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_teams_api_v1_teams_get: {
+        parameters: {
+            query?: {
+                task_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamRead"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_team_api_v1_teams_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamSave"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_team_api_v1_teams__team_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_team_api_v1_teams__team_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

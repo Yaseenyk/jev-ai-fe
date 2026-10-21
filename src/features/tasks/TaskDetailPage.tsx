@@ -8,6 +8,7 @@ import {
   Play,
   RotateCcw,
   Send,
+  Users,
   X,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
@@ -42,6 +43,7 @@ import type { CandidateMatch, SentState } from '@/features/hr/types'
 import { ScoreBar } from '@/features/hr/ui'
 import { type CloseAs, CloseTaskDialog } from '@/features/tasks/CloseTaskDialog'
 import { useChangeTaskStatus, useStartRun, useTask, useTaskRuns } from '@/features/tasks/api'
+import { useTeams } from '@/features/teams/api'
 import { cn } from '@/lib/utils'
 import { date, dateTime, domainLabel, humanize, levelLabel, locationLabel } from '@/lib/format'
 import { showBilling } from '@/lib/features'
@@ -156,6 +158,7 @@ function TaskDetail({ task }: { task: Task }) {
                   <Pencil aria-hidden /> Edit task
                 </Link>
               </Button>
+              <TeamButton taskId={task.id} />
               <Button
                 onClick={() =>
                   start.mutate(undefined, { onSuccess: (r) => void navigate(`/runs/${r.run_id}`) })
@@ -623,5 +626,18 @@ function SuggestDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** The task's team (ADR 039): open it, or build one. */
+function TeamButton({ taskId }: { taskId: string }) {
+  const teams = useTeams(taskId)
+  const team = teams.data?.[0]
+  return (
+    <Button variant="outline" asChild>
+      <Link to={team ? `/teams/${team.id}` : `/teams/new?task=${taskId}`}>
+        <Users aria-hidden /> {team ? 'View team' : 'Build a team'}
+      </Link>
+    </Button>
   )
 }

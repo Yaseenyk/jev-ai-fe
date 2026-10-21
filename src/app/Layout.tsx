@@ -21,6 +21,7 @@ import {
   Sparkles,
   Sun,
   UserSearch,
+  Users,
 } from 'lucide-react'
 import { useId, useState, type ComponentType, type SyntheticEvent } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
@@ -104,6 +105,13 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
         isActive: (p) => p.startsWith('/hiring-requests'),
         requestsOnly: true,
         badge: 'requests',
+      },
+      {
+        to: '/teams',
+        label: 'Teams',
+        icon: Users,
+        isActive: (p) => p.startsWith('/teams'),
+        plannersOnly: true,
       },
       {
         to: '/planning',

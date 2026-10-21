@@ -25,8 +25,6 @@ import type {
   RfpDrafts,
   SavingsReport,
   SetupStatus,
-  TeamIn,
-  TeamPlan,
   WorkingOn,
 } from '@/api/types'
 
@@ -48,11 +46,6 @@ export const useCapacity = (months: number) =>
   useQuery({
     queryKey: ['planning', 'capacity', months],
     queryFn: () => apiFetch<CapacityReport>(`/planning/capacity?months=${months}`),
-  })
-
-export const useBuildTeam = () =>
-  useMutation({
-    mutationFn: (body: TeamIn) => apiFetch<TeamPlan>('/planning/team', post(body)),
   })
 
 export const useInterpretSearch = () =>

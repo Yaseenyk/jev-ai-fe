@@ -176,3 +176,11 @@ export type MonthNumbers = Schemas['MonthNumbers']
 // Bench-to-billable plan (ADR 033)
 export type BenchPlan = Schemas['BenchPlan']
 export type BenchStep = Schemas['BenchStep']
+
+// Teams for tasks (ADR 039)
+export type TeamCandidate = Schemas['TeamCandidate']
+export type LeadOptions = Schemas['LeadOptions']
+export type MemberOptions = Schemas['MemberOptions']
+export type TeamSave = Schemas['TeamSave']
+export type TeamPerson = Schemas['TeamPerson']
+export type Team = Schemas['TeamRead']
