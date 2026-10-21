@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import type {
+  Client,
   CostBand,
   Domain,
   InterpretResponse,
@@ -328,17 +329,83 @@ export const FIELD_LABELS: Record<keyof Draft, string> = {
 
 export const isAnswered = (d: Draft, id: keyof Draft) => d[id] !== undefined
 
-/** The first step after `from` that applies and is unanswered; null means show the summary. */
-export function nextStep(all: Step[], d: Draft, from = -1): number | null {
-  for (let i = from + 1; i < all.length; i++) {
+/** Asked when the document leaves them out, most important first; never more than
+ * MAX_QUESTIONS. The rest get DEFAULTS, which the manager can change before matching. */
+export const ASK_ORDER: (keyof Draft)[] = [
+  'must_skills',
+  'title',
+  'client_code',
+  'domain',
+  'start_date',
+  'duration_weeks',
+  'required_level',
+  'work_mode',
+  'location',
+]
+export const MAX_QUESTIONS = 5
+
+/** The next question to ask, or null when enough has been asked. */
+export function nextQuestion(all: Step[], d: Draft, asked: number): number | null {
+  if (asked >= MAX_QUESTIONS) return null
+  for (const id of ASK_ORDER) {
+    const i = all.findIndex((s) => s.id === id)
     const s = all[i]
-    if (s && !s.skip?.(d) && !isAnswered(d, s.id)) return i
-  }
-  for (let i = 0; i <= from && i < all.length; i++) {
-    const s = all[i]
-    if (s && !s.skip?.(d) && !isAnswered(d, s.id)) return i
+    if (s && !s.skip?.(d) && !isAnswered(d, id)) return i
   }
   return null
+}
+
+/** How many more questions will be asked from here. */
+export function questionsLeft(all: Step[], d: Draft, asked: number): number {
+  const open = ASK_ORDER.filter((id) => {
+    const s = all.find((x) => x.id === id)
+    return s && !s.skip?.(d) && !isAnswered(d, id)
+  }).length
+  return Math.min(open, MAX_QUESTIONS - asked)
+}
+
+/** A known client's domain and timezone, unless the document gave them. */
+export function fromClient(d: Draft, clients: Client[]): Draft {
+  const c = clients.find((x) => x.code === d.client_code)
+  if (!c) return d
+  const domain = DOMAINS.includes(c.domain ?? '') ? (c.domain as Domain) : undefined
+  return {
+    ...d,
+    domain: d.domain ?? domain,
+    client_timezone: d.client_timezone ?? c.timezone ?? undefined,
+  }
+}
+
+const LEVEL_FROM_YEARS: [number, Level][] = [
+  [8, 'L5'],
+  [5, 'L4'],
+  [3, 'L3'],
+  [1, 'L2'],
+]
+
+/** Everything not asked: plain defaults, so matching is not narrowed by a guess. */
+export function withDefaults(d: Draft, today: Date): Draft {
+  const years = d.min_years_experience
+  return {
+    ...d,
+    start_date: d.start_date ?? isoDate(today),
+    duration_weeks: d.duration_weeks ?? 12,
+    required_level:
+      d.required_level ??
+      (years === undefined ? 'L3' : (LEVEL_FROM_YEARS.find(([y]) => years >= y)?.[1] ?? 'L2')),
+    min_years_experience: years ?? 0,
+    must_min_proficiency: d.must_min_proficiency ?? 3,
+    nice_skills: d.nice_skills ?? [],
+    allocation_pct_required: d.allocation_pct_required ?? 100,
+    work_mode: d.work_mode ?? 'hybrid',
+    location: d.location ?? 'any',
+    client_timezone: d.client_timezone ?? 'Asia/Kolkata',
+    min_timezone_overlap_hours: d.min_timezone_overlap_hours ?? 0,
+    max_cost_band: d.max_cost_band ?? 'E',
+    clearance: d.clearance ?? 'none',
+    priority: d.priority ?? 'medium',
+    description: d.description ?? '',
+  }
 }
 
 const NUMERIC: (keyof Draft)[] = [
