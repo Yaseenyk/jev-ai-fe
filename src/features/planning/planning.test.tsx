@@ -95,16 +95,85 @@ test('skill gaps show every needed skill when nothing is short', async () => {
   expect(within(table).getAllByRole('row').length).toBeGreaterThan(1)
 })
 
-test('project staffing proposes one person per task and explains the rest', async () => {
+const member = (id: string, name: string, score: number) => ({
+  employee_id: id,
+  employee_code: `SPY-${id}`,
+  full_name: name,
+  designation: 'Engineer',
+  level: 'L4',
+  cost_band: 'C',
+  business_unit: null,
+  score,
+  band: 'shortlist',
+  margin: { weekly_cost_usd: 1000, weekly_bill_usd: 1600, margin_pct: 37.5, below_target: false },
+})
+
+test("a client's open tasks get a whole team, one person per role", async () => {
+  const sent: string[][] = []
+  server.use(
+    http.post('*/api/v1/planning/staffing', async ({ request }) => {
+      const { task_ids } = (await request.json()) as { task_ids: string[] }
+      sent.push(task_ids)
+      return HttpResponse.json({
+        tasks: [
+          {
+            task_id: first.id,
+            task_code: first.code,
+            title: first.title,
+            proposed: member('a', 'Asha Rao', 0.97),
+            alternates: [member('b', 'Ben Kurian', 0.95), member('c', 'Chitra Nair', 0.9)],
+            unfilled_reason: null,
+          },
+          {
+            task_id: second.id,
+            task_code: second.code,
+            title: second.title,
+            proposed: member('b', 'Ben Kurian', 0.93),
+            alternates: [],
+            unfilled_reason: null,
+          },
+          {
+            task_id: 'swift',
+            task_code: 'TSK-0099',
+            title: 'Swift iOS Developer',
+            proposed: null,
+            alternates: [],
+            unfilled_reason: 'Nobody was recommended in the latest matching run.',
+          },
+        ],
+        filled: 2,
+        total_weekly_margin_usd: 1200,
+      })
+    }),
+  )
   const user = userEvent.setup()
   renderRoute('/planning?tab=staffing')
-  const list = await screen.findByRole('region', { name: 'Tasks to staff' })
-  await user.click(within(list).getByRole('checkbox', { name: new RegExp(first.code) }))
-  await user.click(within(list).getByRole('checkbox', { name: new RegExp(second.code) }))
-  await user.click(screen.getByRole('button', { name: /Propose a team \(2\)/ }))
+  await user.click(await screen.findByRole('button', { name: /Propose a team for CL-/ }))
   const team = await screen.findByRole('region', { name: 'Proposed team' })
-  expect(await within(team).findByText('Tasks filled')).toBeInTheDocument()
-  expect(within(team).getAllByText(/margin/).length).toBeGreaterThan(0)
+  expect(
+    await within(team).findByRole('heading', { name: /Team for CL-.*: 2 of 3 roles filled/ }),
+  ).toBeInTheDocument()
+  expect(sent[0]?.length).toBeGreaterThan(0)
+  expect(within(team).getByText(/Gross margin \$1,200 a week/)).toBeInTheDocument()
+
+  const role = within(team).getByRole('listitem', { name: `Role ${first.code}` })
+  expect(within(role).getByText('Asha Rao')).toBeInTheDocument()
+  // Swapping: someone already in the team cannot be picked twice.
+  await user.click(within(role).getByRole('combobox', { name: `Swap person for ${first.code}` }))
+  expect(await screen.findByRole('option', { name: /Ben Kurian.*\(in team\)/ })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  )
+  await user.click(screen.getByRole('option', { name: /Chitra Nair/ }))
+  expect(await within(role).findByText('Chitra Nair')).toBeInTheDocument()
+  expect(within(role).getByRole('link', { name: 'Open task to accept' })).toHaveAttribute(
+    'href',
+    `/tasks/${first.id}`,
+  )
+
+  const empty = within(team).getByRole('listitem', { name: 'Role TSK-0099' })
+  expect(within(empty).getByText('Nobody proposed')).toBeInTheDocument()
+  expect(within(empty).getByRole('link', { name: 'Open task to ask HR' })).toBeInTheDocument()
   expect(within(team).getByText(/A proposal only/)).toBeInTheDocument()
 })
 
@@ -170,9 +239,7 @@ test('tasks without a finished run can be matched from the plan in one click', a
   )
   const user = userEvent.setup()
   renderRoute('/planning?tab=staffing')
-  const list = await screen.findByRole('region', { name: 'Tasks to staff' })
-  await user.click(within(list).getByRole('checkbox', { name: new RegExp(first.code) }))
-  await user.click(screen.getByRole('button', { name: /Propose a team \(1\)/ }))
+  await user.click(await screen.findByRole('button', { name: /Propose a team for CL-/ }))
   expect(await screen.findByText('Run matching for this task first.')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Run matching for it' }))
   expect(await screen.findByText(/Matching started for 1 of 1 tasks/)).toBeInTheDocument()

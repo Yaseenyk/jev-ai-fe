@@ -42,12 +42,14 @@ test('manager plans: bench, skill gaps, a team for two tasks, then hire or move 
     page.getByRole('table', { name: 'Skill gaps' }).getByRole('row').nth(1),
   ).toBeVisible()
 
-  await openTool(page, /Who should take each task of a project\?/)
-  const list = page.getByRole('region', { name: 'Tasks to staff' })
-  await list.getByRole('checkbox', { name: /Snowflake Data Engineer/ }).check()
-  await page.getByRole('button', { name: /Propose a team \(1\)/ }).click()
+  await openTool(page, /Who should make up the team for a client's work\?/)
+  await page.getByRole('combobox', { name: 'Client' }).click()
+  await page.getByRole('option', { name: /CL-ZENITH/ }).click()
+  await page.getByRole('button', { name: 'Propose a team for CL-ZENITH' }).click()
   const team = page.getByRole('region', { name: 'Proposed team' })
-  await expect(team.getByText('Tasks filled')).toBeVisible()
+  await expect(
+    team.getByRole('heading', { name: /Team for CL-ZENITH: \d+ of \d+ roles filled/ }),
+  ).toBeVisible()
   await team.getByRole('link', { name: /Snowflake Data Engineer/ }).click()
 
   const card = page.getByRole('region', { name: 'Hire or move internally' })

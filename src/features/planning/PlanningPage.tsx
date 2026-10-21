@@ -18,6 +18,13 @@ import { EmptyState, ErrorState } from '@/components/QueryStates'
 import { StatusBadge, type Tone } from '@/components/StatusBadge'
 import { useUrlState } from '@/components/useUrlState'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/features/auth/AuthProvider'
 import { usePointers } from '@/features/dashboard/api'
@@ -150,13 +157,13 @@ const TOOLS: Tool[] = [
   {
     tab: 'staffing',
     group: 'Staff a project',
-    title: 'Staff several tasks',
-    question: 'Who should take each task of a project?',
-    what: 'Pick the open tasks of one project and get one proposed person per task, without booking anyone twice.',
+    title: "Staff a client's work",
+    question: "Who should make up the team for a client's work?",
+    what: 'Choose a client and get a whole team: one person for each of its open tasks, the best free people first, nobody booked twice.',
     steps: [
-      'Tick the tasks of one project on the left.',
-      'Click "Propose a team".',
-      'Open each task to accept the proposed person.',
+      'Choose the client.',
+      'Click "Propose a team": every open task of that client gets a person.',
+      'Swap anyone you prefer, then open each task to accept its person.',
     ],
     view: () => <StaffingTab />,
   },
@@ -681,115 +688,119 @@ export function MarginBadge({ margin }: { margin: Margin }) {
   )
 }
 
-function PersonLine({ p }: { p: ProposedPerson }) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Link to={`/planning/people/${p.employee_id}`} className="font-medium hover:underline">
-        {p.full_name}
-      </Link>
-      <span className="text-muted-foreground text-xs">
-        {p.employee_code} · {p.level}
-        {showBilling() && ` · band ${p.cost_band}`}
-      </span>
-      <UnitBadge unit={p.business_unit} />
-      <StatusBadge tone={p.band === 'shortlist' ? 'ready' : 'info'}>
-        {BAND_LABELS[p.band]} · {chance(p.score)}
-      </StatusBadge>
-      {showBilling() && <MarginBadge margin={p.margin} />}
-    </div>
-  )
-}
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .map((w) => w[0] ?? '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
 function StaffingTab() {
   const tasks = useTasks({ q: '', priority: '', domain: '' }, 'open')
   const staffing = useStaffing()
   const startRuns = useStartRuns()
-  const [picked, setPicked] = useState<string[]>([])
+  const [client, setClient] = useState('')
+  const [proposedFor, setProposedFor] = useState('')
+  // task id -> the person picked with Swap instead of the proposal
+  const [swaps, setSwaps] = useState<Record<string, string>>({})
   const NO_RUN = 'Run matching for this task first.'
-  const needRun = (staffing.data?.tasks ?? [])
-    .filter((t) => t.unfilled_reason === NO_RUN)
-    .map((t) => t.task_id)
 
   if (tasks.isPending) return <Skeleton className="h-96 w-full rounded-xl" />
   if (tasks.isError) return <ErrorState error={tasks.error} />
   const open = tasks.data.items
-  const toggle = (id: string) =>
-    setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id].slice(0, 30)))
+  const counts = new Map<string, number>()
+  for (const t of open) counts.set(t.client_code, (counts.get(t.client_code) ?? 0) + 1)
+  const clients = [...counts.keys()].sort()
+  const chosen = client || clients[0] || ''
+  const forClient = open.filter((t) => t.client_code === chosen).slice(0, 30)
+
+  const propose = () => {
+    startRuns.reset()
+    setSwaps({})
+    setProposedFor(chosen)
+    staffing.mutate(forClient.map((t) => t.id))
+  }
+
+  const plan = staffing.data
+  const person = (t: StaffedTask): ProposedPerson | null => {
+    const id = swaps[t.task_id]
+    return (id && [t.proposed, ...t.alternates].find((p) => p?.employee_id === id)) || t.proposed
+  }
+  const members = plan ? plan.tasks.map(person).filter((p) => p !== null) : []
+  const inTeam = new Set(members.map((p) => p.employee_id))
+  const needRun = (plan?.tasks ?? [])
+    .filter((t) => t.unfilled_reason === NO_RUN)
+    .map((t) => t.task_id)
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_1fr]">
-      <section className="bg-surface space-y-3 rounded-xl border p-4" aria-label="Tasks to staff">
-        <h2 className="text-sm font-semibold">Tasks to staff together</h2>
-        <p className="text-muted-foreground text-xs">
-          Pick the tasks of one project (up to 30). Each needs a finished matching run.
-        </p>
-        {open.length === 0 ? (
-          <EmptyState title="No open tasks" />
-        ) : (
-          <ul className="max-h-96 space-y-1 overflow-y-auto pr-1">
-            {open.map((t) => (
-              <li key={t.id}>
-                <label className="hover:bg-muted flex cursor-pointer items-start gap-2 rounded-md p-1.5 text-sm">
-                  <input
-                    type="checkbox"
-                    className="mt-1"
-                    checked={picked.includes(t.id)}
-                    onChange={() => toggle(t.id)}
-                  />
-                  <span>
-                    <span className="font-medium">{t.code}</span> {t.title}
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        )}
-        <Button
-          className="w-full"
-          disabled={picked.length === 0 || staffing.isPending}
-          onClick={() => {
-            startRuns.reset()
-            staffing.mutate(picked)
-          }}
-        >
+    <div className="space-y-5">
+      <section
+        aria-label="Client to staff"
+        className="bg-surface flex flex-wrap items-end gap-4 rounded-xl border p-4"
+      >
+        <div className="space-y-1.5">
+          <label htmlFor="staff-client" className="text-sm font-medium">
+            Client
+          </label>
+          {clients.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No open tasks to staff.</p>
+          ) : (
+            <Select value={chosen} onValueChange={setClient}>
+              <SelectTrigger id="staff-client" className="w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c} · {plural(counts.get(c) ?? 0, 'open task')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+        <Button disabled={forClient.length === 0 || staffing.isPending} onClick={propose}>
           {staffing.isPending ? (
             <Loader2 className="animate-spin" aria-hidden />
           ) : (
             <Users aria-hidden />
           )}
-          Propose a team ({picked.length})
+          Propose a team for {chosen || 'this client'}
         </Button>
+        {forClient.length > 0 && (
+          <p className="text-muted-foreground basis-full text-xs">
+            Roles: {forClient.map((t) => `${t.code} ${t.title}`).join(' · ')}
+          </p>
+        )}
       </section>
 
-      <section className="space-y-3" aria-label="Proposed team">
+      <section className="space-y-4" aria-label="Proposed team">
         {staffing.isError && <ErrorState error={staffing.error} />}
-        {!staffing.data && !staffing.isError && (
-          <EmptyState title="No proposal yet">
-            Pick tasks and choose Propose a team. Each person is proposed for one task at most, and
-            never beyond the time they have free.
+        {!plan && !staffing.isError && (
+          <EmptyState title="No team proposed yet">
+            Choose a client and click Propose a team. Each open task is one role; each role gets the
+            best free person, and nobody is booked twice.
           </EmptyState>
         )}
-        {staffing.data && (
+        {plan && (
           <>
-            <dl className="grid gap-3 sm:grid-cols-2">
-              <Stat
-                label="Tasks filled"
-                value={`${staffing.data.filled} of ${staffing.data.tasks.length}`}
-              />
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="text-lg font-semibold">
+                Team for {proposedFor}: {members.length} of {plan.tasks.length} roles filled
+              </h2>
               {showBilling() && (
-                <Stat
-                  label="Gross margin per week"
-                  value={usd(staffing.data.total_weekly_margin_usd)}
-                  hint="Bill rate minus cost, at each task's allocation"
-                />
+                <span className="text-muted-foreground text-sm">
+                  Gross margin {usd(plan.total_weekly_margin_usd)} a week
+                </span>
               )}
-            </dl>
+            </div>
             {needRun.length > 0 && (
               <div className="bg-surface flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4 text-sm">
                 <p>
                   {startRuns.data
                     ? `Matching started for ${startRuns.data.started} of ${startRuns.data.asked} tasks. Propose again in a minute.`
-                    : `${needRun.length} task${needRun.length === 1 ? ' has' : 's have'} no finished matching run yet.`}
+                    : `${plural(needRun.length, 'role')} cannot be filled yet: ${needRun.length === 1 ? 'its task has' : 'their tasks have'} no finished matching run.`}
                 </p>
                 <Button
                   variant="outline"
@@ -802,11 +813,17 @@ function StaffingTab() {
               </div>
             )}
             {startRuns.isError && <ErrorState error={startRuns.error} />}
-            <ol className="space-y-3">
-              {staffing.data.tasks.map((t) => (
-                <StaffedCard key={t.task_id} t={t} />
+            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {plan.tasks.map((t) => (
+                <RoleCard
+                  key={t.task_id}
+                  t={t}
+                  person={person(t)}
+                  inTeam={inTeam}
+                  onSwap={(id) => setSwaps((s) => ({ ...s, [t.task_id]: id }))}
+                />
               ))}
-            </ol>
+            </ul>
             <p className="text-muted-foreground text-xs">
               A proposal only. Open each task to accept or reject the person on its shortlist.
             </p>
@@ -817,29 +834,91 @@ function StaffingTab() {
   )
 }
 
-function StaffedCard({ t }: { t: StaffedTask }) {
+function RoleCard({
+  t,
+  person,
+  inTeam,
+  onSwap,
+}: {
+  t: StaffedTask
+  person: ProposedPerson | null
+  inTeam: Set<string>
+  onSwap: (employeeId: string) => void
+}) {
+  const options = [t.proposed, ...t.alternates].filter((p) => p !== null)
   return (
-    <li className="bg-surface rounded-xl border p-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <Link to={`/tasks/${t.task_id}`} className="font-medium hover:underline">
-          {t.task_code} · {t.title}
+    <li
+      className="bg-surface flex flex-col gap-3 rounded-xl border p-4"
+      aria-label={`Role ${t.task_code}`}
+    >
+      <div>
+        <p className="text-muted-foreground text-xs">Role</p>
+        <Link to={`/tasks/${t.task_id}`} className="font-semibold hover:underline">
+          {t.title}
         </Link>
-        {t.proposed ? (
-          <StatusBadge tone="ready">Proposed</StatusBadge>
-        ) : (
-          <StatusBadge tone="attention">Not filled</StatusBadge>
-        )}
+        <p className="text-muted-foreground text-xs">{t.task_code}</p>
       </div>
-      <div className="mt-2 space-y-2 text-sm">
-        {t.proposed ? <PersonLine p={t.proposed} /> : <p>{t.unfilled_reason}</p>}
-        {t.alternates.length > 0 && (
-          <div className="text-muted-foreground space-y-1 text-xs">
-            <p>Also possible:</p>
-            {t.alternates.map((a) => (
-              <PersonLine key={a.employee_id} p={a} />
-            ))}
+      {person ? (
+        <div className="bg-muted/40 flex items-center gap-3 rounded-lg p-3">
+          <span className="bg-primary/10 text-primary grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold">
+            {initials(person.full_name)}
+          </span>
+          <div className="min-w-0 flex-1">
+            <Link
+              to={`/planning/people/${person.employee_id}`}
+              className="block truncate font-medium hover:underline"
+            >
+              {person.full_name}
+            </Link>
+            <p className="text-muted-foreground text-xs">
+              {person.employee_code} · {person.designation} · {person.level}
+            </p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              <StatusBadge tone={person.band === 'shortlist' ? 'ready' : 'info'}>
+                {BAND_LABELS[person.band]} · {chance(person.score)}
+              </StatusBadge>
+              {showBilling() && <MarginBadge margin={person.margin} />}
+              <UnitBadge unit={person.business_unit} />
+            </div>
           </div>
+        </div>
+      ) : (
+        <div className="bg-muted/40 rounded-lg p-3 text-sm">
+          <p className="font-medium">Nobody proposed</p>
+          <p className="text-muted-foreground text-xs">{t.unfilled_reason}</p>
+        </div>
+      )}
+      <div className="mt-auto flex flex-wrap items-center gap-2">
+        {options.length > 1 && person && (
+          <Select value={person.employee_id} onValueChange={onSwap}>
+            <SelectTrigger
+              className="h-8 w-56 text-xs"
+              aria-label={`Swap person for ${t.task_code}`}
+            >
+              <span className="text-muted-foreground mr-1">Swap:</span>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((p) => (
+                <SelectItem
+                  key={p.employee_id}
+                  value={p.employee_id}
+                  disabled={p.employee_id !== person.employee_id && inTeam.has(p.employee_id)}
+                >
+                  {p.full_name} · {chance(p.score)}
+                  {p.employee_id !== person.employee_id && inTeam.has(p.employee_id)
+                    ? ' (in team)'
+                    : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
+        <Button asChild size="sm" variant={person ? 'default' : 'outline'} className="h-8">
+          <Link to={`/tasks/${t.task_id}`}>
+            {person ? 'Open task to accept' : 'Open task to ask HR'}
+          </Link>
+        </Button>
       </div>
     </li>
   )
