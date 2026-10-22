@@ -2308,47 +2308,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/planning/staffing": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Staffing
-         * @description Staff several tasks at once from each task's latest matching run without proposing anyone
-         *     for more than their capacity. A proposal only: nothing is assigned.
-         */
-        post: operations["staffing_api_v1_planning_staffing_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/planning/team": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Build Team
-         * @description A proposed team, role by role, within the budget. Nothing is assigned.
-         */
-        post: operations["build_team_api_v1_planning_team_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/planning/what-if": {
         parameters: {
             query?: never;
@@ -6038,24 +5997,6 @@ export interface components {
             /** Sole Skills */
             sole_skills: components["schemas"]["SoleSkill"][];
         };
-        /** ProposedPerson */
-        ProposedPerson: {
-            band: components["schemas"]["Band"];
-            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
-            cost_band: components["schemas"]["CostBand"];
-            /** Designation */
-            designation: string;
-            /** Employee Code */
-            employee_code: string;
-            /** Employee Id */
-            employee_id: string;
-            /** Full Name */
-            full_name: string;
-            level: components["schemas"]["Level"];
-            margin: components["schemas"]["Margin"];
-            /** Score */
-            score: number;
-        };
         /** QualityIssue */
         QualityIssue: {
             /** Issue */
@@ -6450,42 +6391,6 @@ export interface components {
             /** Skill Id */
             skill_id: string;
         };
-        /** StaffedTask */
-        StaffedTask: {
-            /** Alternates */
-            alternates: components["schemas"]["ProposedPerson"][];
-            /** Headcount */
-            headcount: number;
-            /** People */
-            people: components["schemas"]["ProposedPerson"][];
-            /** Task Code */
-            task_code: string;
-            /** Task Id */
-            task_id: string;
-            /** Title */
-            title: string;
-            /** Unfilled Reason */
-            unfilled_reason: string | null;
-        };
-        /** StaffingIn */
-        StaffingIn: {
-            /** Task Ids */
-            task_ids: string[];
-        };
-        /**
-         * StaffingPlan
-         * @description A proposal only: managers still accept or reject each person on the task's shortlist.
-         */
-        StaffingPlan: {
-            /** Filled */
-            filled: number;
-            /** Seats */
-            seats: number;
-            /** Tasks */
-            tasks: components["schemas"]["StaffedTask"][];
-            /** Total Weekly Margin Usd */
-            total_weekly_margin_usd: number;
-        };
         /** Submission */
         Submission: {
             candidate: components["schemas"]["SubmittedCandidate"];
@@ -6779,58 +6684,6 @@ export interface components {
              */
             suggested: boolean;
         };
-        /** TeamGap */
-        TeamGap: {
-            /** Missing */
-            missing: number;
-            /** Reason */
-            reason: string;
-            /** Role */
-            role: string;
-        };
-        /** TeamIn */
-        TeamIn: {
-            /**
-             * Allocation Pct
-             * @default 100
-             */
-            allocation_pct: number;
-            /** Client Code */
-            client_code?: string | null;
-            /** Roles */
-            roles: components["schemas"]["TeamRole-Input"][];
-            /**
-             * Start Date
-             * Format: date
-             */
-            start_date: string;
-            /** Weekly Budget Usd */
-            weekly_budget_usd?: number | null;
-        };
-        /** TeamMember */
-        TeamMember: {
-            business_unit?: components["schemas"]["BusinessUnitRef"] | null;
-            cost_band: components["schemas"]["CostBand"];
-            /** Designation */
-            designation: string;
-            /** Employee Code */
-            employee_code: string;
-            /** Employee Id */
-            employee_id: string;
-            /** Fit */
-            fit: number;
-            /** Full Name */
-            full_name: string;
-            level: components["schemas"]["Level"];
-            /** Role */
-            role: string;
-            /** Weekly Bill Usd */
-            weekly_bill_usd: number;
-            /** Weekly Cost Usd */
-            weekly_cost_usd: number;
-            /** Worked With */
-            worked_with: string[];
-        };
         /** TeamPerson */
         TeamPerson: {
             /** Allocation Pct */
@@ -6846,26 +6699,7 @@ export interface components {
             /** Full Name */
             full_name: string;
             level: components["schemas"]["Level"];
-            role: components["schemas"]["TeamRole-Output"];
-        };
-        /** TeamPlan */
-        TeamPlan: {
-            /** Alternates */
-            alternates: {
-                [key: string]: components["schemas"]["PersonRef"][];
-            };
-            /** Gaps */
-            gaps: components["schemas"]["TeamGap"][];
-            /** Margin Pct */
-            margin_pct: number;
-            /** Members */
-            members: components["schemas"]["TeamMember"][];
-            /** Weekly Bill Usd */
-            weekly_bill_usd: number;
-            /** Weekly Cost Usd */
-            weekly_cost_usd: number;
-            /** Within Budget */
-            within_budget: boolean | null;
+            role: components["schemas"]["TeamRole"];
         };
         /** TeamRead */
         TeamRead: {
@@ -6884,25 +6718,12 @@ export interface components {
             shadow: components["schemas"]["TeamPerson"] | null;
             task: components["schemas"]["TeamTask"];
         };
-        /** TeamRole */
-        "TeamRole-Input": {
-            /**
-             * Count
-             * @default 1
-             */
-            count: number;
-            level: components["schemas"]["Level"];
-            /** Skills */
-            skills: components["schemas"]["TeamSkill"][];
-            /** Title */
-            title: string;
-        };
         /**
          * TeamRole
          * @description A person's place in a team for a task (ADR 039).
          * @enum {string}
          */
-        "TeamRole-Output": "lead" | "member" | "shadow";
+        TeamRole: "lead" | "member" | "shadow";
         /** TeamSave */
         TeamSave: {
             /** Lead Id */
@@ -6913,21 +6734,6 @@ export interface components {
             shadow_id?: string | null;
             /** Task Id */
             task_id: string;
-        };
-        /** TeamSkill */
-        TeamSkill: {
-            /**
-             * Min Proficiency
-             * @default 3
-             */
-            min_proficiency: number;
-            /**
-             * Must Have
-             * @default true
-             */
-            must_have: boolean;
-            /** Skill Id */
-            skill_id: string;
         };
         /** TeamTask */
         TeamTask: {
@@ -11409,72 +11215,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SkillGapReport"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    staffing_api_v1_planning_staffing_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["StaffingIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["StaffingPlan"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    build_team_api_v1_planning_team_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TeamIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TeamPlan"];
                 };
             };
             /** @description Validation Error */

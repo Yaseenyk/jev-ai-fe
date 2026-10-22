@@ -23,8 +23,6 @@ import type {
   RfpDrafts,
   SavingsReport,
   SetupStatus,
-  TeamIn,
-  TeamPlan,
   WorkingOn,
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
@@ -79,36 +77,6 @@ export function createWorkforceHandlers(db: Db) {
         projects: [],
       }),
     ),
-    http.post(api('/planning/team'), async ({ request }) => {
-      const body = (await request.json()) as TeamIn
-      const members = body.roles.flatMap((r, ri) =>
-        Array.from({ length: Math.min(r.count, 2) }, (_, k) => ({
-          ...person(ri * 2 + k),
-          role: r.title,
-          fit: 0.9,
-          worked_with: k === 1 ? [person(ri * 2).full_name] : [],
-          weekly_cost_usd: 1300,
-          weekly_bill_usd: 2100,
-        })),
-      )
-      const cost = members.reduce((n, m) => n + m.weekly_cost_usd, 0)
-      const bill = members.reduce((n, m) => n + m.weekly_bill_usd, 0)
-      return HttpResponse.json<TeamPlan>({
-        members,
-        gaps: body.roles
-          .filter((r) => r.count > 2)
-          .map((r) => ({
-            role: r.title,
-            missing: r.count - 2,
-            reason: 'not enough free people with the skills at this level',
-          })),
-        alternates: {},
-        weekly_cost_usd: cost,
-        weekly_bill_usd: bill,
-        margin_pct: bill ? Math.round((1000 * (bill - cost)) / bill) / 10 : 0,
-        within_budget: body.weekly_budget_usd == null ? null : cost <= body.weekly_budget_usd,
-      })
-    }),
     http.get(api('/planning/opportunity'), () =>
       HttpResponse.json<OpportunityReport>({
         long_bench: [{ ...person(2), reason: 'On the bench', days: 64 }],

@@ -9,12 +9,10 @@ import type {
   CostBand,
   HireOrMove,
   Margin,
-  ProposedPerson,
   RateCard,
   RateCardLine,
   ShortlistItem,
   SkillGap,
-  StaffedTask,
 } from '@/api/types'
 import type { Db } from '@/mocks/db'
 import hrData from '@/mocks/data/hr.json'
@@ -92,7 +90,9 @@ export function createPlanningHandlers(db: Db) {
     }
   }
 
-  const person = (item: ShortlistItem): ProposedPerson => {
+  const person = (
+    item: ShortlistItem,
+  ): Omit<NonNullable<HireOrMove['internal']>, 'available_from' | 'run_id'> => {
     const band = byId.get(item.employee.id)?.cost_band ?? 'C'
     return {
       employee_id: item.employee.id,
@@ -483,50 +483,6 @@ export function createPlanningHandlers(db: Db) {
         })
         .sort((a, b) => order[a.status] - order[b.status] || b.gap - a.gap)
       return HttpResponse.json({ horizon_days: horizon, open_tasks: open.length, gaps })
-    }),
-
-    http.post(api('/planning/staffing'), async ({ request }) => {
-      const { task_ids } = (await request.json()) as { task_ids: string[] }
-      const used = new Set<string>()
-      const tasks: StaffedTask[] = []
-      for (const id of task_ids) {
-        const task = db.tasks.find((t) => t.id === id)
-        if (!task) return problem(404, 'task_not_found', `Task ${id} not found`)
-        const found = recommended(id)
-        const picks = (found?.items ?? [])
-          .filter((i) => !used.has(i.employee.id))
-          .slice(0, task.headcount)
-        for (const p of picks) used.add(p.employee.id)
-        tasks.push({
-          task_id: task.id,
-          task_code: task.code,
-          title: task.title,
-          headcount: task.headcount,
-          people: picks.map(person),
-          alternates: (found?.items ?? [])
-            .filter((i) => !picks.includes(i))
-            .slice(0, 3)
-            .map(person),
-          unfilled_reason:
-            picks.length >= task.headcount
-              ? null
-              : !found
-                ? 'Run matching for this task first.'
-                : found.items.length === 0
-                  ? 'Nobody was recommended in the latest matching run.'
-                  : 'Everyone recommended is already proposed for another task in this plan.',
-        })
-      }
-      const filled = tasks.flatMap((t) => t.people)
-      return HttpResponse.json({
-        tasks,
-        seats: tasks.reduce((n, t) => n + t.headcount, 0),
-        filled: filled.length,
-        total_weekly_margin_usd: filled.reduce(
-          (s, p) => s + p.margin.weekly_bill_usd - p.margin.weekly_cost_usd,
-          0,
-        ),
-      })
     }),
 
     http.get(api('/tasks/:taskId/hire-or-move'), ({ params }) => {
