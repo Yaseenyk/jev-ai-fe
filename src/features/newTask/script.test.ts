@@ -147,6 +147,8 @@ const empty: InterpretResponse = {
   duration_weeks: null,
   allocation_pct_required: null,
   headcount: null,
+  client_timezone: null,
+  min_timezone_overlap_hours: null,
   work_mode: null,
   location: null,
   priority: null,
@@ -180,4 +182,15 @@ test('interpreted values snap onto the chat options and unknowns stay unanswered
     work_mode: 'remote',
   })
   expect(fromInterpretation(empty, [], new Date())).toEqual({})
+})
+
+test("a JD's client timezone and overlap fill the draft; a client's own timezone does not override them", () => {
+  const d = fromInterpretation(
+    { ...empty, client_timezone: 'America/New_York', min_timezone_overlap_hours: 4 },
+    [],
+    new Date('2026-10-02T09:00:00Z'),
+  )
+  expect(d.client_timezone).toBe('America/New_York')
+  expect(d.min_timezone_overlap_hours).toBe(4)
+  expect(fromInterpretation(empty, [], new Date()).client_timezone).toBeUndefined()
 })

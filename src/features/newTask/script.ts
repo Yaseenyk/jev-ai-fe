@@ -527,6 +527,9 @@ export function fromInterpretation(r: InterpretResponse, clients: string[], toda
   if (r.location && LOCATIONS.includes(r.location) && r.work_mode !== 'remote')
     d.location = r.location
   if (r.priority) d.priority = r.priority
+  if (r.client_timezone) d.client_timezone = r.client_timezone
+  if (r.min_timezone_overlap_hours !== null)
+    d.min_timezone_overlap_hours = r.min_timezone_overlap_hours
   return d
 }
 

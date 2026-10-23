@@ -1,34 +1,58 @@
+import { lazy } from 'react'
 import { Link, Navigate, createBrowserRouter } from 'react-router'
 
 import { Layout } from '@/app/Layout'
 import { EmptyState } from '@/components/QueryStates'
-import AdminPage from '@/features/admin/AdminPage'
 import { CHANGE_PASSWORD_PATH, RequireAuth, useAuth } from '@/features/auth/AuthProvider'
 import ChangePasswordPage from '@/features/auth/ChangePasswordPage'
-import CandidatePage from '@/features/hr/CandidatePage'
-import CandidatesPage from '@/features/hr/CandidatesPage'
-import EmployeePage from '@/features/hr/EmployeePage'
-import CompanyPage from '@/features/hr/CompanyPage'
-import HiringRequestPage from '@/features/hr/HiringRequestPage'
-import HiringRequestsPage from '@/features/hr/HiringRequestsPage'
 import HrHomePage from '@/features/hr/HrHomePage'
-import ImportPage from '@/features/hr/ImportPage'
-import TaskCandidatesPage from '@/features/hr/TaskCandidatesPage'
-import UploadResumePage from '@/features/hr/UploadResumePage'
 import LoginPage from '@/features/auth/LoginPage'
-import NewTaskChatPage from '@/features/newTask/NewTaskChatPage'
-import ClientProfilePage from '@/features/planning/ClientProfilePage'
-import EmployeeValuePage from '@/features/planning/EmployeeValuePage'
-import PlanningPage from '@/features/planning/PlanningPage'
-import TeamBuilderPage from '@/features/teams/TeamBuilderPage'
-import { TeamPage, TeamsPage } from '@/features/teams/TeamPages'
-import RunPage from '@/features/runs/RunPage'
-import TaskDetailPage from '@/features/tasks/TaskDetailPage'
 import TaskListPage from '@/features/tasks/TaskListPage'
-import CareerPage from '@/features/planning/CareerPage'
 import DashboardPage from '@/features/dashboard/DashboardPage'
-import { FromRequestPage, PeopleSearchPage } from '@/features/workforce/Pages'
-import { HelpPage, MyProfilePage, SavingsPage, SetupPage } from '@/features/workforce/MorePages'
+
+// Opened less often: each loads on first visit, so the first screen comes up faster.
+const AdminPage = lazy(() => import('@/features/admin/AdminPage'))
+const CandidatePage = lazy(() => import('@/features/hr/CandidatePage'))
+const CandidatesPage = lazy(() => import('@/features/hr/CandidatesPage'))
+const EmployeePage = lazy(() => import('@/features/hr/EmployeePage'))
+const CompanyPage = lazy(() => import('@/features/hr/CompanyPage'))
+const HiringRequestPage = lazy(() => import('@/features/hr/HiringRequestPage'))
+const HiringRequestsPage = lazy(() => import('@/features/hr/HiringRequestsPage'))
+const ImportPage = lazy(() => import('@/features/hr/ImportPage'))
+const TaskCandidatesPage = lazy(() => import('@/features/hr/TaskCandidatesPage'))
+const UploadResumePage = lazy(() => import('@/features/hr/UploadResumePage'))
+const NewTaskChatPage = lazy(() => import('@/features/newTask/NewTaskChatPage'))
+const ClientProfilePage = lazy(() => import('@/features/planning/ClientProfilePage'))
+const EmployeeValuePage = lazy(() => import('@/features/planning/EmployeeValuePage'))
+const PlanningPage = lazy(() => import('@/features/planning/PlanningPage'))
+const TeamBuilderPage = lazy(() => import('@/features/teams/TeamBuilderPage'))
+const RunPage = lazy(() => import('@/features/runs/RunPage'))
+const TaskDetailPage = lazy(() => import('@/features/tasks/TaskDetailPage'))
+const CareerPage = lazy(() => import('@/features/planning/CareerPage'))
+const TeamPage = lazy(() =>
+  import('@/features/teams/TeamPages').then((m) => ({ default: m.TeamPage })),
+)
+const TeamsPage = lazy(() =>
+  import('@/features/teams/TeamPages').then((m) => ({ default: m.TeamsPage })),
+)
+const FromRequestPage = lazy(() =>
+  import('@/features/workforce/Pages').then((m) => ({ default: m.FromRequestPage })),
+)
+const PeopleSearchPage = lazy(() =>
+  import('@/features/workforce/Pages').then((m) => ({ default: m.PeopleSearchPage })),
+)
+const HelpPage = lazy(() =>
+  import('@/features/workforce/MorePages').then((m) => ({ default: m.HelpPage })),
+)
+const MyProfilePage = lazy(() =>
+  import('@/features/workforce/MorePages').then((m) => ({ default: m.MyProfilePage })),
+)
+const SavingsPage = lazy(() =>
+  import('@/features/workforce/MorePages').then((m) => ({ default: m.SavingsPage })),
+)
+const SetupPage = lazy(() =>
+  import('@/features/workforce/MorePages').then((m) => ({ default: m.SetupPage })),
+)
 
 /** HR start on their own queue; viewers, who cannot see bench cost, on the task board; everyone
  * else on the dashboard (ADR 028). */
