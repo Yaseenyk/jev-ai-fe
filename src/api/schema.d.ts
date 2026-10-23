@@ -4917,12 +4917,16 @@ export interface components {
             allocation_pct_required: number | null;
             /** Client Code */
             client_code: string | null;
+            /** Client Timezone */
+            client_timezone: string | null;
             domain: components["schemas"]["Domain"] | null;
             /** Duration Weeks */
             duration_weeks: number | null;
             /** Headcount */
             headcount: number | null;
             location: components["schemas"]["Location"] | null;
+            /** Min Timezone Overlap Hours */
+            min_timezone_overlap_hours: number | null;
             /** Min Years Experience */
             min_years_experience: number | null;
             /** Model */
