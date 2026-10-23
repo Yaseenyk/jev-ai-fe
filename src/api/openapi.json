@@ -6078,6 +6078,17 @@
             ],
             "title": "Client Code"
           },
+          "client_timezone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Timezone"
+          },
           "domain": {
             "anyOf": [
               {
@@ -6119,6 +6130,17 @@
                 "type": "null"
               }
             ]
+          },
+          "min_timezone_overlap_hours": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Timezone Overlap Hours"
           },
           "min_years_experience": {
             "anyOf": [
@@ -6231,6 +6253,8 @@
           "work_mode",
           "location",
           "priority",
+          "client_timezone",
+          "min_timezone_overlap_hours",
           "unmatched_skills",
           "notes",
           "model"

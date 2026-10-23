@@ -23,7 +23,7 @@ import {
   UserSearch,
   Users,
 } from 'lucide-react'
-import { useId, useState, type ComponentType, type SyntheticEvent } from 'react'
+import { Suspense, useId, useState, type ComponentType, type SyntheticEvent } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 
 import { apiFetch } from '@/api/client'
@@ -537,7 +537,9 @@ export function Layout() {
       <div className="min-w-0 flex-1 px-3 pt-3 sm:px-4 lg:px-0 lg:pt-0">
         <TopBar />
         <main className="mx-auto w-full max-w-[90rem] pt-5 pb-28 lg:pb-8">
-          <Outlet />
+          <Suspense fallback={<p className="text-muted-foreground p-4 text-sm">Loading…</p>}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
 

@@ -24,6 +24,8 @@ const NOTHING: InterpretResponse = {
   duration_weeks: null,
   allocation_pct_required: null,
   headcount: null,
+  client_timezone: null,
+  min_timezone_overlap_hours: null,
   work_mode: null,
   location: null,
   priority: null,
