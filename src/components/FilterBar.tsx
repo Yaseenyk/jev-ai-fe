@@ -149,7 +149,11 @@ export function Segmented({
   options: { value: string; label: string; count?: number }[]
 }) {
   return (
-    <div role="group" aria-label={label} className="bg-muted/60 inline-flex rounded-lg p-0.5">
+    <div
+      role="group"
+      aria-label={label}
+      className="bg-muted/60 inline-flex max-w-full [scrollbar-width:none] overflow-x-auto rounded-lg p-0.5"
+    >
       {options.map((o) => (
         <button
           key={o.value}

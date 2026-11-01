@@ -163,6 +163,14 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Phones: grid columns may shrink below their content (tables and long text scroll or wrap
+     inside them), and native dropdowns with long options stay within their column. */
+  .grid > * {
+    min-width: 0;
+  }
+  select {
+    max-width: 100%;
+  }
   /* Screens build cards from bg-surface + border (and shadcn's Card); one soft shadow lifts
      them off the lavender canvas so every page gets the new look without per-screen edits. */
   [data-slot='card'],

@@ -102,7 +102,7 @@ export function HealthTab() {
           <ul className="mt-3 space-y-2 text-sm">
             {h.models.map((m) => (
               <li key={m.model} className="flex justify-between gap-3">
-                <span className="truncate">{m.model}</span>
+                <span className="min-w-0 truncate">{m.model}</span>
                 <span className="shrink-0 tabular-nums">
                   {rate(m.rate)} · {m.decisions}
                 </span>

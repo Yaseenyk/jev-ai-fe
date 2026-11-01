@@ -250,7 +250,7 @@ function CompletedRun({ run, headcount }: { run: MatchRun; headcount: number }) 
         />
       )}
 
-      <footer className="text-muted-foreground border-t pt-3 text-xs">
+      <footer className="text-muted-foreground border-t pt-3 text-xs wrap-anywhere">
         Model {run.model ?? 'not needed (nobody reached scoring)'} · Decisions{' '}
         {run.decision_set_version} · Thresholds {run.thresholds_version} · Finished{' '}
         {run.finished_at ? dateTime(run.finished_at) : 'n/a'}
